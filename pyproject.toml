@@ -8,9 +8,9 @@ version = "0.1.3"
 description = "A CLI tool to detect secrets in repositories for maintaining best security practices."
 readme = "README.md"
 authors = [
-    {name = "Vishnu Prashanth"}
+    {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
 ]
-license = "MIT"
+license = "MIT"                  # SPDX expression
 license-files = ["LICENSE"]
 requires-python = ">=3.8"
 keywords = ["security", "secrets", "devsecops", "cli", "python"]
@@ -22,8 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "License :: OSI Approved :: MIT License"
+    "Programming Language :: Python :: 3.10"
 ]
 dependencies = [
     "click>=8.0"
@@ -41,10 +40,3 @@ Changelog = "https://github.com/vishnu-77/secchecker/blob/main/CHANGELOG.md"
 
 [project.scripts]
 secchecker = "secchecker.cli:main"
-
-[project.gui-scripts]
-# No GUI scripts for this project
-
-[project.entry-points."secchecker.plugins"]
-# Optional plugin system
-
