@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secchecker"
+version = "0.1.0"
+description = "A CLI tool to detect hardcoded secrets in repositories."
+authors = [
+    {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
+]
+dependencies = []
+
+[project.scripts]
+secchecker = "secchecker.cli:main"
