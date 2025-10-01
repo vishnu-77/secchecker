@@ -1,7 +1,9 @@
 [![PyPI version](https://img.shields.io/pypi/v/secchecker.svg)](https://pypi.org/project/secchecker/)  
 [![Python versions](https://img.shields.io/pypi/pyversions/secchecker.svg)](https://pypi.org/project/secchecker/)  
-[![Build Status](https://github.com/yourusername/secchecker/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/secchecker/actions)  
+[![Build Status](https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnu-77/secchecker/actions)  
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
+
+
 
 
 # secchecker  
