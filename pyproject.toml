@@ -4,13 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.1.1"
-
+version = "0.1.2"
 description = "A CLI tool to detect secrets in repositories for maintaining best security practices."
+readme = "README.md"               # Add your README as long description
 authors = [
     {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
 ]
-dependencies = []
+license = {text = "MIT"}           # License for PyPI badge
+requires-python = ">=3.8"          # Supported Python versions
+dependencies = []                  # Add dependencies if needed
 
 [project.scripts]
 secchecker = "secchecker.cli:main"
