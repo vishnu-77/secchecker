@@ -4,8 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.1.0"
-description = "A CLI tool to detect hardcoded secrets in repositories."
+version = "0.1.1"
+
+description = "A CLI tool to detect secrets in repositories for maintaining best security practices."
 authors = [
     {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
 ]
