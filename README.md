@@ -5,6 +5,7 @@
 
 
 
+
 # secchecker  
 
 `secchecker` is a Python package + CLI tool to detect hidden or untracked hardcoded secrets in repositories, helping developers keep their projects secure and audit-ready.  
