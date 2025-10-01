@@ -4,15 +4,47 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.1.2"
+version = "0.1.3"
 description = "A CLI tool to detect secrets in repositories for maintaining best security practices."
-readme = "README.md"               # Add your README as long description
+readme = "README.md"
 authors = [
-    {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
+    {name = "Vishnu Prashanth"}
 ]
-license = {text = "MIT"}           # License for PyPI badge
-requires-python = ">=3.8"          # Supported Python versions
-dependencies = []                  # Add dependencies if needed
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.8"
+keywords = ["security", "secrets", "devsecops", "cli", "python"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Topic :: Software Development :: Build Tools",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "click>=8.0"
+]
+
+[project.optional-dependencies]
+cli = ["rich"]
+
+[project.urls]
+Homepage = "https://github.com/vishnu-77/secchecker"
+Documentation = "https://github.com/vishnu-77/secchecker#readme"
+Repository = "https://github.com/vishnu-77/secchecker.git"
+"Bug Tracker" = "https://github.com/vishnu-77/secchecker/issues"
+Changelog = "https://github.com/vishnu-77/secchecker/blob/main/CHANGELOG.md"
 
 [project.scripts]
 secchecker = "secchecker.cli:main"
+
+[project.gui-scripts]
+# No GUI scripts for this project
+
+[project.entry-points."secchecker.plugins"]
+# Optional plugin system
+
