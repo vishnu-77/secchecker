@@ -2,7 +2,44 @@ import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Union
+try:
+    from typing import TYPE_CHECKING
+except ImportError:
+    TYPE_CHECKING = False
+
+if TYPE_CHECKING:
+    pass
+
+# Compatibility function for Python 3.8
+def _indent_xml(elem, level=0):
+    """Indent XML for pretty printing (Python 3.8 compatibility)."""
+    i = "\n" + level * "  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for child in elem:
+            _indent_xml(child, level + 1)
+        if not child.tail or not child.tail.strip():
+            child.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
+def indent_xml(elem, space="  "):
+    """Cross-compatible XML indentation."""
+    try:
+        if hasattr(ET, 'indent') and callable(getattr(ET, 'indent', None)):
+            # Python 3.9+
+            ET.indent(elem, space)
+        else:
+            # Python 3.8 fallback
+            _indent_xml(elem)
+    except (AttributeError, TypeError):
+        # Extra safety fallback
+        _indent_xml(elem)
 
 # Severity mapping for different types of secrets
 SEVERITY_MAP = {
@@ -201,7 +238,7 @@ def to_xml(results: Dict[str, Dict[str, List[str]]], output_file="secchecker_rep
                 match_elem.text = match
     
     # Write with proper formatting
-    ET.indent(root, space="  ")
+    indent_xml(root, space="  ")
     tree = ET.ElementTree(root)
     tree.write(output_file, encoding="utf-8", xml_declaration=True)
     
@@ -283,5 +320,5 @@ def generate_xml_report(data: Dict[str, Dict[str, List[str]]]) -> str:
                 match_elem = ET.SubElement(category_elem, "Match")
                 match_elem.text = match
     
-    ET.indent(root, space="  ")
+    indent_xml(root, space="  ")
     return ET.tostring(root, encoding="unicode")
