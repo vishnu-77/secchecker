@@ -4,32 +4,44 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.1.3"
-description = "A CLI tool to detect secrets in repositories for maintaining best security practices."
+version = "0.2.0"
+description = "A comprehensive CLI tool to detect secrets and sensitive information in repositories for maintaining security best practices."
 readme = "README.md"
 authors = [
     {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
 ]
-license = "MIT"                  # SPDX expression
+license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.8"
-keywords = ["security", "secrets", "devsecops", "cli", "python"]
+keywords = ["security", "secrets", "devsecops", "cli", "python", "scanning", "audit"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
     "Topic :: Security",
+    "Topic :: Security :: Cryptography",
     "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Quality Assurance",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10"
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
 ]
-dependencies = [
-    "click>=8.0"
-]
+dependencies = []
 
 [project.optional-dependencies]
-cli = ["rich"]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=21.0",
+    "flake8>=3.8",
+    "mypy>=0.800"
+]
+cli = ["rich>=10.0"]
 
 [project.urls]
 Homepage = "https://github.com/vishnu-77/secchecker"
@@ -40,3 +52,20 @@ Changelog = "https://github.com/vishnu-77/secchecker/blob/main/CHANGELOG.md"
 
 [project.scripts]
 secchecker = "secchecker.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["secchecker"]
+omit = ["tests/*", "setup.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError"
+]

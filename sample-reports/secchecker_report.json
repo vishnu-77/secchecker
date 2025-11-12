@@ -1,0 +1,347 @@
+{
+    "metadata": {
+        "timestamp": "2025-11-12T18:05:12.602102",
+        "version": "0.2.0",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 8,
+        "total_secrets": 43,
+        "total_matches": 53,
+        "severity_counts": {
+            "CRITICAL": 18,
+            "HIGH": 7,
+            "MEDIUM": 15,
+            "LOW": 13
+        }
+    },
+    "findings": {
+        "pyproject.toml": {
+            "Email": {
+                "matches": [
+                    "vishnu7stanite@gmail.com"
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "secchecker_report.xml": {
+            "AWS Access Key": {
+                "matches": [
+                    "AKIAIOSFODNN7EXAMPLE"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "JWT Token": {
+                "matches": [
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.signature",
+                    "eyJhbGciOiJIUzI1NiJ9.test.signature"
+                ],
+                "severity": "MEDIUM",
+                "count": 2
+            },
+            "Bearer Token": {
+                "matches": [
+                    "Bearer Token"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Basic Auth": {
+                "matches": [
+                    "Basic Auth"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "RSA Private Key": {
+                "matches": [
+                    "-----BEGIN RSA PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "EC Private Key": {
+                "matches": [
+                    "-----BEGIN EC PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "DSA Private Key": {
+                "matches": [
+                    "-----BEGIN DSA PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "PGP Private Key": {
+                "matches": [
+                    "-----BEGIN PGP PRIVATE KEY BLOCK-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "SSH Private Key": {
+                "matches": [
+                    "-----BEGIN OPENSSH PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "Generic Private Key": {
+                "matches": [
+                    "-----BEGIN RSA PRIVATE KEY-----",
+                    "-----BEGIN EC PRIVATE KEY-----",
+                    "-----BEGIN DSA PRIVATE KEY-----",
+                    "-----BEGIN OPENSSH PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 4
+            },
+            "SQL Server Connection": {
+                "matches": [
+                    "server=.*password=.*\",</Match>"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "Oracle Connection": {
+                "matches": [
+                    "Oracle Connection\": r\"(?i)oracle.*password=.*\",</Match>"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "Email": {
+                "matches": [
+                    "vishnu7stanite@gmail.com"
+                ],
+                "severity": "LOW",
+                "count": 1
+            },
+            "FTP URL with Credentials": {
+                "matches": [
+                    "ftp://[^:\\s]+:[^@\\s]+@[^\\s]+\",</Match>"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Docker Config": {
+                "matches": [
+                    ".dockercfg"
+                ],
+                "severity": "LOW",
+                "count": 1
+            },
+            "X509 Certificate": {
+                "matches": [
+                    "-----BEGIN CERTIFICATE-----"
+                ],
+                "severity": "LOW",
+                "count": 1
+            },
+            "PKCS12 Certificate": {
+                "matches": [
+                    "-----BEGIN PKCS12-----"
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "secchecker\\patterns.py": {
+            "Bearer Token": {
+                "matches": [
+                    "Bearer Token"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Basic Auth": {
+                "matches": [
+                    "Basic Auth"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "RSA Private Key": {
+                "matches": [
+                    "-----BEGIN RSA PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "EC Private Key": {
+                "matches": [
+                    "-----BEGIN EC PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "DSA Private Key": {
+                "matches": [
+                    "-----BEGIN DSA PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "PGP Private Key": {
+                "matches": [
+                    "-----BEGIN PGP PRIVATE KEY BLOCK-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "SSH Private Key": {
+                "matches": [
+                    "-----BEGIN OPENSSH PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "Generic Private Key": {
+                "matches": [
+                    "-----BEGIN RSA PRIVATE KEY-----",
+                    "-----BEGIN EC PRIVATE KEY-----",
+                    "-----BEGIN DSA PRIVATE KEY-----",
+                    "-----BEGIN OPENSSH PRIVATE KEY-----"
+                ],
+                "severity": "CRITICAL",
+                "count": 4
+            },
+            "SQL Server Connection": {
+                "matches": [
+                    "server=.*password=.*\","
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "Oracle Connection": {
+                "matches": [
+                    "Oracle Connection\": r\"(?i)oracle.*password=.*\","
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "FTP URL with Credentials": {
+                "matches": [
+                    "ftp://[^:\\s]+:[^@\\s]+@[^\\s]+\","
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Docker Config": {
+                "matches": [
+                    ".dockercfg"
+                ],
+                "severity": "LOW",
+                "count": 1
+            },
+            "X509 Certificate": {
+                "matches": [
+                    "-----BEGIN CERTIFICATE-----"
+                ],
+                "severity": "LOW",
+                "count": 1
+            },
+            "PKCS12 Certificate": {
+                "matches": [
+                    "-----BEGIN PKCS12-----"
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "secchecker\\reporter.py": {
+            "Bearer Token": {
+                "matches": [
+                    "Bearer Token"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Basic Auth": {
+                "matches": [
+                    "Basic Auth"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Password in Config": {
+                "matches": [
+                    "Secret",
+                    "Password"
+                ],
+                "severity": "MEDIUM",
+                "count": 2
+            }
+        },
+        "secchecker\\__init__.py": {
+            "Email": {
+                "matches": [
+                    "vishnu7stanite@gmail.com"
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "secchecker.egg-info\\PKG-INFO": {
+            "Email": {
+                "matches": [
+                    "vishnu7stanite@gmail.com"
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "tests\\test_core.py": {
+            "AWS Access Key": {
+                "matches": [
+                    "AKIAIOSFODNN7EXAMPLE"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "JWT Token": {
+                "matches": [
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.signature"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Password in Config": {
+                "matches": [
+                    "password"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Generic Secret": {
+                "matches": [
+                    "KEY",
+                    "password",
+                    "token"
+                ],
+                "severity": "LOW",
+                "count": 3
+            }
+        },
+        "tests\\test_patterns.py": {
+            "AWS Access Key": {
+                "matches": [
+                    "AKIAIOSFODNN7EXAMPLE"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "JWT Token": {
+                "matches": [
+                    "eyJhbGciOiJIUzI1NiJ9.test.signature"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            }
+        }
+    }
+}
