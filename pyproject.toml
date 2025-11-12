@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.2.0"
+version = "0.2.1"
 description = "A comprehensive CLI tool to detect secrets and sensitive information in repositories for maintaining security best practices."
 readme = "README.md"
 authors = [
