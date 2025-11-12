@@ -1,0 +1,36 @@
+name: Package Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  package-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Test package installation
+        run: |
+          python -m pip install --upgrade pip
+          pip install build wheel
+          python -m build
+          pip install dist/*.whl
+      
+      - name: Test installed package
+        run: |
+          # Test CLI from installed package
+          secchecker --help
+          # Test basic functionality
+          mkdir test_scan
+          echo 'password="test123"' > test_scan/config.py
+          secchecker test_scan --format json
+          # Clean up
+          rm -rf test_scan secchecker_report.json
