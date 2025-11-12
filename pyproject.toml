@@ -31,15 +31,21 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"
 ]
-dependencies = []
+dependencies = [
+    # No external dependencies - using only Python standard library
+]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=6.0",
     "pytest-cov>=2.0",
-    "black>=21.0",
     "flake8>=3.8",
+    "black>=21.0",
     "mypy>=0.800"
+]
+test = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0"
 ]
 cli = ["rich>=10.0"]
 
