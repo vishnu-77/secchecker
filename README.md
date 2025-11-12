@@ -3,43 +3,43 @@
 [![Build Status](https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnu-77/secchecker/actions)  
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
 
-# 🔍 secchecker  
+# secchecker  
 
 `secchecker` is a comprehensive Python package + CLI tool designed to detect hardcoded secrets, sensitive information, and security vulnerabilities in code repositories. It helps developers maintain security best practices and keep their projects audit-ready.
 
-## ✨ Features  
+## Features  
 
-### 🎯 Comprehensive Secret Detection
+### Comprehensive Secret Detection
 - **40+ Secret Patterns** covering major security categories:
-  - 🏗️ **Database Connections**: PostgreSQL, MySQL, MongoDB, Redis
-  - ☁️ **Cloud Provider Keys**: AWS, Google Cloud, Azure
-  - 🔑 **Authentication Tokens**: JWT, Bearer tokens, Basic Auth
-  - 🔐 **Private Keys**: RSA, EC, DSA, PGP, SSH keys
-  - 🐙 **Version Control**: GitHub, GitLab tokens
-  - 💬 **Communication**: Slack, Discord, Telegram bot tokens
-  - 💰 **Cryptocurrency**: Bitcoin, Ethereum private keys
-  - 🏦 **Sensitive Data**: Credit cards, Social Security numbers
-  - 🌐 **URLs with Credentials**: HTTP/FTP with embedded auth
+  - **Database Connections**: PostgreSQL, MySQL, MongoDB, Redis
+  - **Cloud Provider Keys**: AWS, Google Cloud, Azure
+  - **Authentication Tokens**: JWT, Bearer tokens, Basic Auth
+  - **Private Keys**: RSA, EC, DSA, PGP, SSH keys
+  - **Version Control**: GitHub, GitLab tokens
+  - **Communication**: Slack, Discord, Telegram bot tokens
+  - **Cryptocurrency**: Bitcoin, Ethereum private keys
+  - **Sensitive Data**: Credit cards, Social Security numbers
+  - **URLs with Credentials**: HTTP/FTP with embedded auth
 
-### 📊 Advanced Reporting
+### Advanced Reporting
 - **Multiple Output Formats**: JSON, Markdown, XML
 - **Severity Classification**: CRITICAL, HIGH, MEDIUM, LOW levels
 - **Rich Metadata**: Timestamps, statistics, tool version info
 - **Professional Formatting**: Emojis, structured layout, detailed breakdowns
 
-### 🚀 Performance & Accuracy  
+### Performance & Accuracy  
 - **Smart File Filtering**: Automatically skips binary files and build directories
 - **False Positive Detection**: Filters common test/example patterns
 - **Multiple Encoding Support**: Handles international text files
 - **Memory Efficient**: Optimized for large repositories
 
-### 🛠️ Developer-Friendly CLI
+### Developer-Friendly CLI
 - **Verbose Mode**: Detailed scanning information
 - **Custom Output**: Specify output file paths
 - **Environment Configuration**: Set default formats via environment variables
 - **Comprehensive Help**: Detailed usage examples and options
 
-## 🚀 Installation  
+## Installation  
 
 ### From PyPI (Recommended)
 ```bash
@@ -53,7 +53,7 @@ cd secchecker
 pip install -e .
 ```
 
-## 🛠 Usage
+## Usage
 
 ### Basic Scanning
 ```bash
@@ -91,32 +91,32 @@ Options:
 - `--verbose`, `-v`: Enable verbose output
 - `--help`, `-h`: Show help message
 
-## 📋 Example Output
+## Example Output
 
-> 💡 **See sample reports**: Check the [`sample-reports/`](sample-reports/) folder for complete example outputs in all formats.
+> **Note**: Check the [`sample-reports/`](sample-reports/) folder for complete example outputs in all formats.
 
 ### Markdown Report
 ```markdown
-# 🔍 Secret Scan Report
+# Secret Scan Report
 
 **Generated:** 2025-11-12T18:05:17.494792  
 **Tool:** secchecker v0.2.0  
 
-## 📊 Summary
+## Summary
 - **Files Scanned:** 25
 - **Secret Types Found:** 12
 - **Total Matches:** 18
 
-### 🚨 Severity Breakdown
-- 🔴 **CRITICAL:** 3
-- 🟠 **HIGH:** 8
-- 🟡 **MEDIUM:** 5
-- 🟢 **LOW:** 2
+### Severity Breakdown
+- **CRITICAL:** 3
+- **HIGH:** 8
+- **MEDIUM:** 5
+- **LOW:** 2
 
-## 🔎 Detailed Findings
-### 📄 `config/database.py`
-- 🔴 **RSA Private Key** (CRITICAL): 1 match(es)
-- 🟠 **AWS Access Key** (HIGH): 1 match(es)
+## Detailed Findings
+### `config/database.py`
+- **RSA Private Key** (CRITICAL): 1 match(es)
+- **AWS Access Key** (HIGH): 1 match(es)
 ```
 
 ### JSON Report Structure
@@ -145,7 +145,7 @@ Options:
 }
 ```
 
-## 🔧 API Usage
+## API Usage
 
 ### Basic Scanning
 ```python
@@ -177,27 +177,27 @@ print(f"Found {stats['total_files']} files with secrets")
 severity = get_severity("AWS Access Key")  # Returns "HIGH"
 ```
 
-## 🧪 Security Categories
+## Security Categories
 
 | Category | Examples | Severity |
 |----------|----------|----------|
-| **Private Keys** | RSA, EC, DSA, PGP keys | 🔴 CRITICAL |
-| **Financial Data** | Credit cards, SSN | 🔴 CRITICAL |
-| **Cloud Keys** | AWS, Google, Azure secrets | 🟠 HIGH |
-| **Database URIs** | PostgreSQL, MySQL connections | 🟠 HIGH |
-| **API Tokens** | GitHub, GitLab, service tokens | 🟠 HIGH |
-| **Auth Tokens** | JWT, Bearer tokens | 🟡 MEDIUM |
-| **Config Passwords** | Application passwords | 🟡 MEDIUM |
-| **Contact Info** | Email addresses | 🟢 LOW |
+| **Private Keys** | RSA, EC, DSA, PGP keys | CRITICAL |
+| **Financial Data** | Credit cards, SSN | CRITICAL |
+| **Cloud Keys** | AWS, Google, Azure secrets | HIGH |
+| **Database URIs** | PostgreSQL, MySQL connections | HIGH |
+| **API Tokens** | GitHub, GitLab, service tokens | HIGH |
+| **Auth Tokens** | JWT, Bearer tokens | MEDIUM |
+| **Config Passwords** | Application passwords | MEDIUM |
+| **Contact Info** | Email addresses | LOW |
 
-## 📈 Performance
+## Performance
 
 - **Fast Scanning**: Optimized regex patterns and smart file filtering
 - **Memory Efficient**: Processes large repositories without memory issues  
 - **Accurate Detection**: Low false positive rate with pattern validation
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run the full test suite
@@ -207,7 +207,7 @@ pytest tests/ -v
 pytest tests/ --cov=secchecker --cov-report=html
 ```
 
-## 📦 Integration
+## Integration
 
 ### CI/CD Pipeline Integration
 ```yaml
@@ -234,29 +234,29 @@ repos:
 
 ---
 
-## ⚠️ Disclaimer
+##  Disclaimer
 
 `secchecker` is intended **only** for security auditing of repositories you own or have explicit permission to test.
 
-* ❌ Misuse of this tool to access, scan, or extract information from systems you do not own is **strictly prohibited** and may violate the law.
-* ❌ The author(s) assume **no liability** for misuse or damages caused by this software.
-* ✅ Use responsibly for legitimate security auditing purposes only.
+*  Misuse of this tool to access, scan, or extract information from systems you do not own is **strictly prohibited** and may violate the law.
+*  The author(s) assume **no liability** for misuse or damages caused by this software.
+*  Use responsibly for legitimate security auditing purposes only.
 
 ---
 
-## 📜 Terms & Conditions
+##  Terms & Conditions
 
 By using `secchecker`, you agree to the following:
 
-1. 👤 You will only use this tool on codebases you own or have explicit authorization to audit.
-2. 🛡️ You will not use this software for malicious purposes, including but not limited to unauthorized access, exploitation, or data theft.
-3. 🚫 The software is provided **"as is," without warranty of any kind**, express or implied.
-4. 📝 The author(s) are not responsible for any damages, losses, or legal consequences arising from the use or misuse of this software.
-5. ⚖️ You accept full responsibility for ensuring that your use of this tool complies with applicable laws and regulations in your jurisdiction.
+1.  You will only use this tool on codebases you own or have explicit authorization to audit.
+2.  You will not use this software for malicious purposes, including but not limited to unauthorized access, exploitation, or data theft.
+3.  The software is provided **"as is," without warranty of any kind**, express or implied.
+4.  The author(s) are not responsible for any damages, losses, or legal consequences arising from the use or misuse of this software.
+5.  You accept full responsibility for ensuring that your use of this tool complies with applicable laws and regulations in your jurisdiction.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Here's how you can help:
 
@@ -265,7 +265,7 @@ Contributions are welcome! Here's how you can help:
 - Include sample code or files that demonstrate the issue
 - Specify your environment (OS, Python version, etc.)
 
-### 🔧 Development Setup
+### Development Setup
 ```bash
 git clone https://github.com/vishnu-77/secchecker.git
 cd secchecker
@@ -280,13 +280,13 @@ flake8 secchecker/ tests/           # Lint code
 mypy secchecker/                    # Type checking
 ```
 
-### 📝 Adding New Patterns
+###  Adding New Patterns
 1. Add patterns to `secchecker/patterns.py`
 2. Add severity mapping in `secchecker/reporter.py`
 3. Add tests in `tests/test_patterns.py`
 4. Update documentation
 
-### 🚀 Pull Request Process
+###  Pull Request Process
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
@@ -299,7 +299,7 @@ mypy secchecker/                    # Type checking
 
 - Inspired by security best practices from the DevSecOps community
 - Thanks to all contributors and security researchers
-- Built with ❤️ for the open-source community
+- Built with dedication for the open-source community
 
 ## 📚 Resources
 
