@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SecretScanReport timestamp="2025-11-12T18:05:06.849106" version="0.2.0" tool="secchecker">
+  <Summary totalFiles="7" totalSecrets="26" totalMatches="32">
+    <SeverityCounts>
+      <Severity level="CRITICAL" count="9" />
+      <Severity level="HIGH" count="4" />
+      <Severity level="MEDIUM" count="10" />
+      <Severity level="LOW" count="9" />
+    </SeverityCounts>
+  </Summary>
+  <Findings>
+    <File path="pyproject.toml" secretCount="1">
+      <Category name="Email" severity="LOW" matchCount="1">
+        <Match>vishnu7stanite@gmail.com</Match>
+      </Category>
+    </File>
+    <File path="secchecker\patterns.py" secretCount="14">
+      <Category name="Bearer Token" severity="MEDIUM" matchCount="1">
+        <Match>Bearer Token</Match>
+      </Category>
+      <Category name="Basic Auth" severity="MEDIUM" matchCount="1">
+        <Match>Basic Auth</Match>
+      </Category>
+      <Category name="RSA Private Key" severity="CRITICAL" matchCount="1">
+        <Match>-----BEGIN RSA PRIVATE KEY-----</Match>
+      </Category>
+      <Category name="EC Private Key" severity="CRITICAL" matchCount="1">
+        <Match>-----BEGIN EC PRIVATE KEY-----</Match>
+      </Category>
+      <Category name="DSA Private Key" severity="CRITICAL" matchCount="1">
+        <Match>-----BEGIN DSA PRIVATE KEY-----</Match>
+      </Category>
+      <Category name="PGP Private Key" severity="CRITICAL" matchCount="1">
+        <Match>-----BEGIN PGP PRIVATE KEY BLOCK-----</Match>
+      </Category>
+      <Category name="SSH Private Key" severity="CRITICAL" matchCount="1">
+        <Match>-----BEGIN OPENSSH PRIVATE KEY-----</Match>
+      </Category>
+      <Category name="Generic Private Key" severity="CRITICAL" matchCount="4">
+        <Match>-----BEGIN RSA PRIVATE KEY-----</Match>
+        <Match>-----BEGIN EC PRIVATE KEY-----</Match>
+        <Match>-----BEGIN DSA PRIVATE KEY-----</Match>
+        <Match>-----BEGIN OPENSSH PRIVATE KEY-----</Match>
+      </Category>
+      <Category name="SQL Server Connection" severity="HIGH" matchCount="1">
+        <Match>server=.*password=.*",</Match>
+      </Category>
+      <Category name="Oracle Connection" severity="HIGH" matchCount="1">
+        <Match>Oracle Connection": r"(?i)oracle.*password=.*",</Match>
+      </Category>
+      <Category name="FTP URL with Credentials" severity="MEDIUM" matchCount="1">
+        <Match>ftp://[^:\s]+:[^@\s]+@[^\s]+",</Match>
+      </Category>
+      <Category name="Docker Config" severity="LOW" matchCount="1">
+        <Match>.dockercfg</Match>
+      </Category>
+      <Category name="X509 Certificate" severity="LOW" matchCount="1">
+        <Match>-----BEGIN CERTIFICATE-----</Match>
+      </Category>
+      <Category name="PKCS12 Certificate" severity="LOW" matchCount="1">
+        <Match>-----BEGIN PKCS12-----</Match>
+      </Category>
+    </File>
+    <File path="secchecker\reporter.py" secretCount="3">
+      <Category name="Bearer Token" severity="MEDIUM" matchCount="1">
+        <Match>Bearer Token</Match>
+      </Category>
+      <Category name="Basic Auth" severity="MEDIUM" matchCount="1">
+        <Match>Basic Auth</Match>
+      </Category>
+      <Category name="Password in Config" severity="MEDIUM" matchCount="2">
+        <Match>Secret</Match>
+        <Match>Password</Match>
+      </Category>
+    </File>
+    <File path="secchecker\__init__.py" secretCount="1">
+      <Category name="Email" severity="LOW" matchCount="1">
+        <Match>vishnu7stanite@gmail.com</Match>
+      </Category>
+    </File>
+    <File path="secchecker.egg-info\PKG-INFO" secretCount="1">
+      <Category name="Email" severity="LOW" matchCount="1">
+        <Match>vishnu7stanite@gmail.com</Match>
+      </Category>
+    </File>
+    <File path="tests\test_core.py" secretCount="4">
+      <Category name="AWS Access Key" severity="HIGH" matchCount="1">
+        <Match>AKIAIOSFODNN7EXAMPLE</Match>
+      </Category>
+      <Category name="JWT Token" severity="MEDIUM" matchCount="1">
+        <Match>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.signature</Match>
+      </Category>
+      <Category name="Password in Config" severity="MEDIUM" matchCount="1">
+        <Match>password</Match>
+      </Category>
+      <Category name="Generic Secret" severity="LOW" matchCount="3">
+        <Match>KEY</Match>
+        <Match>password</Match>
+        <Match>token</Match>
+      </Category>
+    </File>
+    <File path="tests\test_patterns.py" secretCount="2">
+      <Category name="AWS Access Key" severity="HIGH" matchCount="1">
+        <Match>AKIAIOSFODNN7EXAMPLE</Match>
+      </Category>
+      <Category name="JWT Token" severity="MEDIUM" matchCount="1">
+        <Match>eyJhbGciOiJIUzI1NiJ9.test.signature</Match>
+      </Category>
+    </File>
+  </Findings>
+</SecretScanReport>
