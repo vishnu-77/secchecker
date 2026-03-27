@@ -1,308 +1,310 @@
-[![PyPI version](https://img.shields.io/pypi/v/secchecker.svg)](https://pypi.org/project/secchecker/)  
-[![Python versions](https://img.shields.io/pypi/pyversions/secchecker.svg)](https://pypi.org/project/secchecker/)  
-[![Build Status](https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnu-77/secchecker/actions)  
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
+[![PyPI version](https://img.shields.io/pypi/v/secchecker.svg)](https://pypi.org/project/secchecker/)
+[![Python versions](https://img.shields.io/pypi/pyversions/secchecker.svg)](https://pypi.org/project/secchecker/)
+[![Downloads](https://img.shields.io/pypi/dm/secchecker.svg)](https://pypi.org/project/secchecker/)
+[![Build Status](https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnu-77/secchecker/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![codecov](https://codecov.io/gh/vishnu-77/secchecker/branch/main/graph/badge.svg)](https://codecov.io/gh/vishnu-77/secchecker)
 
-# secchecker  
+# secchecker
 
-`secchecker` is a comprehensive Python package + CLI tool designed to detect hardcoded secrets, sensitive information, and security vulnerabilities in code repositories. It helps developers maintain security best practices and keep their projects audit-ready.
+**Lightweight security auditing for DevSecOps and AI systems.**
 
-## Features  
+secchecker is a zero-dependency CLI tool and Python library that detects hardcoded secrets, LLM/AI vulnerabilities, and infrastructure misconfigurations in source code. Think Bandit + Checkov — with an AI security layer no other PyPI tool has.
 
-### Comprehensive Secret Detection
-- **40+ Secret Patterns** covering major security categories:
-  - **Database Connections**: PostgreSQL, MySQL, MongoDB, Redis
-  - **Cloud Provider Keys**: AWS, Google Cloud, Azure
-  - **Authentication Tokens**: JWT, Bearer tokens, Basic Auth
-  - **Private Keys**: RSA, EC, DSA, PGP, SSH keys
-  - **Version Control**: GitHub, GitLab tokens
-  - **Communication**: Slack, Discord, Telegram bot tokens
-  - **Cryptocurrency**: Bitcoin, Ethereum private keys
-  - **Sensitive Data**: Credit cards, Social Security numbers
-  - **URLs with Credentials**: HTTP/FTP with embedded auth
+```bash
+pip install secchecker
+secchecker . --type all --format sarif --output report.sarif
+```
 
-### Advanced Reporting
-- **Multiple Output Formats**: JSON, Markdown, XML
-- **Severity Classification**: CRITICAL, HIGH, MEDIUM, LOW levels
-- **Rich Metadata**: Timestamps, statistics, tool version info
-- **Professional Formatting**: Emojis, structured layout, detailed breakdowns
+---
 
-### Performance & Accuracy  
-- **Smart File Filtering**: Automatically skips binary files and build directories
-- **False Positive Detection**: Filters common test/example patterns
-- **Multiple Encoding Support**: Handles international text files
-- **Memory Efficient**: Optimized for large repositories
+## Why secchecker
 
-### Developer-Friendly CLI
-- **Verbose Mode**: Detailed scanning information
-- **Custom Output**: Specify output file paths
-- **Environment Configuration**: Set default formats via environment variables
-- **Comprehensive Help**: Detailed usage examples and options
+Most static scanners stop at secrets. secchecker goes further:
 
-## Installation  
+- **52+ secret patterns** — cloud keys, private keys, database URIs, payment credentials, service tokens
+- **18+ LLM/AI checks** — prompt injection via f-strings, jailbreak literals, RAG data leakage, `eval(llm_response)`, hardcoded AI API keys
+- **28+ DevSecOps checks** — Dockerfile, Kubernetes YAML, Terraform, CI/CD pipeline misconfigurations
+- **Entropy detection** — catches unknown secrets that don't match any known pattern
+- **5 output formats** — JSON, Markdown, XML, SARIF (GitHub Security tab), HTML
+- **Zero dependencies** — stdlib only, works anywhere Python runs
 
-### From PyPI (Recommended)
+---
+
+## Architecture
+
+```
+secchecker
+├── Scanners
+│   ├── secrets      (patterns.py)       40+ hardcoded secret regexes
+│   ├── llm          (llm_scanner.py)    18+ LLM/AI vulnerability patterns
+│   ├── devsecops    (devsecops_scanner) 28+ infra misconfiguration patterns
+│   └── entropy      (entropy.py)        Shannon entropy for unknown secrets
+│
+├── Reporters
+│   ├── JSON   sarif   XML   Markdown   HTML
+│   └── Severity: CRITICAL / HIGH / MEDIUM / LOW
+│
+└── Config  (.secchecker.yml)  exclude paths, custom patterns, thresholds
+```
+
+All scanners return the same shape: `Dict[filepath, Dict[pattern_name, List[str]]]`.
+
+---
+
+## Installation
+
 ```bash
 pip install secchecker
 ```
 
-### From Source
-```bash
-git clone https://github.com/vishnu-77/secchecker.git
-cd secchecker
-pip install -e .
-```
+Requires Python 3.8+. No external dependencies.
+
+---
 
 ## Usage
 
-### Basic Scanning
+### Scan for secrets (default)
+
 ```bash
-# Scan current directory with markdown report
 secchecker .
-
-# Scan specific path
-secchecker /path/to/project
-
-# Generate JSON report
-secchecker . --format json
-
-# Generate XML report with custom output
-secchecker . --format xml --output security_audit.xml
-
-# Verbose mode for detailed information
-secchecker . --format md --verbose
+secchecker /path/to/project --format json --output report.json
+secchecker src/config.py --severity-threshold HIGH
 ```
 
-### Environment Configuration
+### Scan for LLM/AI vulnerabilities
+
 ```bash
-# Set default report format
-export SECHECKER_REPORT_FORMAT=json
-secchecker .  # Will use JSON format by default
+secchecker . --type llm
+secchecker . --type llm --format html --output llm_report.html
 ```
 
-### Command Line Options
+### Scan infrastructure configs (Dockerfile, Terraform, K8s)
+
 ```bash
-secchecker --help
+secchecker . --type devsecops --format sarif --output report.sarif
 ```
 
-Options:
-- `--format {json,md,xml}`: Report format (default: md)
-- `--output`, `-o`: Custom output file path
-- `--verbose`, `-v`: Enable verbose output
-- `--help`, `-h`: Show help message
+### Run all scanners at once
 
-## Example Output
-
-> **Note**: Check the [`sample-reports/`](sample-reports/) folder for complete example outputs in all formats.
-
-### Markdown Report
-```markdown
-# Secret Scan Report
-
-**Generated:** 2025-11-12T18:05:17.494792  
-**Tool:** secchecker v0.2.0  
-
-## Summary
-- **Files Scanned:** 25
-- **Secret Types Found:** 12
-- **Total Matches:** 18
-
-### Severity Breakdown
-- **CRITICAL:** 3
-- **HIGH:** 8
-- **MEDIUM:** 5
-- **LOW:** 2
-
-## Detailed Findings
-### `config/database.py`
-- **RSA Private Key** (CRITICAL): 1 match(es)
-- **AWS Access Key** (HIGH): 1 match(es)
+```bash
+secchecker . --type all --format sarif --output report.sarif
 ```
 
-### JSON Report Structure
-```json
-{
-  "metadata": {
-    "timestamp": "2025-11-12T18:05:17.494792",
-    "version": "0.2.0",
-    "tool": "secchecker"
-  },
-  "summary": {
-    "total_files": 25,
-    "total_secrets": 12,
-    "total_matches": 18,
-    "severity_counts": {"CRITICAL": 3, "HIGH": 8, "MEDIUM": 5, "LOW": 2}
-  },
-  "findings": {
-    "config/database.py": {
-      "AWS Access Key": {
-        "matches": ["AKIAIOSFODNN7EXAMPLE"],
-        "severity": "HIGH",
-        "count": 1
-      }
-    }
-  }
-}
+### Filter by severity
+
+```bash
+# Only report HIGH and CRITICAL findings
+secchecker . --severity-threshold HIGH
 ```
 
-## API Usage
+### All options
 
-### Basic Scanning
+```
+secchecker PATH [options]
+
+  --type {secrets,llm,devsecops,all}   Scan type (default: secrets)
+  --format {json,md,xml,sarif,html}    Output format (default: md)
+  --output, -o FILE                    Output file path
+  --severity-threshold LEVEL           Minimum severity: LOW/MEDIUM/HIGH/CRITICAL
+  --config FILE                        Path to .secchecker.yml
+  --no-entropy                         Disable entropy-based detection
+  --verbose, -v                        Verbose output
+
+Exit codes:
+  0  No findings at or above threshold
+  1  Findings detected
+  2  Runtime error
+```
+
+---
+
+## What gets detected
+
+### Secrets (52+ patterns)
+
+| Category | Examples | Severity |
+|----------|----------|----------|
+| Private keys | RSA, EC, DSA, PGP, SSH | CRITICAL |
+| Financial | Credit cards, SSN | CRITICAL |
+| Vault tokens | HashiCorp Vault `hvs.*` | CRITICAL |
+| Cloud keys | AWS, Google, Azure | HIGH |
+| Database URIs | PostgreSQL, MySQL, MongoDB | HIGH |
+| Service tokens | Stripe, Twilio, SendGrid, Datadog | HIGH |
+| VCS tokens | GitHub, GitLab | HIGH |
+| Auth tokens | JWT, Bearer, Basic Auth | MEDIUM |
+| Config passwords | `password=`, `db_pass=` | MEDIUM |
+
+### LLM / AI security (18+ patterns)
+
+| Check | What it catches | Severity |
+|-------|----------------|----------|
+| Prompt injection | `f"...{user_input}..."` in LLM calls | HIGH |
+| Jailbreak literals | Hardcoded "ignore previous instructions" strings | HIGH |
+| RAG leakage | Unfiltered DB query / file read fed into LLM context | HIGH |
+| Output execution | `eval(llm_response)`, `exec(response)` | CRITICAL |
+| AI API key exposure | OpenAI `sk-...`, Anthropic `sk-ant-...`, HuggingFace tokens | CRITICAL |
+| Sensitive data in prompt | SSN / credit card concatenated into prompt string | CRITICAL |
+
+### DevSecOps (28+ patterns)
+
+| Category | Examples | Severity |
+|----------|----------|----------|
+| Dockerfile | `FROM *:latest`, secret in `ENV`, `curl \| sh`, `COPY . .` | HIGH |
+| Kubernetes | `privileged: true`, `runAsUser: 0`, `hostNetwork: true` | CRITICAL |
+| Terraform | Open security group `0.0.0.0/0`, public S3 bucket, hardcoded creds | HIGH |
+| CI/CD | Secret echoed to log, `pull_request_target` abuse, unpinned actions | HIGH |
+
+---
+
+## GitHub Action
+
+```yaml
+- uses: vishnu-77/secchecker@v0.3.0
+  with:
+    path: '.'
+    type: 'all'
+    format: 'sarif'
+    severity-threshold: 'LOW'
+    fail-on-findings: 'true'
+```
+
+SARIF output is automatically uploaded to the GitHub Security tab.
+
+**Inputs:**
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `path` | `.` | Directory or file to scan |
+| `type` | `secrets` | Scan type: `secrets`, `llm`, `devsecops`, `all` |
+| `format` | `sarif` | Output format |
+| `severity-threshold` | `LOW` | Minimum severity to report |
+| `output` | `secchecker_report.sarif` | Output file path |
+| `fail-on-findings` | `true` | Fail the workflow if findings are detected |
+
+---
+
+## Configuration file
+
+Create `.secchecker.yml` in your project root:
+
+```yaml
+severity_threshold: MEDIUM
+exclude_paths:
+  - "tests/"
+  - "*.mock.*"
+  - "node_modules/"
+scan_types:
+  - secrets
+  - llm
+entropy:
+  enabled: true
+  threshold: 4.5
+custom_patterns:
+  "Internal API Key": "myco_[a-zA-Z0-9]{32}"
+```
+
+---
+
+## Python API
+
 ```python
 from secchecker import scan_directory, scan_file
-from secchecker.reporter import generate_report
+from secchecker.reporter import to_json, to_sarif
 
 # Scan a directory
 results = scan_directory("/path/to/project")
 
 # Scan a single file
-findings = scan_file("/path/to/file.py")
+findings = scan_file("/path/to/config.py")
+
+# LLM vulnerability scan
+from secchecker.llm_scanner import scan_directory_llm
+llm_results = scan_directory_llm("/path/to/ai_app")
+
+# DevSecOps scan
+from secchecker.devsecops_scanner import scan_directory_devsecops
+infra_results = scan_directory_devsecops("/path/to/infra")
 
 # Generate reports
-json_report = generate_report(results, "json")
-markdown_report = generate_report(results, "md")
-xml_report = generate_report(results, "xml")
+to_json(results, "report.json")
+to_sarif(results, "report.sarif")
 ```
 
-### Advanced Usage
-```python
-from secchecker.core import get_scan_stats
-from secchecker.reporter import get_severity
+---
 
-# Get scan statistics
-stats = get_scan_stats(results)
-print(f"Found {stats['total_files']} files with secrets")
+## Real-world use cases
 
-# Check severity of specific patterns
-severity = get_severity("AWS Access Key")  # Returns "HIGH"
-```
+**Use case 1: Pre-commit secret scan**
 
-## Security Categories
-
-| Category | Examples | Severity |
-|----------|----------|----------|
-| **Private Keys** | RSA, EC, DSA, PGP keys | CRITICAL |
-| **Financial Data** | Credit cards, SSN | CRITICAL |
-| **Cloud Keys** | AWS, Google, Azure secrets | HIGH |
-| **Database URIs** | PostgreSQL, MySQL connections | HIGH |
-| **API Tokens** | GitHub, GitLab, service tokens | HIGH |
-| **Auth Tokens** | JWT, Bearer tokens | MEDIUM |
-| **Config Passwords** | Application passwords | MEDIUM |
-| **Contact Info** | Email addresses | LOW |
-
-## Performance
-
-- **Fast Scanning**: Optimized regex patterns and smart file filtering
-- **Memory Efficient**: Processes large repositories without memory issues  
-- **Accurate Detection**: Low false positive rate with pattern validation
-- **Cross-Platform**: Works on Windows, macOS, and Linux
-
-## Testing
-
-```bash
-# Run the full test suite
-pytest tests/ -v
-
-# Run with coverage
-pytest tests/ --cov=secchecker --cov-report=html
-```
-
-## Integration
-
-### CI/CD Pipeline Integration
-```yaml
-# GitHub Actions example
-- name: Security Scan
-  run: |
-    pip install secchecker
-    secchecker . --format json --output security-report.json
-    # Fail build if critical secrets found
-```
-
-### Pre-commit Hook
 ```yaml
 # .pre-commit-config.yaml
 repos:
   - repo: local
     hooks:
       - id: secchecker
-        name: Secret Checker
+        name: secchecker
         entry: secchecker
+        args: ['.', '--severity-threshold', 'HIGH', '--format', 'md']
         language: system
-        args: ['.', '--format', 'md']
+```
+
+**Use case 2: CI/CD pipeline with SARIF**
+
+```yaml
+- name: Security audit
+  run: |
+    pip install secchecker
+    secchecker . --type all --format sarif --output results.sarif
+- name: Upload to GitHub Security tab
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: results.sarif
+```
+
+**Use case 3: LLM application review**
+
+```bash
+# Scan a FastAPI app that uses OpenAI
+secchecker ./app --type llm --severity-threshold HIGH --format html --output llm_audit.html
 ```
 
 ---
 
-##  Disclaimer
+## Metrics
 
-`secchecker` is intended **only** for security auditing of repositories you own or have explicit permission to test.
-
-*  Misuse of this tool to access, scan, or extract information from systems you do not own is **strictly prohibited** and may violate the law.
-*  The author(s) assume **no liability** for misuse or damages caused by this software.
-*  Use responsibly for legitimate security auditing purposes only.
-
----
-
-##  Terms & Conditions
-
-By using `secchecker`, you agree to the following:
-
-1.  You will only use this tool on codebases you own or have explicit authorization to audit.
-2.  You will not use this software for malicious purposes, including but not limited to unauthorized access, exploitation, or data theft.
-3.  The software is provided **"as is," without warranty of any kind**, express or implied.
-4.  The author(s) are not responsible for any damages, losses, or legal consequences arising from the use or misuse of this software.
-5.  You accept full responsibility for ensuring that your use of this tool complies with applicable laws and regulations in your jurisdiction.
+- **52+ secret patterns** across 15 credential categories
+- **18+ LLM/AI vulnerability checks** — the only PyPI static scanner in this category
+- **28+ DevSecOps checks** across Dockerfile, Kubernetes, Terraform, and CI/CD
+- **5 output formats**: JSON, Markdown, XML, SARIF, HTML
+- **Python 3.8–3.12** compatibility tested in CI
+- **Zero runtime dependencies**
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Here's how you can help:
-
-### 🐛 Bug Reports & Feature Requests
-- Open an issue on GitHub with detailed information
-- Include sample code or files that demonstrate the issue
-- Specify your environment (OS, Python version, etc.)
-
-### Development Setup
 ```bash
 git clone https://github.com/vishnu-77/secchecker.git
 cd secchecker
-pip install -e ".[dev]"  # Install with development dependencies
+pip install -e ".[dev]"
+pytest tests/ -v
 ```
 
-### Running Tests
-```bash
-pytest tests/ -v                    # Run tests
-black secchecker/ tests/            # Format code
-flake8 secchecker/ tests/           # Lint code
-mypy secchecker/                    # Type checking
-```
+To add new patterns:
 
-###  Adding New Patterns
-1. Add patterns to `secchecker/patterns.py`
-2. Add severity mapping in `secchecker/reporter.py`
-3. Add tests in `tests/test_patterns.py`
-4. Update documentation
+1. Add the regex to `secchecker/patterns.py` (secrets) or the relevant `*_patterns.py`
+2. Add a severity entry to `SEVERITY_MAP` in `secchecker/reporter.py`
+3. Add a test in `tests/test_patterns.py`
 
-###  Pull Request Process
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Pull requests are welcome. Please keep changes focused and include tests.
 
 ---
 
-## Acknowledgments
+## Disclaimer
 
-- Inspired by security best practices from the DevSecOps community
-- Thanks to all contributors and security researchers
-- Built with dedication for the open-source community
+secchecker is intended for security auditing of repositories you own or have explicit permission to test. The author assumes no liability for misuse. Use responsibly.
 
-## Resources
+## License
 
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [GitHub Secret Scanning](https://docs.github.com/en/code-security/secret-scanning)
-- [DevSecOps Best Practices](https://www.devsecops.org/)
+MIT — see [LICENSE](LICENSE).
