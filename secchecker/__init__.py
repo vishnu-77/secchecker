@@ -1,11 +1,10 @@
 """
-Secchecker - A tool for detecting hardcoded secrets in repositories.
+secchecker — lightweight security auditing for DevSecOps and AI systems.
 
-This package provides functionality to scan code repositories for various types
-of hardcoded secrets including API keys, passwords, tokens, and other sensitive data.
+Detects secrets, LLM/AI vulnerabilities, and infrastructure misconfigurations.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __author__ = "Vishnu Prashanth"
 __email__ = "vishnu7stanite@gmail.com"
 
