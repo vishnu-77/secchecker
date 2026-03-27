@@ -322,3 +322,10 @@ def generate_xml_report(data: Dict[str, Dict[str, List[str]]]) -> str:
     
     indent_xml(root, space="  ")
     return ET.tostring(root, encoding="unicode")
+
+
+# SARIF format support
+try:
+    from secchecker.sarif_reporter import to_sarif, generate_sarif_report
+except ImportError:
+    pass
