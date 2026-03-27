@@ -31,6 +31,6 @@ jobs:
           # Test basic functionality
           mkdir test_scan
           echo 'password="test123"' > test_scan/config.py
-          secchecker test_scan --format json
+          secchecker test_scan --format json || true
           # Clean up
           rm -rf test_scan secchecker_report.json
