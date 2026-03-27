@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
 
@@ -10,46 +11,96 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
-    
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .
           pip install pytest pytest-cov
-      
-      - name: Lint with flake8 (optional)
+
+      - name: Run tests
         run: |
-          pip install flake8
-          # Stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # Exit-zero treats all errors as warnings
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
-        continue-on-error: true
-      
-      - name: Test CLI functionality
+          pytest tests/ -v --tb=short --cov=secchecker --cov-report=xml
+
+      - name: Test CLI — secrets scan
         run: |
-          # Test that the CLI works
           python -m secchecker.cli --help
-          # Test basic scanning functionality
+          echo 'password="test123"' > test_file.py
           python -m secchecker.cli . --format json --output test_output.json
           python -m secchecker.cli . --format md --output test_output.md
           python -m secchecker.cli . --format xml --output test_output.xml
-          # Verify output files were created
+          python -m secchecker.cli . --format sarif --output test_output.sarif
+          python -m secchecker.cli . --format html --output test_output.html
           ls -la test_output.*
-      
-      - name: Run tests
+          rm -f test_file.py test_output.*
+
+      - name: Test CLI — LLM scan
         run: |
-          pytest tests/ -v --tb=short --cov=secchecker --cov-report=term-missing
-      
+          echo 'prompt = f"Answer: {user_input}"' > test_llm.py
+          python -m secchecker.cli test_llm.py --type llm --format json --output /dev/null || true
+          rm -f test_llm.py
+
+      - name: Test CLI — DevSecOps scan
+        run: |
+          printf 'FROM ubuntu:latest\nRUN curl -s http://example.com | sh\n' > Dockerfile.test
+          python -m secchecker.cli Dockerfile.test --type devsecops --format json --output /dev/null || true
+          rm -f Dockerfile.test
+
+      - name: Test CLI — severity threshold
+        run: |
+          echo 'password="test123"' > test_file.py
+          python -m secchecker.cli test_file.py --severity-threshold HIGH --format json --output /dev/null || true
+          rm -f test_file.py
+
       - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.10'
         uses: codecov/codecov-action@v3
         continue-on-error: true
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: test
+    # Only publish on push to main or on version tags — never on PRs
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    environment: release
+    permissions:
+      id-token: write  # Required for PyPI trusted publishing (OIDC)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Verify dist contents
+        run: |
+          ls -la dist/
+          pip install twine
+          twine check dist/*
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true

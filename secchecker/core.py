@@ -2,6 +2,14 @@ import re
 import os
 from pathlib import Path
 from typing import Dict, List, Set
+try:
+    from typing import TYPE_CHECKING
+except ImportError:
+    TYPE_CHECKING = False
+
+if TYPE_CHECKING:
+    pass
+
 from .patterns import PATTERNS
 
 # File extensions to skip for performance and accuracy

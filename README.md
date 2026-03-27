@@ -272,7 +272,7 @@ cd secchecker
 pip install -e ".[dev]"  # Install with development dependencies
 ```
 
-### 🧪 Running Tests
+### Running Tests
 ```bash
 pytest tests/ -v                    # Run tests
 black secchecker/ tests/            # Format code
@@ -295,13 +295,13 @@ mypy secchecker/                    # Type checking
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Inspired by security best practices from the DevSecOps community
 - Thanks to all contributors and security researchers
 - Built with dedication for the open-source community
 
-## 📚 Resources
+## Resources
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [GitHub Secret Scanning](https://docs.github.com/en/code-security/secret-scanning)
