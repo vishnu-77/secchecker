@@ -36,6 +36,12 @@ try:
 except ImportError:
     load_config = None
 
+try:
+    from .ast_scanner import scan_directory_ast, scan_file_ast
+except ImportError:
+    scan_directory_ast = None
+    scan_file_ast = None
+
 SEVERITY_ORDER = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
 
 
@@ -119,6 +125,15 @@ def _run_scan(path, scan_type, no_entropy, config):
                     results.setdefault(path, {}).update(r)
             else:
                 results = _merge_results(results, scan_directory_devsecops(path))
+
+    # AST scanner runs on Python files for secrets and all scan types
+    if scan_type in ('secrets', 'all') and scan_directory_ast is not None:
+        if is_file:
+            r = scan_file_ast(path)
+            if r:
+                results.setdefault(path, {}).update(r)
+        else:
+            results = _merge_results(results, scan_directory_ast(path))
 
     return results
 

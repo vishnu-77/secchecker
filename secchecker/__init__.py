@@ -37,6 +37,16 @@ try:
 except ImportError:
     pass
 
+try:
+    from .ast_scanner import scan_file_ast, scan_directory_ast
+except ImportError:
+    pass
+
+try:
+    from .owasp import get_owasp
+except ImportError:
+    pass
+
 __all__ = [
     'scan_file',
     'scan_directory',

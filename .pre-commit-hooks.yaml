@@ -1,0 +1,26 @@
+- id: secchecker
+  name: secchecker — secret detection
+  description: Scan for hardcoded secrets, API keys, and credentials
+  entry: secchecker
+  args: ['--type', 'secrets', '--severity-threshold', 'HIGH']
+  language: python
+  types: [text]
+  pass_filenames: false
+
+- id: secchecker-llm
+  name: secchecker — LLM/AI security
+  description: Scan for prompt injection, RAG leakage, and insecure AI patterns
+  entry: secchecker
+  args: ['--type', 'llm', '--severity-threshold', 'HIGH']
+  language: python
+  types: [python]
+  pass_filenames: false
+
+- id: secchecker-all
+  name: secchecker — full audit
+  description: Run all secchecker scanners (secrets, LLM, DevSecOps, AST)
+  entry: secchecker
+  args: ['--type', 'all', '--severity-threshold', 'HIGH']
+  language: python
+  types: [text]
+  pass_filenames: false
