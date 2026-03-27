@@ -342,3 +342,9 @@ try:
     from secchecker.sarif_reporter import to_sarif, generate_sarif_report
 except ImportError:
     pass
+
+# HTML format support
+try:
+    from secchecker.html_reporter import to_html, generate_html_report
+except ImportError:
+    pass
