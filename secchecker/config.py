@@ -98,12 +98,16 @@ def _parse_simple_yaml(text):
                         j += 1
                         continue
                     list_m = re.match(r'^\s+-\s+(.+)', next_line)
-                    map_m = re.match(r'^\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.*)', next_line)
+                    map_m = re.match(r'^\s+([a-zA-Z_][a-zA-Z0-9_]*|"[^"]*"|\'[^\']*\')\s*:\s*(.*)', next_line)
                     if list_m:
                         items.append(_parse_scalar(list_m.group(1).strip()))
                         j += 1
                     elif map_m:
-                        nested[map_m.group(1)] = _parse_scalar(map_m.group(2).strip())
+                        mk = map_m.group(1)
+                        if (mk.startswith('"') and mk.endswith('"')) or \
+                           (mk.startswith("'") and mk.endswith("'")):
+                            mk = mk[1:-1]
+                        nested[mk] = _parse_scalar(map_m.group(2).strip())
                         j += 1
                     else:
                         break
