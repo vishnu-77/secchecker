@@ -78,7 +78,20 @@ SEVERITY_MAP = {
     "Telegram Bot Token": "HIGH",
     "Password in Config": "MEDIUM",
     "Database Password": "HIGH",
-    "Admin Password": "HIGH"
+    "Admin Password": "HIGH",
+    # Third-Party Service Keys
+    "Stripe Secret Key": "CRITICAL",
+    "Stripe Test Secret Key": "LOW",
+    "Stripe Publishable Key": "LOW",
+    "Stripe Restricted Key": "HIGH",
+    "Twilio Account SID": "HIGH",
+    "Twilio Auth Token": "HIGH",
+    "SendGrid API Key": "HIGH",
+    "Datadog API Key": "HIGH",
+    "New Relic License Key": "MEDIUM",
+    "HashiCorp Vault Token": "CRITICAL",
+    "npm Access Token": "HIGH",
+    "PyPI API Token": "HIGH",
 }
 
 def get_severity(pattern_name: str) -> str:

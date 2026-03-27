@@ -70,7 +70,21 @@ PATTERNS = {
     
     # Certificate Files
     "X509 Certificate": r"-----BEGIN CERTIFICATE-----",
-    "PKCS12 Certificate": r"-----BEGIN PKCS12-----"
+    "PKCS12 Certificate": r"-----BEGIN PKCS12-----",
+
+    # Third-Party Service Keys
+    "Stripe Secret Key": r"sk_live_[0-9a-zA-Z]{24,}",
+    "Stripe Test Secret Key": r"sk_test_[0-9a-zA-Z]{24,}",
+    "Stripe Publishable Key": r"pk_live_[0-9a-zA-Z]{24,}",
+    "Stripe Restricted Key": r"rk_live_[0-9a-zA-Z]{24,}",
+    "Twilio Account SID": r"AC[a-zA-Z0-9]{32}",
+    "Twilio Auth Token": r"(?i)twilio.*auth.*token['\"\s:=]+[a-zA-Z0-9]{32}",
+    "SendGrid API Key": r"SG\.[a-zA-Z0-9\-_]{22}\.[a-zA-Z0-9\-_]{43}",
+    "Datadog API Key": r"(?i)datadog.*api[_\-]?key['\"\s:=]+[a-zA-Z0-9]{32}",
+    "New Relic License Key": r"(?i)new.?relic.*key['\"\s:=]+[a-zA-Z0-9]{40}",
+    "HashiCorp Vault Token": r"hvs\.[a-zA-Z0-9]{24,}",
+    "npm Access Token": r"(?i)npm[_\-]?token['\"\s:=]+[a-zA-Z0-9\-_]{36}",
+    "PyPI API Token": r"pypi-[a-zA-Z0-9\-_]{36,}",
 }
 
 # Patterns that commonly produce false positives - used for filtering
