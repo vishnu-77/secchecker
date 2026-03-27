@@ -33,9 +33,9 @@ def test_scan_directory(tmp_path):
     results = scan_directory(str(tmp_path))
     
     assert len(results) >= 1  # Should find at least one file with secrets
-    # Check if relative paths are used
-    file_paths = list(results.keys())
-    assert any("file1.py" in path for path in file_paths)
+    # Check if files are found (don't check specific paths due to OS differences)
+    found_files = list(results.keys())
+    assert any("file1.py" in path for path in found_files)
 
 def test_scan_nonexistent_file():
     """Test scanning a file that doesn't exist."""
