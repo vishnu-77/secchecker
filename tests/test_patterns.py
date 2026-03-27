@@ -93,3 +93,13 @@ def test_pattern_categories():
     # Sensitive data
     assert any("Credit Card" in name for name in pattern_names)
     assert any("Social Security" in name for name in pattern_names)
+
+
+def test_service_patterns():
+    """Test that third-party service patterns are present."""
+    assert "Stripe Secret Key" in patterns.PATTERNS
+    assert "HashiCorp Vault Token" in patterns.PATTERNS
+    assert "SendGrid API Key" in patterns.PATTERNS
+    assert "PyPI API Token" in patterns.PATTERNS
+    assert "Twilio Account SID" in patterns.PATTERNS
+    assert len(patterns.PATTERNS) > 45
