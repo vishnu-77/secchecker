@@ -1,5 +1,6 @@
 import re
 import os
+import json
 from pathlib import Path
 from typing import Dict, List, Set
 try:
@@ -11,6 +12,11 @@ if TYPE_CHECKING:
     pass
 
 from .patterns import PATTERNS
+try:
+    from .validators import validate_match as _validate_match
+except ImportError:
+    def _validate_match(pattern_name, match):
+        return True
 
 # File extensions to skip for performance and accuracy
 SKIP_EXTENSIONS = {
@@ -46,33 +52,58 @@ def should_skip_directory(dirpath: Path) -> bool:
     """Check if directory should be skipped."""
     return dirpath.name in SKIP_DIRS
 
+def _extract_notebook_content(filepath):
+    # type: (str) -> str
+    """Extract source text from all cells of a Jupyter notebook."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            nb = json.load(f)
+        parts = []
+        for cell in nb.get('cells', []):
+            src = cell.get('source', [])
+            if isinstance(src, list):
+                parts.append(''.join(src))
+            elif isinstance(src, str):
+                parts.append(src)
+        return '\n'.join(parts)
+    except Exception:
+        return ''
+
+
 def scan_file(filepath: str) -> Dict[str, List[str]]:
     """
     Scan a single file for secret patterns.
-    
+
     Args:
         filepath: Path to the file to scan
-        
+
     Returns:
         Dictionary with pattern names as keys and matched strings as values
     """
     findings = {}
     path_obj = Path(filepath)
-    
+
     if should_skip_file(path_obj):
         return findings
-    
+
     try:
-        # Try different encodings
         content = None
-        for encoding in ['utf-8', 'latin-1', 'cp1252']:
-            try:
-                with open(filepath, "r", encoding=encoding) as f:
-                    content = f.read()
-                break
-            except UnicodeDecodeError:
-                continue
-        
+
+        # Jupyter notebooks: extract cell source text before scanning
+        if path_obj.suffix.lower() == '.ipynb':
+            content = _extract_notebook_content(filepath)
+            if not content:
+                return findings
+        else:
+            # Try different encodings
+            for encoding in ['utf-8', 'latin-1', 'cp1252']:
+                try:
+                    with open(filepath, "r", encoding=encoding) as f:
+                        content = f.read()
+                    break
+                except UnicodeDecodeError:
+                    continue
+
         if content is None:
             return findings
             
@@ -83,7 +114,10 @@ def scan_file(filepath: str) -> Dict[str, List[str]]:
                 if matches:
                     # Remove duplicates while preserving order
                     unique_matches = list(dict.fromkeys(matches))
-                    findings[name] = unique_matches
+                    # Apply post-match validators to reduce false positives
+                    validated = [m for m in unique_matches if _validate_match(name, m)]
+                    if validated:
+                        findings[name] = validated
             except re.error:
                 # Skip invalid regex patterns
                 continue

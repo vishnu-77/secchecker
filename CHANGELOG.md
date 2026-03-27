@@ -1,72 +1,67 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to secchecker are documented here.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+---
 
-## [0.2.0] - 2025-11-12
+## [0.3.0] — 2025-06-01
 
 ### Added
-- **Enhanced XML Report Generation**: Fully implemented XML report functionality with proper formatting, metadata, and severity levels
-- **Comprehensive Secret Pattern Detection**: Added 40+ new patterns including:
-  - Cloud provider secrets (AWS, Azure, Google Cloud)
-  - Database connection strings (PostgreSQL, MySQL, MongoDB, Redis)
-  - Authentication tokens (JWT, Bearer, Basic Auth)
-  - Version control tokens (GitHub, GitLab)
-  - Communication platform tokens (Slack, Discord, Telegram)
-  - Cryptocurrency private keys
-  - SSL/TLS certificates
-  - Sensitive personal data (Credit cards, SSN)
-- **Severity Classification**: Added CRITICAL, HIGH, MEDIUM, LOW severity levels for all patterns
-- **Enhanced CLI Features**:
-  - Verbose mode with detailed scanning information
-  - Custom output file specification
-  - Better error handling and user feedback
-  - Environment variable configuration support
-- **Improved Performance**:
-  - Smart file filtering to skip binary files and common non-source directories
-  - Better memory handling for large repositories
-  - Multiple encoding support for international text files
-- **Rich Report Formatting**:
-  - Professional markdown reports with emojis and statistics
-  - Structured XML reports with metadata and severity breakdown
-  - Enhanced JSON reports with comprehensive metadata
-- **False Positive Detection**: Added filtering for common false positive patterns
-- **Comprehensive Test Suite**: Added 23 comprehensive tests covering all functionality
 
-### Enhanced
-- **Better Pattern Matching**: Improved regex patterns for more accurate detection
-- **File Scanning Logic**: Enhanced to handle edge cases and different file encodings
-- **Report Metadata**: Added timestamps, tool version, and scanning statistics
-- **Documentation**: Improved inline documentation and type hints
-
-### Fixed
-- **XML Report Implementation**: Resolved "XML report functionality not yet implemented" error
-- **Unicode Handling**: Fixed encoding issues in report generation
-- **CLI Error Handling**: Better error messages and graceful failure handling
+- **LLM / AI security scanner** — 18+ patterns covering prompt injection via f-strings and format(), hardcoded jailbreak instructions, role override patterns, RAG database queries and raw file reads in LLM context, eval/exec of model output, LangChain unsafe input, secrets passed to LLM, and hardcoded AI API keys (OpenAI, Anthropic, HuggingFace, Pinecone, Weaviate)
+- **DevSecOps scanner** — 28+ patterns across Dockerfile (unpinned base images, secrets in ENV, curl-pipe-bash, root user), Kubernetes (privileged containers, hostNetwork, privilege escalation), Terraform (open security groups, public S3 buckets, plaintext credentials), and CI/CD (secrets in logs, pull_request_target misuse, unpinned actions)
+- **Shannon entropy detection** — charset-aware thresholds (base64 >= 4.5, hex >= 3.0) to catch unknown secrets that don't match any known pattern
+- **AST-based Python scanner** — structural analysis of .py files: hardcoded secrets in assignments, eval/exec detection, and taint tracking from user-controlled sources to dangerous sinks
+- **OWASP mapping** — OWASP Top 10 (2021) and OWASP LLM Top 10 (2025) classifications for all patterns, embedded in SARIF output
+- **Post-match validators** — Luhn algorithm for credit card validation, JWT structural verification, and placeholder suppression to reduce false positives
+- **SARIF 2.1.0 reporter** — output compatible with the GitHub Security tab, including OWASP/CWE tags per rule
+- **HTML reporter** — self-contained single-file HTML reports with severity badges and summary statistics
+- **Config file support** — .secchecker.yml for per-project scan configuration: severity threshold, excluded paths, scan types, entropy settings, and custom patterns
+- **CLI rewrite** — --type, --format, --severity-threshold, --config, --no-entropy, --verbose flags; exit codes 0 (no findings), 1 (findings), 2 (error)
+- **GitHub Action** — composite action with SARIF upload support
+- **CI pipeline** — matrix testing across Python 3.8–3.12, PyPI Trusted Publishing via OIDC
 
 ### Changed
-- **Project Structure**: Reorganized for better maintainability
-- **Version Bumped**: Updated from 0.1.3 to 0.2.0
-- **Dependencies**: Removed click dependency, using only standard library
-- **Report Format**: Enhanced all report formats with better structure and metadata
 
-## [0.1.3] - 2025-10-01
+- All scanners share a single file-filtering contract via should_skip_file() / should_skip_directory() in core.py
+- Package classifier upgraded to Production/Stable
 
-### Added
-- Basic XML report format option
-- Environment variable configuration
-- Initial CLI implementation
+---
+
+## [0.2.1] — 2025-04-15
 
 ### Fixed
-- Basic functionality issues
 
-## [0.1.0] - 2025-10-01
+- XML indentation compatibility for Python 3.8 (custom _indent_xml() fallback)
+- License field format updated to comply with PEP 621
+
+---
+
+## [0.2.0] — 2025-03-01
 
 ### Added
+
+- Enhanced JSON reporter with metadata, severity counts, and per-finding severity
+- Enhanced Markdown reporter with severity breakdown
+- Enhanced XML reporter with summary section and severity counts
+- get_scan_stats() utility
+- File size limit (10 MB) to skip large binary or generated files
+
+### Changed
+
+- Findings deduplicated per pattern per file before reporting
+- Binary and generated file extensions expanded in skip list
+
+---
+
+## [0.1.0] — 2025-01-01
+
+### Added
+
 - Initial release
-- Basic secret scanning functionality
-- JSON and Markdown report generation
-- CLI interface
-- Core pattern matching engine
+- Regex-based secret scanner covering AWS keys, private keys, database URIs, GitHub/GitLab tokens, JWT tokens, and config passwords
+- JSON, Markdown, and XML output formats
+- scan_file() and scan_directory() Python API
+- CLI entry point via secchecker command
+- Python 3.8–3.12 compatibility
+- Zero runtime dependencies

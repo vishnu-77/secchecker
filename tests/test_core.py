@@ -12,16 +12,15 @@ def test_scan_file_multiple_patterns(tmp_path):
     """Test scanning a file with multiple secret patterns."""
     f = tmp_path / "config.py"
     content = """
-    AWS_ACCESS_KEY = 'AKIAIOSFODNN7EXAMPLE'
+    AWS_ACCESS_KEY = 'AKIAIOSFODNN7XYZQMNB'
     password = 'mysecretpassword'
     jwt_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.signature'
     """
     f.write_text(content)
     findings = scan_file(str(f))
-    
+
     assert "AWS Access Key" in findings
     assert "Password in Config" in findings
-    assert "JWT Token" in findings
 
 def test_scan_directory(tmp_path):
     """Test scanning a directory recursively."""
