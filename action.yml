@@ -1,0 +1,94 @@
+name: 'secchecker'
+description: 'Lightweight security auditing for DevSecOps and AI systems — detects secrets, LLM vulnerabilities, and infrastructure misconfigurations'
+author: 'Vishnu Prashanth'
+
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  path:
+    description: 'Path to scan (directory or file)'
+    required: false
+    default: '.'
+  type:
+    description: 'Scan type: secrets, llm, devsecops, all'
+    required: false
+    default: 'secrets'
+  format:
+    description: 'Output format: json, md, xml, sarif, html'
+    required: false
+    default: 'sarif'
+  severity-threshold:
+    description: 'Minimum severity level: LOW, MEDIUM, HIGH, CRITICAL'
+    required: false
+    default: 'LOW'
+  output:
+    description: 'Output file path'
+    required: false
+    default: 'secchecker_report.sarif'
+  fail-on-findings:
+    description: 'Fail the action if findings are detected'
+    required: false
+    default: 'true'
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.11'
+  version:
+    description: 'secchecker version to install ("latest" or e.g. "0.3.0")'
+    required: false
+    default: 'latest'
+
+outputs:
+  report-path:
+    description: 'Path to the generated report file'
+    value: ${{ steps.run-scan.outputs.report_path }}
+  findings-detected:
+    description: 'Whether any findings were detected (true/false)'
+    value: ${{ steps.run-scan.outputs.findings_detected }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install secchecker
+      shell: bash
+      run: |
+        if [ "${{ inputs.version }}" = "latest" ]; then
+          pip install secchecker
+        else
+          pip install "secchecker==${{ inputs.version }}"
+        fi
+
+    - name: Run secchecker scan
+      id: run-scan
+      shell: bash
+      run: |
+        set +e
+        secchecker "${{ inputs.path }}" \
+          --format "${{ inputs.format }}" \
+          --output "${{ inputs.output }}" \
+          --severity-threshold "${{ inputs.severity-threshold }}"
+        SCAN_EXIT=$?
+        echo "report_path=${{ inputs.output }}" >> $GITHUB_OUTPUT
+        if [ $SCAN_EXIT -eq 1 ]; then
+          echo "findings_detected=true" >> $GITHUB_OUTPUT
+        else
+          echo "findings_detected=false" >> $GITHUB_OUTPUT
+        fi
+        if [ "${{ inputs.fail-on-findings }}" = "true" ] && [ $SCAN_EXIT -eq 1 ]; then
+          echo "::error::secchecker found security issues. See ${{ inputs.output }}"
+          exit 1
+        fi
+
+    - name: Upload SARIF to GitHub Security tab
+      if: inputs.format == 'sarif' && always()
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.output }}
+      continue-on-error: true
