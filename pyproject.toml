@@ -4,19 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.2.1"
-description = "A comprehensive CLI tool to detect secrets and sensitive information in repositories for maintaining security best practices."
+version = "0.3.0"
+description = "Lightweight security auditing for DevSecOps and AI systems — detects secrets, LLM vulnerabilities, and infrastructure misconfigurations."
 readme = "README.md"
 authors = [
     {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
 ]
 license = {text = "MIT"}
 requires-python = ">=3.8"
-keywords = ["security", "secrets", "devsecops", "cli", "python", "scanning", "audit"]
+keywords = ["security", "secrets", "devsecops", "llm-security", "ai-security", "prompt-injection", "terraform", "kubernetes", "cli", "scanning", "audit"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
     "Topic :: Security",
     "Topic :: Security :: Cryptography",
     "Topic :: Software Development :: Build Tools",
@@ -45,7 +46,6 @@ test = [
     "pytest>=6.0",
     "pytest-cov>=2.0"
 ]
-cli = ["rich>=10.0"]
 
 [project.urls]
 Homepage = "https://github.com/vishnu-77/secchecker"
