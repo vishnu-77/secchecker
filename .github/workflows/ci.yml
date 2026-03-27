@@ -37,11 +37,11 @@ jobs:
         run: |
           python -m secchecker.cli --help
           echo 'password="test123"' > test_file.py
-          python -m secchecker.cli . --format json --output test_output.json
-          python -m secchecker.cli . --format md --output test_output.md
-          python -m secchecker.cli . --format xml --output test_output.xml
-          python -m secchecker.cli . --format sarif --output test_output.sarif || true
-          python -m secchecker.cli . --format html --output test_output.html || true
+          python -m secchecker.cli . --format json --output test_output.json; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 1 ]
+          python -m secchecker.cli . --format md --output test_output.md; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 1 ]
+          python -m secchecker.cli . --format xml --output test_output.xml; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 1 ]
+          python -m secchecker.cli . --format sarif --output test_output.sarif; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 1 ] || true
+          python -m secchecker.cli . --format html --output test_output.html; rc=$?; [ $rc -eq 0 ] || [ $rc -eq 1 ] || true
           ls -la test_output.* || true
           rm -f test_file.py test_output.*
 
