@@ -32,9 +32,10 @@ except ImportError:
     scan_file_entropy = None
 
 try:
-    from .config import load_config
+    from .config import load_config, is_path_excluded
 except ImportError:
     load_config = None
+    is_path_excluded = None
 
 try:
     from .ast_scanner import scan_directory_ast, scan_file_ast
@@ -134,6 +135,13 @@ def _run_scan(path, scan_type, no_entropy, config):
                 results.setdefault(path, {}).update(r)
         else:
             results = _merge_results(results, scan_directory_ast(path))
+
+    # Drop findings in files matched by config exclude_paths. Applied after all
+    # scanners so a single rule covers secrets, LLM, DevSecOps, AST, and entropy.
+    exclude_paths = config.get('exclude_paths') if config else None
+    if exclude_paths and is_path_excluded is not None:
+        results = {fp: findings for fp, findings in results.items()
+                   if not is_path_excluded(fp, exclude_paths)}
 
     return results
 

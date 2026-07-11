@@ -4,6 +4,18 @@ All notable changes to secchecker are documented here.
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- `exclude_paths` in `.secchecker.yml` is now enforced. Previously it was parsed
+  from config but never applied, so configured exclusions had no effect. Findings
+  in matching files are now dropped after scanning, covering every scanner
+  (secrets, LLM/MCP/agentic, DevSecOps, AST, entropy) with one rule. Supports
+  directory prefixes (`tests/`), path components (`node_modules`), globs
+  (`*.mock.*`), and multi-segment literals (`secchecker/patterns.py`).
+
+---
+
 ## [0.4.0] — 2026-07-08
 
 ### Added
