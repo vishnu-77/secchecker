@@ -68,7 +68,10 @@ def test_find_config_file(tmp_path):
     assert found.endswith('.secchecker.yml')
 
 
-def test_find_config_file_not_found(tmp_path):
+def test_find_config_file_not_found(tmp_path, monkeypatch):
+    # chdir into the empty tmp dir so the cwd fallback can't pick up a
+    # .secchecker.yml that happens to exist in the project root.
+    monkeypatch.chdir(tmp_path)
     assert find_config_file(scan_root=str(tmp_path)) is None
 
 
@@ -77,6 +80,33 @@ def test_parse_scalars():
     assert result['severity_threshold'] == 'HIGH'
     assert result['version'] == 1
     assert result['enabled'] is True
+
+
+def test_parse_strips_inline_comments():
+    # Inline comments on quoted list items and scalars must not leak into values.
+    text = (
+        'exclude_paths:\n'
+        '  - "demo/"        # intentional demo\n'
+        '  - tests/         # fixtures\n'
+        'severity_threshold: HIGH   # only high and above\n'
+    )
+    result = _parse_simple_yaml(text)
+    assert result['exclude_paths'] == ['demo/', 'tests/']
+    assert result['severity_threshold'] == 'HIGH'
+
+
+def test_parse_skips_comment_lines_between_list_items():
+    # Full-line comments interspersed between list items must not truncate it.
+    text = (
+        'exclude_paths:\n'
+        '  # first\n'
+        '  - "demo/"\n'
+        '  # second\n'
+        '  - "tests/"\n'
+        '  - "sample-reports/"\n'
+    )
+    result = _parse_simple_yaml(text)
+    assert result['exclude_paths'] == ['demo/', 'tests/', 'sample-reports/']
 
 
 def test_invalid_severity_uses_default(tmp_path):

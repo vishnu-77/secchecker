@@ -13,6 +13,15 @@ All notable changes to secchecker are documented here.
   (secrets, LLM/MCP/agentic, DevSecOps, AST, entropy) with one rule. Supports
   directory prefixes (`tests/`), path components (`node_modules`), globs
   (`*.mock.*`), and multi-segment literals (`secchecker/patterns.py`).
+- Config parser now strips trailing inline comments (`- "demo/"  # note`) and
+  skips full-line comments interspersed between list items, so commented
+  `.secchecker.yml` files parse as intended instead of silently dropping entries.
+
+### Changed
+- The repository now ships a `.secchecker.yml` that excludes its own pattern
+  definitions, fixtures, sample reports, and demo from the self-scan. The
+  Security Scan workflow again uploads SARIF to the GitHub Security tab, now
+  free of self-referential false positives.
 
 ---
 
