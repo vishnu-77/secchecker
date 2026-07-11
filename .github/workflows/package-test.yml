@@ -27,7 +27,7 @@ jobs:
       - name: Test installed package
         run: |
           # Treat exit 0 (clean) and 1 (findings) as success; fail on 2+ (runtime error).
-          run_scan() { "$@"; rc=$?; if [ $rc -ge 2 ]; then echo "::error::secchecker exited $rc"; exit $rc; fi; }
+          run_scan() { local rc=0; "$@" || rc=$?; if [ $rc -ge 2 ]; then echo "::error::secchecker exited $rc"; exit $rc; fi; }
           # Test CLI from installed wheel
           secchecker --help
           # Test basic functionality + every advertised output format from the wheel
