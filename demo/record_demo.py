@@ -77,7 +77,7 @@ def main():
     # Report header
     print_line(f"{BOLD}# 🔍 Secret Scan Report{RESET}", 0.012)
     pause(0.3)
-    print_line(f"{DIM}Generated: 2026-03-28  |  Tool: secchecker v0.3.0{RESET}", 0.008)
+    print_line(f"{DIM}Generated: 2026-03-28  |  Tool: secchecker v0.4.0{RESET}", 0.008)
     pause(0.4)
 
     # Summary
