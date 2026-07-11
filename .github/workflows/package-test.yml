@@ -26,11 +26,21 @@ jobs:
       
       - name: Test installed package
         run: |
-          # Test CLI from installed package
+          # Treat exit 0 (clean) and 1 (findings) as success; fail on 2+ (runtime error).
+          run_scan() { "$@"; rc=$?; if [ $rc -ge 2 ]; then echo "::error::secchecker exited $rc"; exit $rc; fi; }
+          # Test CLI from installed wheel
           secchecker --help
-          # Test basic functionality
+          # Test basic functionality + every advertised output format from the wheel
           mkdir test_scan
           echo 'password="test123"' > test_scan/config.py
-          secchecker test_scan --format json || true
+          echo 'prompt += tool_result' > test_scan/agent.py
+          run_scan secchecker test_scan --type all --format json --output report.json
+          run_scan secchecker test_scan --type all --format sarif --output report.sarif
+          run_scan secchecker test_scan --type all --format html --output report.html
+          test -f report.json && echo "JSON report OK"
+          test -f report.sarif && echo "SARIF report OK"
+          test -f report.html && echo "HTML report OK"
+          # Confirm the HTML reporter is actually importable from the installed wheel
+          python -c "from secchecker.html_reporter import to_html, generate_html_report; print('html_reporter import OK')"
           # Clean up
-          rm -rf test_scan secchecker_report.json
+          rm -rf test_scan report.json report.sarif report.html

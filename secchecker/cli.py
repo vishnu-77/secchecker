@@ -141,14 +141,14 @@ def _run_scan(path, scan_type, no_entropy, config):
 def main():
     """Main CLI entry point for secchecker."""
     parser = argparse.ArgumentParser(
-        description='secchecker — security auditing for DevSecOps and AI systems',
+        description='secchecker — static security scanner for AI agents, MCP tools, and LLM applications',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  secchecker .                               # Scan for secrets (default)
-  secchecker . --type llm                    # Scan for LLM/AI vulnerabilities
-  secchecker . --type devsecops             # Scan Dockerfiles, Terraform, K8s
-  secchecker . --type all                    # Run all scanners
+  secchecker . --type llm          # Scan for LLM/AI/MCP vulnerabilities (recommended)
+  secchecker . --type all          # Run all scanners: LLM + secrets + IaC
+  secchecker . --type secrets      # Scan for hardcoded credentials only
+  secchecker . --type devsecops    # Scan Dockerfiles, Terraform, K8s
   secchecker . --format sarif --output report.sarif
   secchecker . --severity-threshold HIGH     # Only report HIGH and CRITICAL
 

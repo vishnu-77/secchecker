@@ -1,6 +1,6 @@
 import pytest
 from secchecker.llm_patterns import LLM_PATTERNS, LLM_SEVERITY_MAP
-from secchecker.llm_scanner import scan_file_llm, scan_directory_llm
+from secchecker.llm_scanner import scan_file_llm, scan_directory_llm, _scan_content
 
 
 def test_llm_patterns_exist():
@@ -69,3 +69,72 @@ def test_skips_binary_extension(tmp_path):
     f.write_bytes(b'\x89PNG\r\n')
     findings = scan_file_llm(str(f))
     assert findings == {}
+
+
+# ---------------------------------------------------------------------------
+# MCP (Model Context Protocol) detections
+# ---------------------------------------------------------------------------
+
+def test_mcp_unvalidated_tool_result_in_prompt():
+    findings = _scan_content("prompt += tool_result")
+    assert "MCP - Unvalidated Tool Result in Prompt" in findings
+
+
+def test_mcp_tool_call_output_executed_directly():
+    findings = _scan_content("eval(tool_result)")
+    assert "MCP - Tool Call Output Executed Directly" in findings
+
+
+def test_mcp_hardcoded_server_url():
+    findings = _scan_content('mcp_server = "https://mcp.example.com/rpc"')
+    assert "MCP - Hardcoded MCP Server URL" in findings
+
+
+def test_mcp_hardcoded_server_url_ignores_localhost():
+    findings = _scan_content('mcp_server = "http://localhost:8080"')
+    assert "MCP - Hardcoded MCP Server URL" not in findings
+
+
+# ---------------------------------------------------------------------------
+# Agentic AI detections
+# ---------------------------------------------------------------------------
+
+def test_agentic_unsanitized_input_to_memory():
+    findings = _scan_content("agent_memory.add(user_input)")
+    assert "Agentic - Unsanitized Input to Agent Memory" in findings
+
+
+def test_agentic_pii_passed_to_external_agent():
+    findings = _scan_content("ssn = user.ssn; agent.run(ssn)")
+    assert "Agentic - PII Passed to External Agent" in findings
+
+
+def test_agentic_loop_without_exit_condition_multiline():
+    code = '''
+while True:
+    result = agent.invoke(task)
+'''
+    findings = _scan_content(code)
+    assert "Agentic - Agent Loop Without Exit Condition" in findings
+
+
+def test_agentic_function_call_result_not_validated():
+    findings = _scan_content("tool_call = json.loads(response)")
+    assert "Agentic - Function Call Result Not Validated" in findings
+
+
+# ---------------------------------------------------------------------------
+# Severity coverage for new patterns
+# ---------------------------------------------------------------------------
+
+def test_new_mcp_and_agentic_severities():
+    assert LLM_SEVERITY_MAP["MCP - Tool Call Output Executed Directly"] == "CRITICAL"
+    assert LLM_SEVERITY_MAP["Agentic - Function Call Result Not Validated"] == "CRITICAL"
+    assert LLM_SEVERITY_MAP["Agentic - PII Passed to External Agent"] == "CRITICAL"
+    assert LLM_SEVERITY_MAP["MCP - Unvalidated Tool Result in Prompt"] == "HIGH"
+    assert LLM_SEVERITY_MAP["Agentic - Agent Loop Without Exit Condition"] == "MEDIUM"
+
+
+def test_every_new_pattern_has_a_severity():
+    for name in LLM_PATTERNS:
+        assert name in LLM_SEVERITY_MAP, "Missing severity for: {}".format(name)

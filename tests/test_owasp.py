@@ -66,3 +66,22 @@ def test_terraform_open_sg_maps_to_a01():
     result = get_owasp("Terraform - Open Security Group")
     assert "A01:2021" in result["owasp"]
     assert "CWE-732" in result["cwe"]
+
+
+def test_new_mcp_and_agentic_owasp_mappings():
+    assert "LLM01:2025" in OWASP_MAP["MCP - Unvalidated Tool Result in Prompt"]["owasp_llm"]
+    assert "LLM05:2025" in OWASP_MAP["MCP - Tool Call Output Executed Directly"]["owasp_llm"]
+    assert "LLM02:2025" in OWASP_MAP["Agentic - PII Passed to External Agent"]["owasp_llm"]
+    assert "LLM06:2025" in OWASP_MAP["Agentic - Agent Loop Without Exit Condition"]["owasp_llm"]
+
+
+def test_mcp_tool_output_execution_is_code_injection():
+    result = get_owasp("MCP - Tool Call Output Executed Directly")
+    assert "CWE-94" in result["cwe"]
+    assert "LLM05:2025" in result["owasp_llm"]
+
+
+def test_all_new_llm_patterns_have_owasp_entries():
+    from secchecker.llm_patterns import LLM_PATTERNS
+    for name in LLM_PATTERNS:
+        assert name in OWASP_MAP, "Missing OWASP mapping for: {}".format(name)
