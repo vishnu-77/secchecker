@@ -365,26 +365,6 @@ Available reporter functions: `to_json`, `to_markdown`, `to_xml`, `to_sarif`, `t
 
 ---
 
-## Comparison
-
-| Capability | secchecker | Bandit | detect-secrets | Gitleaks | Checkov |
-|-----------|-----------|--------|----------------|----------|---------|
-| Secret detection | Yes | Partial¹ | Yes | Yes | Partial² |
-| MCP / Agentic AI security | Yes | No | No | No | No |
-| LLM / AI security | Yes | No | No | No | No |
-| Dockerfile / K8s / Terraform | Yes | No | No | No | Yes |
-| AST-based Python analysis | Yes | Yes | No | No | No |
-| Shannon entropy detection | Yes | No | Yes | Yes | Partial³ |
-| SARIF output | Yes | Yes | No | Yes | Yes |
-| OWASP LLM Top 10 tags | Yes | No | No | No | No |
-| Zero runtime dependencies | Yes | No | No | No | No |
-
-¹ Bandit detects hardcoded password assignments (B105–B107) but not API keys, cloud credentials, or service tokens.
-² Checkov's secret detection targets IaC files; coverage of general source code secrets is limited.
-³ Checkov's entropy detection (CKV_SECRET_6) applies to IaC files only.
-
----
-
 ## Contributing
 
 Clone the repository, install in editable mode with dev dependencies, and run the test suite:
