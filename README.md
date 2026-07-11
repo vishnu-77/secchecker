@@ -290,7 +290,7 @@ secchecker runs on every push via GitHub Actions. SARIF results are uploaded dir
 secchecker ships as a composite GitHub Action. Add it to any workflow:
 
 ```yaml
-- uses: vishnu-77/secchecker@v0.3.0
+- uses: vishnu-77/secchecker@v0.4.0
   with:
     path: '.'
     type: 'all'
@@ -411,7 +411,7 @@ secchecker ships a `.pre-commit-hooks.yaml` so it can be used directly with the 
 ```yaml
 repos:
   - repo: https://github.com/vishnu-77/secchecker
-    rev: v0.3.0
+    rev: v0.4.0
     hooks:
       - id: secchecker          # secret detection only
       # - id: secchecker-llm    # LLM/AI security only
