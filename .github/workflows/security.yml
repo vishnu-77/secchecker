@@ -60,12 +60,12 @@ jobs:
         if: always()
         run: |
           # Treat exit 0 (clean) and 1 (findings) as success; fail on 2+ (runtime error).
+          rc=0
           secchecker . \
             --type all \
             --format html \
             --output secchecker_report.html \
-            --severity-threshold LOW
-          rc=$?
+            --severity-threshold LOW || rc=$?
           if [ $rc -ge 2 ]; then
             echo "::error::HTML report generation failed with a runtime error (exit $rc)."
             exit $rc
