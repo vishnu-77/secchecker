@@ -350,18 +350,13 @@ Available reporter functions: `to_json`, `to_markdown`, `to_xml`, `to_sarif`, `t
 
 ---
 
-## Metrics
+## Why secchecker
 
-- **52+ secret patterns** across 15 credential categories
-- **18+ LLM/AI vulnerability checks** — the only PyPI static scanner with a dedicated AI security layer
-- **9 MCP / Agentic AI checks** — tool poisoning, tool-output execution, memory injection, recursive self-invocation, and PII passed to external agents
-- **28+ DevSecOps checks** across Dockerfile, Kubernetes, Terraform, and CI/CD configs
-- **AST-based Python analysis** — structural detection beyond regex, covering hardcoded assignments, eval/exec, and taint flows
-- **OWASP Top 10 (2021) + OWASP LLM Top 10 (2025)** tags on every SARIF rule
-- **Post-match validation** — Luhn algorithm for credit cards, JWT structural check — to reduce noise
-- **5 output formats**: JSON, Markdown, XML, SARIF 2.1.0, HTML
-- **Python 3.8–3.12** compatibility tested in CI across all supported versions
-- **Zero runtime dependencies** — installs anywhere Python runs, no transitive supply chain risk
+- **The only PyPI scanner with a dedicated AI security layer** — prompt injection, MCP tool poisoning, agentic risks, and PII-to-agent flows that Bandit, Gitleaks, and Checkov don't touch
+- **One pass, three surfaces** — AI app code, source secrets, and infrastructure-as-code in a single scan
+- **Findings you can act on** — OWASP Top 10 (2021) + OWASP LLM Top 10 (2025) tags on every SARIF rule, straight to the GitHub Security tab
+- **Validated, not noisy** — Luhn and JWT post-match checks cut false positives before results are returned
+- **Zero runtime dependencies** — nothing to audit, installs anywhere Python runs
 
 ---
 
