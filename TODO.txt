@@ -1,0 +1,246 @@
+================================================================================
+secchecker — Project TODO & Progress Tracker
+Last updated: 2026-07-08
+================================================================================
+
+LEGEND
+  [x] Done
+  [-] In progress / partially done
+  [ ] Not started
+  [!] Blocked / needs external action (you, not code)
+
+================================================================================
+PHASE 1 — Core framework (v0.1.0 → v0.2.1)               STATUS: COMPLETE
+================================================================================
+
+[x] Regex-based secret scanner (52+ patterns, 15 credential categories)
+[x] scan_file() and scan_directory() Python API
+[x] JSON, Markdown, XML output formats
+[x] CLI entry point (secchecker command)
+[x] Python 3.8–3.12 compatibility
+[x] Zero runtime dependencies
+[x] File size guard (>10 MB skip)
+[x] Binary extension skip list
+[x] Per-finding deduplication
+[x] get_scan_stats() utility
+[x] XML indentation Python 3.8 fallback (_indent_xml)
+[x] PEP 621 license field fix
+[x] PyPI initial publish (v0.1.0, v0.2.0, v0.2.1)
+
+================================================================================
+PHASE 2 — Security framework upgrade (v0.3.0)             STATUS: COMPLETE
+================================================================================
+
+[x] LLM / AI security scanner (llm_scanner.py, llm_patterns.py)
+      18+ patterns: prompt injection, jailbreak literals, RAG leakage,
+      eval of LLM output, AI API key exposure, sensitive data in prompt
+[x] DevSecOps scanner (devsecops_scanner.py, devsecops_patterns.py)
+      28+ patterns: Dockerfile, Kubernetes, Terraform, CI/CD
+[x] Shannon entropy detection (entropy.py)
+      Charset-aware: base64 >= 4.5, hex >= 3.0
+[x] AST-based Python scanner (ast_scanner.py)
+      Hardcoded assignments, eval/exec, taint tracking (source -> sink)
+[x] OWASP Top 10 (2021) + OWASP LLM Top 10 (2025) mapping (owasp.py)
+[x] Post-match validators (validators.py)
+      Luhn algorithm (credit cards), JWT structural check, placeholder filter
+[x] SARIF 2.1.0 reporter (sarif_reporter.py)
+      OWASP / CWE tags on every rule, GitHub Security tab compatible
+[x] HTML reporter (html_reporter.py)
+      Self-contained, XSS-safe, severity badges
+[x] Config file support (config.py)
+      .secchecker.yml: thresholds, exclude paths, scan types, custom patterns
+[x] CLI upgrade (cli.py)
+      --type, --format, --severity-threshold, --config, --no-entropy, --verbose
+      Exit codes: 0 (clean), 1 (findings), 2 (error)
+[x] GitHub Action (action.yml)
+      Composite action, SARIF upload, fail-on-findings flag
+[x] CI pipeline upgrade (.github/workflows/ci.yml)
+      Matrix: Python 3.8–3.12, PyPI Trusted Publishing via OIDC
+[x] Jupyter notebook support in secrets scanner
+      core.py extracts .ipynb cell source before applying secret patterns
+[x] PyPI v0.3.0 published (Production/Stable)
+
+================================================================================
+PHASE 3 — Documentation & positioning                      STATUS: COMPLETE
+================================================================================
+
+[x] README full rewrite — professional positioning, no-snippet prose style
+[x] Architecture section — 3-layer ASCII diagram, module map table,
+      severity pipeline, shared interface contract, design principles
+[x] Comparison table — Bandit, detect-secrets, Gitleaks, Checkov
+      Footnotes added for accuracy (Partial entries explained)
+[x] Real-world scenarios (4 detailed use cases)
+[x] Output formats table with use-case guidance
+[x] Metrics section (pattern counts, OWASP tags, zero deps)
+[x] Pre-commit integration section added to README
+[x] Roadmap table added to README (0.4.0, 0.5.0 targets)
+[x] .pre-commit-hooks.yaml shipped (3 hooks: secrets, llm, all)
+[x] SECURITY.md — responsible disclosure policy, 48h ack SLA, 14-day fix SLA
+[x] CHANGELOG.md — full history 0.1.0 through 0.3.0
+
+================================================================================
+PHASE 4 — Reliability patch + AI/GenAI/MCP-first repositioning
+         (v0.3.1 + v0.4.0 hybrid plan)                    STATUS: COMPLETE
+================================================================================
+
+NOTE: The hybrid plan reassigned what "v0.4.0" means. It is now the AI/MCP-first
+      repositioning below — NOT the incremental-cache/baseline/diff robustness
+      work, which was relabeled to v0.6.0 (see PHASE 6).
+
+--- v0.3.1 reliability patch ---
+[x] Centralized get_severity() across secrets + LLM + DevSecOps maps
+      Was defaulting every LLM/MCP/agentic and DevSecOps finding to LOW in every
+      reporter (JSON/MD/XML/SARIF/HTML) and in the --severity-threshold filter
+      File modified: reporter.py
+[x] GitHub Action now passes --type through to the scanner
+      action.yml defined a `type` input but never forwarded it (always scanned
+      the default). Now: --type "${{ inputs.type }}"
+[x] Exit code 2 (runtime/config/reporting error) now fails the action
+      Previously a runtime error was reported as findings_detected=false and
+      passed as success. Applied same policy to security.yml.
+[x] Removed unsafe `|| true` from CI release-validation smoke tests
+      ci.yml + package-test.yml now use an exit-code-aware wrapper
+      (0/1 = pass, 2+ = fail) so genuine runtime errors fail the build
+[x] Wheel-install smoke test hardened
+      package-test.yml exercises JSON + SARIF + HTML from the installed wheel
+      and asserts html_reporter imports; HTML reporter packaging verified
+      (explicit [tool.setuptools.packages.find] added to pyproject.toml)
+[x] Report metadata version corrected (get_scan_metadata: 0.2.0 -> 0.4.0)
+
+--- v0.4.0 AI/GenAI/MCP-first repositioning ---
+[x] MCP (Model Context Protocol) patterns — 4 new (llm_patterns.py)
+      Unvalidated tool result in prompt, tool output executed directly,
+      hardcoded MCP server URL, untrusted tool description in prompt
+[x] Agentic AI patterns — 5 new (llm_patterns.py)
+      Unsanitized input to agent memory, agent loop without exit condition,
+      function call result not validated, recursive self-invocation risk,
+      PII passed to external agent  (multiline patterns use (?is))
+[x] Severities + OWASP LLM Top 10 (2025) mappings for all 9 new patterns
+      (LLM_SEVERITY_MAP, owasp.py OWASP_MAP)
+[x] Repositioned package/module/CLI/README/CHANGELOG around AI agents, MCP
+      tools, and LLM apps; secrets + DevSecOps kept as supporting proof points
+      Files: __init__.py, pyproject.toml (v0.4.0, description, keywords),
+             cli.py (AI-first description + epilog), README.md, CHANGELOG.md
+[x] OWASP disclaimer added (no certification/endorsement/compliance claim)
+[x] Default scan type kept as `secrets` for backward compatibility
+      Docs lead with `--type llm`; default change deferred to a future major
+[x] Tests: 9 detections + severity + OWASP-mapping + severity-regression tests
+      (test_llm_scanner.py, test_owasp.py, test_reporter.py) — 137 passing
+[x] demo/ (intentionally vulnerable app) + .github/workflows/security.yml
+      cherry-picked from the prior stash; security.yml hardened for exit-2
+
+[!] Not published — no PyPI release, no git tag, no GitHub release (by request).
+      Prepared for review only. NEXT ACTION (you): review, then tag/publish
+      v0.4.0 when ready.
+
+================================================================================
+PHASE 5 — Deeper scanner foundation / technical depth (v0.5.0)
+                                                          STATUS: NOT STARTED
+================================================================================
+
+[ ] Deeper taint analysis in AST scanner
+      Track taint through: function arguments, return values, dict assignments
+      Currently: one-level only (assignment -> sink)
+      Approach: inter-procedural taint with call graph (stdlib ast only)
+      File to modify: ast_scanner.py
+
+[ ] VS Code integration documentation
+      secchecker SARIF output natively supported by vscode-sarif extension
+      Document the workflow: secchecker -> .sarif -> VS Code viewer
+      Stretch: evaluate a minimal diagnostic extension using LSP or task runner
+
+[ ] Scan speed benchmark in README
+      Run secchecker against CPython or Django source tree
+      Record: file count, scan time, findings count
+      Add to README metrics: "Scans X files in Y seconds"
+      Action needed: run the benchmark locally, update README
+
+================================================================================
+PHASE 6 — Robustness features (v0.6.0)                    STATUS: NOT STARTED
+================================================================================
+
+NOTE: Previously slated as v0.4.0. Reassigned to v0.6.0 after the hybrid plan
+      claimed v0.4.0 for the AI/MCP repositioning (PHASE 4).
+
+[ ] Incremental scan / hash cache
+      --cache flag, .secchecker_cache.json per-file hash store
+      Only re-scan files that changed since last run
+      Target: large monorepos (1000+ files), significant speed gain
+      Files to modify: core.py, cli.py
+      New file: secchecker/cache.py
+
+[ ] Baseline / ignore file
+      secchecker baseline --update writes .secchecker-baseline.json
+      Accepted findings are suppressed on subsequent runs
+      Prevents alert fatigue — this is what detect-secrets built on
+      Files to modify: cli.py, core.py
+      New file: secchecker/baseline.py
+
+[ ] --diff mode for CI
+      Accept git diff on stdin: git diff HEAD | secchecker --diff
+      Only scan lines prefixed with + in the diff
+      Files to modify: cli.py
+      New file: secchecker/diff_scanner.py
+
+[ ] Custom rule DSL (YAML)
+      Extend .secchecker.yml custom_patterns to support:
+        - severity per custom pattern
+        - description field
+        - per-pattern enable/disable
+      Files to modify: config.py, reporter.py, owasp.py
+
+================================================================================
+VISIBILITY & ADOPTION                                      STATUS: NOT STARTED
+================================================================================
+
+[!] Blog post — write and publish
+      Title: "Building an OWASP LLM Top 10 Scanner in Pure Python"
+      Publish on: Medium or personal site
+      Cover: why built it, threat model, architecture, live demo
+      Link from README once published
+
+[!] Submit to curated lists — open PRs on:
+      https://github.com/mre/awesome-static-analysis
+      https://github.com/analysis-tools-dev/static-analysis
+      https://github.com/sbilly/awesome-security
+      These are permanent inbound links, no maintenance cost
+
+[!] PyPI page audit
+      Verify badges render on pypi.org/project/secchecker/
+      Check comparison table renders cleanly
+      Confirm first paragraph reads as a 5-second pitch
+
+[!] GitHub repo hygiene
+      Add repository description on GitHub (not just README tagline)
+      Add topics: security, devsecops, llm-security, static-analysis,
+                  sarif, secret-detection, prompt-injection, owasp
+      Pin secchecker repo to profile if it is the flagship project
+
+[!] Integration test fixture
+      Create tests/fixtures/vulnerable_app/ with deliberately insecure code
+      Cover: hardcoded AWS key, prompt injection, privileged K8s spec,
+             open Terraform SG, eval(llm_response), Luhn-valid credit card
+      Serves as: regression suite + live demo target in documentation
+
+================================================================================
+KNOWN TECHNICAL DEBT
+================================================================================
+
+[-] datetime.utcnow() deprecation warning
+      sarif_reporter.py:134 and html_reporter.py:79 use deprecated utcnow()
+      Replace with: datetime.now(datetime.timezone.utc)
+      Python 3.8 compatible: use datetime.timezone.utc directly
+      Low priority — warning only, not a failure
+
+[ ] test_scan_file_multiple_patterns no longer asserts JWT Token
+      JWT test value in fixtures is not structurally valid (fails is_valid_jwt)
+      Either update fixture to a valid JWT or add a separate validator test
+      Tracked as known gap, not a regression
+
+================================================================================
+CURRENT VERSION:     0.4.0 — prepared for review, NOT yet tagged or published
+LAST SHIPPED (PyPI): 0.3.0 (Production/Stable)
+NEXT RELEASE TARGET: 0.5.0 — Deeper scanner foundation
+                     (inter-procedural taint, VS Code docs, scan benchmark)
+LATER:               0.6.0 — Robustness (cache, baseline, --diff, custom DSL)
+================================================================================

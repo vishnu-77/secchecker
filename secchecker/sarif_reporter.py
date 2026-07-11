@@ -7,11 +7,15 @@ from typing import Any, Dict, List
 try:
     from secchecker.reporter import get_severity
     from secchecker import __version__ as _VERSION
+    from secchecker.owasp import get_owasp
 except ImportError:
     _VERSION = "0.3.0"
 
     def get_severity(name):
         return "MEDIUM"
+
+    def get_owasp(name):
+        return {"owasp": [], "cwe": [], "owasp_llm": []}
 
 SARIF_LEVEL_MAP = {
     "CRITICAL": "error",
@@ -45,16 +49,27 @@ def _build_rules(pattern_names):
         seen.add(name)
         severity = get_severity(name)
         level = SARIF_LEVEL_MAP.get(severity, "warning")
+        owasp_info = get_owasp(name)
+        tags = ["security", severity.lower()]
+        tags.extend(owasp_info.get("owasp", []))
+        tags.extend(owasp_info.get("owasp_llm", []))
+        rule_props = {
+            "tags": tags,
+            "security-severity": SARIF_SECURITY_SEVERITY.get(severity, "5.0"),
+        }
+        if owasp_info.get("cwe"):
+            rule_props["cwe"] = owasp_info["cwe"]
+        if owasp_info.get("owasp"):
+            rule_props["owasp"] = owasp_info["owasp"]
+        if owasp_info.get("owasp_llm"):
+            rule_props["owasp-llm"] = owasp_info["owasp_llm"]
         rules.append({
             "id": name,
             "name": name.replace(" ", "").replace("-", "").replace("/", ""),
             "shortDescription": {"text": name},
             "fullDescription": {"text": "Detected: {}".format(name)},
             "defaultConfiguration": {"level": level},
-            "properties": {
-                "tags": ["security", severity.lower()],
-                "security-severity": SARIF_SECURITY_SEVERITY.get(severity, "5.0"),
-            },
+            "properties": rule_props,
         })
     return rules
 

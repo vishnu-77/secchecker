@@ -36,6 +36,12 @@ try:
 except ImportError:
     load_config = None
 
+try:
+    from .ast_scanner import scan_directory_ast, scan_file_ast
+except ImportError:
+    scan_directory_ast = None
+    scan_file_ast = None
+
 SEVERITY_ORDER = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
 
 
@@ -120,20 +126,29 @@ def _run_scan(path, scan_type, no_entropy, config):
             else:
                 results = _merge_results(results, scan_directory_devsecops(path))
 
+    # AST scanner runs on Python files for secrets and all scan types
+    if scan_type in ('secrets', 'all') and scan_directory_ast is not None:
+        if is_file:
+            r = scan_file_ast(path)
+            if r:
+                results.setdefault(path, {}).update(r)
+        else:
+            results = _merge_results(results, scan_directory_ast(path))
+
     return results
 
 
 def main():
     """Main CLI entry point for secchecker."""
     parser = argparse.ArgumentParser(
-        description='secchecker — security auditing for DevSecOps and AI systems',
+        description='secchecker — static security scanner for AI agents, MCP tools, and LLM applications',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  secchecker .                               # Scan for secrets (default)
-  secchecker . --type llm                    # Scan for LLM/AI vulnerabilities
-  secchecker . --type devsecops             # Scan Dockerfiles, Terraform, K8s
-  secchecker . --type all                    # Run all scanners
+  secchecker . --type llm          # Scan for LLM/AI/MCP vulnerabilities (recommended)
+  secchecker . --type all          # Run all scanners: LLM + secrets + IaC
+  secchecker . --type secrets      # Scan for hardcoded credentials only
+  secchecker . --type devsecops    # Scan Dockerfiles, Terraform, K8s
   secchecker . --format sarif --output report.sarif
   secchecker . --severity-threshold HIGH     # Only report HIGH and CRITICAL
 
