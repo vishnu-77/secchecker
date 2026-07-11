@@ -1,6 +1,7 @@
 """Config file loader for secchecker — parses .secchecker.yml using stdlib only."""
 import os
 import re
+import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -162,6 +163,54 @@ def _validate_and_normalize(raw):
             config['entropy']['min_length'] = entropy['min_length']
 
     return config
+
+
+def is_path_excluded(rel_path, exclude_paths):
+    # type: (str, Optional[List[str]]) -> bool
+    """
+    Return True if ``rel_path`` matches any entry in ``exclude_paths``.
+
+    Matching rules (case-sensitive, separator-agnostic):
+      * A glob entry (contains ``*``, ``?`` or ``[``) is matched with fnmatch
+        against both the full path and its basename — e.g. ``*.mock.*`` or
+        ``build/*``.
+      * A plain entry (``tests/``, ``node_modules``, ``sample-reports``) matches
+        when it appears as a full path component anywhere in the path, or when
+        the path equals it or is nested beneath it — e.g. ``tests/`` excludes
+        ``tests/test_x.py`` and ``a/tests/x.py``.
+      * A multi-segment literal (``secchecker/patterns.py``) matches that exact
+        file or anything nested beneath it.
+    """
+    if not exclude_paths:
+        return False
+
+    norm = str(rel_path).replace('\\', '/').strip('/')
+    if not norm:
+        return False
+    segments = norm.split('/')
+
+    for raw in exclude_paths:
+        if not raw:
+            continue
+        pat = str(raw).replace('\\', '/').strip().strip('/')
+        if not pat:
+            continue
+
+        if any(ch in pat for ch in '*?['):
+            if fnmatch.fnmatch(norm, pat) or fnmatch.fnmatch(segments[-1], pat):
+                return True
+            continue
+
+        if '/' in pat:
+            # Multi-segment literal: exact file or a nested path.
+            if norm == pat or norm.startswith(pat + '/'):
+                return True
+        else:
+            # Single token: match as a full path component anywhere.
+            if pat in segments:
+                return True
+
+    return False
 
 
 def load_config(config_path=None, scan_root=None):

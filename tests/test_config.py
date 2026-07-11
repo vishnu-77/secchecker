@@ -2,6 +2,7 @@ import pytest
 import os
 from secchecker.config import (
     get_default_config, find_config_file, load_config, _parse_simple_yaml,
+    is_path_excluded,
 )
 
 
@@ -83,3 +84,60 @@ def test_invalid_severity_uses_default(tmp_path):
     cfg.write_text('severity_threshold: INVALID\n')
     config = load_config(config_path=str(cfg))
     assert config['severity_threshold'] is None
+
+
+# ---------------------------------------------------------------------------
+# is_path_excluded — exclude_paths matching
+# ---------------------------------------------------------------------------
+
+def test_exclude_none_or_empty():
+    assert is_path_excluded('secchecker/cli.py', None) is False
+    assert is_path_excluded('secchecker/cli.py', []) is False
+
+
+def test_exclude_dir_prefix():
+    ex = ['tests/']
+    assert is_path_excluded('tests/test_cli.py', ex) is True
+    assert is_path_excluded('secchecker/cli.py', ex) is False
+
+
+def test_exclude_component_anywhere():
+    ex = ['node_modules']
+    assert is_path_excluded('frontend/node_modules/lib/x.js', ex) is True
+    assert is_path_excluded('node_modules/x.js', ex) is True
+    assert is_path_excluded('src/nodes/x.js', ex) is False  # partial name, no match
+
+
+def test_exclude_glob_basename_and_path():
+    ex = ['*.mock.*']
+    assert is_path_excluded('src/config.mock.js', ex) is True
+    assert is_path_excluded('config.mock.ts', ex) is True
+    assert is_path_excluded('src/config.js', ex) is False
+
+
+def test_exclude_multi_segment_literal():
+    ex = ['secchecker/patterns.py']
+    assert is_path_excluded('secchecker/patterns.py', ex) is True
+    assert is_path_excluded('secchecker/llm_patterns.py', ex) is False
+
+
+def test_exclude_windows_separators_normalized():
+    ex = ['demo/']
+    assert is_path_excluded('demo\\app.py', ex) is True
+
+
+def test_run_scan_respects_exclude_paths(tmp_path):
+    from secchecker.cli import _run_scan
+    (tmp_path / 'keep.py').write_text('password = "hunter2secret"\n')
+    demo = tmp_path / 'demo'
+    demo.mkdir()
+    (demo / 'vuln.py').write_text('password = "hunter2secret"\n')
+
+    no_ex = _run_scan(str(tmp_path), 'secrets', True, {})
+    with_ex = _run_scan(str(tmp_path), 'secrets', True, {'exclude_paths': ['demo/']})
+
+    joined_no_ex = '||'.join(no_ex.keys()).replace('\\', '/')
+    joined_with_ex = '||'.join(with_ex.keys()).replace('\\', '/')
+    assert 'demo/vuln.py' in joined_no_ex
+    assert 'demo/vuln.py' not in joined_with_ex
+    assert 'keep.py' in joined_with_ex
