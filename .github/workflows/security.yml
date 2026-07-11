@@ -1,0 +1,96 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Weekly scan every Monday at 08:00 UTC — catches newly added patterns
+    # against the existing codebase even without a code push
+    - cron: '0 8 * * 1'
+
+jobs:
+  secchecker:
+    name: secchecker — secrets + LLM + IaC
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # required for SARIF upload to Security tab
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install secchecker
+        run: pip install -e .
+
+      - name: Run full security scan
+        id: scan
+        run: |
+          set +e
+          secchecker . \
+            --type all \
+            --format sarif \
+            --output secchecker.sarif \
+            --severity-threshold LOW \
+            --verbose
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: secchecker.sarif
+          category: secchecker
+
+      - name: Upload SARIF as artifact (viewable on every run)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: secchecker-sarif-${{ github.sha }}
+          path: secchecker.sarif
+          retention-days: 90
+
+      - name: Generate HTML report
+        if: always()
+        run: |
+          # Treat exit 0 (clean) and 1 (findings) as success; fail on 2+ (runtime error).
+          secchecker . \
+            --type all \
+            --format html \
+            --output secchecker_report.html \
+            --severity-threshold LOW
+          rc=$?
+          if [ $rc -ge 2 ]; then
+            echo "::error::HTML report generation failed with a runtime error (exit $rc)."
+            exit $rc
+          fi
+
+      - name: Upload HTML report as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: secchecker-html-report-${{ github.sha }}
+          path: secchecker_report.html
+          retention-days: 90
+
+      - name: Fail on runtime error
+        if: steps.scan.outputs.exit_code != '0' && steps.scan.outputs.exit_code != '1'
+        run: |
+          echo "::error::secchecker exited with a runtime error (exit ${{ steps.scan.outputs.exit_code }})."
+          exit 1
+
+      - name: Fail on CRITICAL findings
+        if: steps.scan.outputs.exit_code == '1'
+        run: |
+          secchecker . \
+            --type all \
+            --format md \
+            --severity-threshold CRITICAL
+          echo "::error::secchecker found CRITICAL findings — see the Security tab or the SARIF artifact."
+          exit 1

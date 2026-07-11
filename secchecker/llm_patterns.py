@@ -1,4 +1,4 @@
-"""LLM/AI Security patterns for detecting vulnerabilities in LLM application code."""
+"""LLM, MCP, and agentic AI security patterns — static detection for AI application vulnerabilities."""
 from typing import Dict
 
 LLM_PATTERNS: Dict[str, str] = {
@@ -55,6 +55,37 @@ LLM_PATTERNS: Dict[str, str] = {
     "LLM - Pinecone API Key": r'(?i)pinecone.*api[_\-]?key[\'"\s:=]+[a-zA-Z0-9\-]{32,}',
     "LLM - Weaviate API Key": r'(?i)weaviate.*api[_\-]?key[\'"\s:=]+[a-zA-Z0-9\-_]{32,}',
     "LLM - System Prompt Hardcoded": r'(?i)system_prompt\s*=\s*[\'"](.{50,})[\'"]',
+
+    # MCP (Model Context Protocol) Security
+    "MCP - Unvalidated Tool Result in Prompt": (
+        r'(?i)(prompt|context|system_prompt|message)\s*[+=]+.*\b(tool_result|tool_output|mcp_result|function_result)\b'
+    ),
+    "MCP - Tool Call Output Executed Directly": (
+        r'(?i)(eval|exec|subprocess\.run|os\.system|os\.popen)\s*\(\s*(tool_result|tool_output|function_result|mcp_result|response\.content)'
+    ),
+    "MCP - Hardcoded MCP Server URL": (
+        r'(?i)(mcp_server|mcp_url|server_url)\s*=\s*[\'"]https?://(?!localhost|127\.0\.0\.1)[^\'"]{6,}[\'"]'
+    ),
+    "MCP - Untrusted Tool Description in Prompt": (
+        r'(?i)(tool_description|tool_schema|tool_def)\s*=\s*[^\n]*\.(get|fetch|request|load)\s*\('
+    ),
+
+    # Agentic AI Security
+    "Agentic - Unsanitized Input to Agent Memory": (
+        r'(?i)(memory|agent_memory|long_term_memory|vector_store)\.(add|store|save|insert|append)\s*\(\s*(user_?input|query|request|message)\s*\)'
+    ),
+    "Agentic - Agent Loop Without Exit Condition": (
+        r'(?is)while\s+True.*?\.(run|invoke|call|complete)\s*\('
+    ),
+    "Agentic - Function Call Result Not Validated": (
+        r'(?i)(function_call|tool_call|action)\s*=\s*.*\b(json\.loads|ast\.literal_eval)\s*\(.*\b(response|completion|llm_output|model_output)\b'
+    ),
+    "Agentic - Recursive Self-Invocation Risk": (
+        r'(?is)\b(agent|executor|AgentExecutor|ReActAgent)\b.*?\.(run|invoke)\s*\(.*?\b(agent|executor|AgentExecutor|ReActAgent)\b'
+    ),
+    "Agentic - PII Passed to External Agent": (
+        r'(?i)(ssn|social_security|credit_card|passport|dob|date_of_birth)\b.*\b(agent|llm|openai|anthropic|completion)\b'
+    ),
 }
 
 LLM_SEVERITY_MAP: Dict[str, str] = {
@@ -76,4 +107,17 @@ LLM_SEVERITY_MAP: Dict[str, str] = {
     "LLM - RAG Raw File in Prompt": "MEDIUM",
     "LLM - API Key in Log Statement": "MEDIUM",
     "LLM - System Prompt Hardcoded": "LOW",
+
+    # MCP / Agentic AI
+    "MCP - Tool Call Output Executed Directly": "CRITICAL",
+    "Agentic - Function Call Result Not Validated": "CRITICAL",
+    "Agentic - PII Passed to External Agent": "CRITICAL",
+
+    "MCP - Unvalidated Tool Result in Prompt": "HIGH",
+    "MCP - Hardcoded MCP Server URL": "HIGH",
+    "MCP - Untrusted Tool Description in Prompt": "HIGH",
+    "Agentic - Unsanitized Input to Agent Memory": "HIGH",
+    "Agentic - Recursive Self-Invocation Risk": "HIGH",
+
+    "Agentic - Agent Loop Without Exit Condition": "MEDIUM",
 }

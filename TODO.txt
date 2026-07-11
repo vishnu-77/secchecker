@@ -1,6 +1,6 @@
 ================================================================================
 secchecker — Project TODO & Progress Tracker
-Last updated: 2026-03-27
+Last updated: 2026-07-08
 ================================================================================
 
 LEGEND
@@ -79,8 +79,88 @@ PHASE 3 — Documentation & positioning                      STATUS: COMPLETE
 [x] CHANGELOG.md — full history 0.1.0 through 0.3.0
 
 ================================================================================
-PHASE 4 — Robustness features (v0.4.0)                    STATUS: NOT STARTED
+PHASE 4 — Reliability patch + AI/GenAI/MCP-first repositioning
+         (v0.3.1 + v0.4.0 hybrid plan)                    STATUS: COMPLETE
 ================================================================================
+
+NOTE: The hybrid plan reassigned what "v0.4.0" means. It is now the AI/MCP-first
+      repositioning below — NOT the incremental-cache/baseline/diff robustness
+      work, which was relabeled to v0.6.0 (see PHASE 6).
+
+--- v0.3.1 reliability patch ---
+[x] Centralized get_severity() across secrets + LLM + DevSecOps maps
+      Was defaulting every LLM/MCP/agentic and DevSecOps finding to LOW in every
+      reporter (JSON/MD/XML/SARIF/HTML) and in the --severity-threshold filter
+      File modified: reporter.py
+[x] GitHub Action now passes --type through to the scanner
+      action.yml defined a `type` input but never forwarded it (always scanned
+      the default). Now: --type "${{ inputs.type }}"
+[x] Exit code 2 (runtime/config/reporting error) now fails the action
+      Previously a runtime error was reported as findings_detected=false and
+      passed as success. Applied same policy to security.yml.
+[x] Removed unsafe `|| true` from CI release-validation smoke tests
+      ci.yml + package-test.yml now use an exit-code-aware wrapper
+      (0/1 = pass, 2+ = fail) so genuine runtime errors fail the build
+[x] Wheel-install smoke test hardened
+      package-test.yml exercises JSON + SARIF + HTML from the installed wheel
+      and asserts html_reporter imports; HTML reporter packaging verified
+      (explicit [tool.setuptools.packages.find] added to pyproject.toml)
+[x] Report metadata version corrected (get_scan_metadata: 0.2.0 -> 0.4.0)
+
+--- v0.4.0 AI/GenAI/MCP-first repositioning ---
+[x] MCP (Model Context Protocol) patterns — 4 new (llm_patterns.py)
+      Unvalidated tool result in prompt, tool output executed directly,
+      hardcoded MCP server URL, untrusted tool description in prompt
+[x] Agentic AI patterns — 5 new (llm_patterns.py)
+      Unsanitized input to agent memory, agent loop without exit condition,
+      function call result not validated, recursive self-invocation risk,
+      PII passed to external agent  (multiline patterns use (?is))
+[x] Severities + OWASP LLM Top 10 (2025) mappings for all 9 new patterns
+      (LLM_SEVERITY_MAP, owasp.py OWASP_MAP)
+[x] Repositioned package/module/CLI/README/CHANGELOG around AI agents, MCP
+      tools, and LLM apps; secrets + DevSecOps kept as supporting proof points
+      Files: __init__.py, pyproject.toml (v0.4.0, description, keywords),
+             cli.py (AI-first description + epilog), README.md, CHANGELOG.md
+[x] OWASP disclaimer added (no certification/endorsement/compliance claim)
+[x] Default scan type kept as `secrets` for backward compatibility
+      Docs lead with `--type llm`; default change deferred to a future major
+[x] Tests: 9 detections + severity + OWASP-mapping + severity-regression tests
+      (test_llm_scanner.py, test_owasp.py, test_reporter.py) — 137 passing
+[x] demo/ (intentionally vulnerable app) + .github/workflows/security.yml
+      cherry-picked from the prior stash; security.yml hardened for exit-2
+
+[!] Not published — no PyPI release, no git tag, no GitHub release (by request).
+      Prepared for review only. NEXT ACTION (you): review, then tag/publish
+      v0.4.0 when ready.
+
+================================================================================
+PHASE 5 — Deeper scanner foundation / technical depth (v0.5.0)
+                                                          STATUS: NOT STARTED
+================================================================================
+
+[ ] Deeper taint analysis in AST scanner
+      Track taint through: function arguments, return values, dict assignments
+      Currently: one-level only (assignment -> sink)
+      Approach: inter-procedural taint with call graph (stdlib ast only)
+      File to modify: ast_scanner.py
+
+[ ] VS Code integration documentation
+      secchecker SARIF output natively supported by vscode-sarif extension
+      Document the workflow: secchecker -> .sarif -> VS Code viewer
+      Stretch: evaluate a minimal diagnostic extension using LSP or task runner
+
+[ ] Scan speed benchmark in README
+      Run secchecker against CPython or Django source tree
+      Record: file count, scan time, findings count
+      Add to README metrics: "Scans X files in Y seconds"
+      Action needed: run the benchmark locally, update README
+
+================================================================================
+PHASE 6 — Robustness features (v0.6.0)                    STATUS: NOT STARTED
+================================================================================
+
+NOTE: Previously slated as v0.4.0. Reassigned to v0.6.0 after the hybrid plan
+      claimed v0.4.0 for the AI/MCP repositioning (PHASE 4).
 
 [ ] Incremental scan / hash cache
       --cache flag, .secchecker_cache.json per-file hash store
@@ -108,27 +188,6 @@ PHASE 4 — Robustness features (v0.4.0)                    STATUS: NOT STARTED
         - description field
         - per-pattern enable/disable
       Files to modify: config.py, reporter.py, owasp.py
-
-================================================================================
-PHASE 5 — Technical depth (v0.5.0)                        STATUS: NOT STARTED
-================================================================================
-
-[ ] Deeper taint analysis in AST scanner
-      Track taint through: function arguments, return values, dict assignments
-      Currently: one-level only (assignment -> sink)
-      Approach: inter-procedural taint with call graph (stdlib ast only)
-      File to modify: ast_scanner.py
-
-[ ] VS Code integration documentation
-      secchecker SARIF output natively supported by vscode-sarif extension
-      Document the workflow: secchecker -> .sarif -> VS Code viewer
-      Stretch: evaluate a minimal diagnostic extension using LSP or task runner
-
-[ ] Scan speed benchmark in README
-      Run secchecker against CPython or Django source tree
-      Record: file count, scan time, findings count
-      Add to README metrics: "Scans X files in Y seconds"
-      Action needed: run the benchmark locally, update README
 
 ================================================================================
 VISIBILITY & ADOPTION                                      STATUS: NOT STARTED
@@ -179,6 +238,9 @@ KNOWN TECHNICAL DEBT
       Tracked as known gap, not a regression
 
 ================================================================================
-CURRENT VERSION: 0.3.0 (Production/Stable)
-NEXT RELEASE TARGET: 0.4.0 — Incremental cache + baseline + diff mode
+CURRENT VERSION:     0.4.0 — prepared for review, NOT yet tagged or published
+LAST SHIPPED (PyPI): 0.3.0 (Production/Stable)
+NEXT RELEASE TARGET: 0.5.0 — Deeper scanner foundation
+                     (inter-procedural taint, VS Code docs, scan benchmark)
+LATER:               0.6.0 — Robustness (cache, baseline, --diff, custom DSL)
 ================================================================================

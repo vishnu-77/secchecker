@@ -1,5 +1,5 @@
 name: 'secchecker'
-description: 'Lightweight security auditing for DevSecOps and AI systems — detects secrets, LLM vulnerabilities, and infrastructure misconfigurations'
+description: 'Static security scanner for AI agents, MCP tools, and LLM applications — plus secrets and infrastructure misconfigurations'
 author: 'Vishnu Prashanth'
 
 branding:
@@ -71,6 +71,7 @@ runs:
       run: |
         set +e
         secchecker "${{ inputs.path }}" \
+          --type "${{ inputs.type }}" \
           --format "${{ inputs.format }}" \
           --output "${{ inputs.output }}" \
           --severity-threshold "${{ inputs.severity-threshold }}"
@@ -80,6 +81,11 @@ runs:
           echo "findings_detected=true" >> $GITHUB_OUTPUT
         else
           echo "findings_detected=false" >> $GITHUB_OUTPUT
+        fi
+        # Exit code 2 = runtime/config/reporting error. Never let it pass as success.
+        if [ $SCAN_EXIT -ge 2 ]; then
+          echo "::error::secchecker exited with a runtime error (exit $SCAN_EXIT)."
+          exit $SCAN_EXIT
         fi
         if [ "${{ inputs.fail-on-findings }}" = "true" ] && [ $SCAN_EXIT -eq 1 ]; then
           echo "::error::secchecker found security issues. See ${{ inputs.output }}"

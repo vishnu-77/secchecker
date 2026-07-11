@@ -4,15 +4,31 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.3.0"
-description = "Lightweight security auditing for DevSecOps and AI systems — detects secrets, LLM vulnerabilities, and infrastructure misconfigurations."
+version = "0.4.0"
+description = "Static security scanner for AI agents, MCP tools, and LLM applications. Finds prompt injection, tool poisoning, and agentic vulnerabilities. OWASP LLM Top 10 (2025) tagged."
 readme = "README.md"
 authors = [
     {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
 ]
 license = {text = "MIT"}
 requires-python = ">=3.8"
-keywords = ["security", "secrets", "devsecops", "llm-security", "ai-security", "prompt-injection", "terraform", "kubernetes", "cli", "scanning", "audit"]
+keywords = [
+  "mcp-security",
+  "mcp",
+  "agent-security",
+  "agentic-ai",
+  "llm-security",
+  "ai-security",
+  "prompt-injection",
+  "genai-security",
+  "langchain-security",
+  "rag-security",
+  "owasp-llm",
+  "security",
+  "secrets",
+  "devsecops",
+  "static-analysis"
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -53,6 +69,9 @@ Documentation = "https://github.com/vishnu-77/secchecker#readme"
 Repository = "https://github.com/vishnu-77/secchecker.git"
 "Bug Tracker" = "https://github.com/vishnu-77/secchecker/issues"
 Changelog = "https://github.com/vishnu-77/secchecker/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["secchecker*"]
 
 [project.scripts]
 secchecker = "secchecker.cli:main"

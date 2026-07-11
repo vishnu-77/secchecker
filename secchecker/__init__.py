@@ -1,10 +1,12 @@
 """
-secchecker — lightweight security auditing for DevSecOps and AI systems.
+secchecker — static security scanner for AI agents, MCP tools, and LLM applications.
 
-Detects secrets, LLM/AI vulnerabilities, and infrastructure misconfigurations.
+Finds prompt injection, MCP tool poisoning, agentic vulnerabilities, and hardcoded AI credentials
+before deployment. Also covers secrets and infrastructure misconfigurations.
+Zero runtime dependencies. OWASP LLM Top 10 (2025) tagged output.
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "Vishnu Prashanth"
 __email__ = "vishnu7stanite@gmail.com"
 

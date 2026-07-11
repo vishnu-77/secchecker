@@ -80,6 +80,18 @@ def test_get_severity():
     assert get_severity("Password in Config") == "MEDIUM"
     assert get_severity("Unknown Pattern") == "LOW"
 
+
+def test_get_severity_covers_llm_and_devsecops():
+    """Regression: LLM/AI and DevSecOps findings must not silently fall back to LOW."""
+    # LLM / MCP / agentic patterns
+    assert get_severity("LLM - Eval of LLM Output") == "CRITICAL"
+    assert get_severity("MCP - Tool Call Output Executed Directly") == "CRITICAL"
+    assert get_severity("Agentic - PII Passed to External Agent") == "CRITICAL"
+    assert get_severity("MCP - Unvalidated Tool Result in Prompt") == "HIGH"
+    # DevSecOps patterns
+    assert get_severity("K8s - Privileged container") == "CRITICAL"
+    assert get_severity("Dockerfile - FROM latest tag") == "MEDIUM"
+
 def test_invalid_report_format():
     """Test handling of invalid report format."""
     results = {"file.txt": {"Password in Config": ["password='123'"]}}

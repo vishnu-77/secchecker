@@ -4,6 +4,29 @@ All notable changes to secchecker are documented here.
 
 ---
 
+## [0.4.0] — 2026-07-08
+
+### Added
+- Added MCP security patterns for unvalidated tool results, direct tool output execution, hardcoded MCP server URLs, and untrusted tool descriptions.
+- Added agentic AI security patterns for memory injection, unbounded agent loops, unvalidated function call results, recursive self-invocation, and PII passed to external agents.
+- Added OWASP LLM Top 10 mappings for new MCP and agentic AI findings.
+
+### Improved
+- Repositioned secchecker around AI agents, MCP tools, and LLM application security.
+- Updated package metadata and README to reflect AI/GenAI/MCP-first positioning.
+- Updated CLI examples to lead with LLM/MCP scanning.
+
+### Fixed
+- `get_severity()` now resolves LLM/AI and DevSecOps pattern severities instead of defaulting every non-secret finding to LOW. This corrects severity in the JSON, Markdown, XML, SARIF, and HTML reporters and in the `--severity-threshold` filter.
+- The GitHub Action now passes the `type` input through to the scanner (`--type`) and fails on exit code 2 (runtime/config/reporting errors) instead of treating them as success.
+- Removed unsafe `|| true` from CI smoke tests so genuine runtime errors (exit code 2) fail the build; release-validation smoke tests now exercise the installed wheel across JSON, SARIF, and HTML formats.
+
+### Notes
+- The default scan type remains `secrets` for backward compatibility. Lead with `secchecker . --type llm` for AI/MCP scanning; a default change is under consideration for a future major release.
+- Secret scanning and DevSecOps checks remain supported through explicit scan types and `--type all`.
+
+---
+
 ## [0.3.0] — 2025-06-01
 
 ### Added

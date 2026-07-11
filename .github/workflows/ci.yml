@@ -35,34 +35,41 @@ jobs:
 
       - name: Test CLI — secrets scan
         run: |
+          # Treat exit 0 (clean) and 1 (findings) as success; fail on 2+ (runtime error).
+          run_scan() { "$@"; rc=$?; if [ $rc -ge 2 ]; then echo "::error::secchecker exited $rc"; exit $rc; fi; }
           python -m secchecker.cli --help
           echo 'password="test123"' > test_file.py
-          python -m secchecker.cli . --format json --output test_output.json || true
-          python -m secchecker.cli . --format md --output test_output.md || true
-          python -m secchecker.cli . --format xml --output test_output.xml || true
-          python -m secchecker.cli . --format sarif --output test_output.sarif || true
-          python -m secchecker.cli . --format html --output test_output.html || true
+          run_scan python -m secchecker.cli . --format json --output test_output.json
+          run_scan python -m secchecker.cli . --format md --output test_output.md
+          run_scan python -m secchecker.cli . --format xml --output test_output.xml
+          run_scan python -m secchecker.cli . --format sarif --output test_output.sarif
+          run_scan python -m secchecker.cli . --format html --output test_output.html
           test -f test_output.json && echo "JSON report OK"
           test -f test_output.md && echo "MD report OK"
           test -f test_output.xml && echo "XML report OK"
+          test -f test_output.sarif && echo "SARIF report OK"
+          test -f test_output.html && echo "HTML report OK"
           rm -f test_file.py test_output.*
 
       - name: Test CLI — LLM scan
         run: |
+          run_scan() { "$@"; rc=$?; if [ $rc -ge 2 ]; then echo "::error::secchecker exited $rc"; exit $rc; fi; }
           echo 'prompt = f"Answer: {user_input}"' > test_llm.py
-          python -m secchecker.cli test_llm.py --type llm --format json --output /dev/null || true
+          run_scan python -m secchecker.cli test_llm.py --type llm --format json --output /dev/null
           rm -f test_llm.py
 
       - name: Test CLI — DevSecOps scan
         run: |
+          run_scan() { "$@"; rc=$?; if [ $rc -ge 2 ]; then echo "::error::secchecker exited $rc"; exit $rc; fi; }
           printf 'FROM ubuntu:latest\nRUN curl -s http://example.com | sh\n' > Dockerfile.test
-          python -m secchecker.cli Dockerfile.test --type devsecops --format json --output /dev/null || true
+          run_scan python -m secchecker.cli Dockerfile.test --type devsecops --format json --output /dev/null
           rm -f Dockerfile.test
 
       - name: Test CLI — severity threshold
         run: |
+          run_scan() { "$@"; rc=$?; if [ $rc -ge 2 ]; then echo "::error::secchecker exited $rc"; exit $rc; fi; }
           echo 'password="test123"' > test_file.py
-          python -m secchecker.cli test_file.py --severity-threshold HIGH --format json --output /dev/null || true
+          run_scan python -m secchecker.cli test_file.py --severity-threshold HIGH --format json --output /dev/null
           rm -f test_file.py
 
       - name: Upload coverage to Codecov

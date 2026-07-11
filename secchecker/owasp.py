@@ -141,6 +141,23 @@ OWASP_MAP: Dict[str, Dict[str, List[str]]] = {
     "LLM - Pinecone API Key":                 {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
     "LLM - Weaviate API Key":                 {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
     "LLM - System Prompt Hardcoded":          {"owasp": ["A05:2021"], "cwe": ["CWE-312"], "owasp_llm": ["LLM07:2025"]},
+
+    # ------------------------------------------------------------------ #
+    # MCP (Model Context Protocol)  ->  OWASP LLM Top 10 2025             #
+    # ------------------------------------------------------------------ #
+    "MCP - Unvalidated Tool Result in Prompt":    {"owasp": ["A03:2021"], "cwe": ["CWE-20"],  "owasp_llm": ["LLM01:2025"]},
+    "MCP - Tool Call Output Executed Directly":   {"owasp": ["A03:2021"], "cwe": ["CWE-94"],  "owasp_llm": ["LLM05:2025"]},
+    "MCP - Hardcoded MCP Server URL":             {"owasp": ["A05:2021"], "cwe": ["CWE-200"], "owasp_llm": ["LLM02:2025"]},
+    "MCP - Untrusted Tool Description in Prompt": {"owasp": ["A03:2021"], "cwe": ["CWE-20"],  "owasp_llm": ["LLM01:2025"]},
+
+    # ------------------------------------------------------------------ #
+    # Agentic AI  ->  OWASP LLM Top 10 2025                               #
+    # ------------------------------------------------------------------ #
+    "Agentic - Unsanitized Input to Agent Memory":  {"owasp": ["A03:2021"], "cwe": ["CWE-20"],  "owasp_llm": ["LLM01:2025"]},
+    "Agentic - Agent Loop Without Exit Condition":  {"owasp": ["A04:2021"], "cwe": ["CWE-400"], "owasp_llm": ["LLM06:2025"]},
+    "Agentic - Function Call Result Not Validated": {"owasp": ["A03:2021"], "cwe": ["CWE-20"],  "owasp_llm": ["LLM05:2025"]},
+    "Agentic - Recursive Self-Invocation Risk":     {"owasp": ["A04:2021"], "cwe": ["CWE-674"], "owasp_llm": ["LLM06:2025"]},
+    "Agentic - PII Passed to External Agent":       {"owasp": ["A01:2021"], "cwe": ["CWE-200"], "owasp_llm": ["LLM02:2025"]},
 }
 
 

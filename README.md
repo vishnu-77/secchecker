@@ -7,11 +7,12 @@
 
 # secchecker
 
-**Security auditing for DevSecOps pipelines and AI systems — in a single command.**
+> **Static security scanner for AI agents, MCP tools, and LLM applications.
+> Finds prompt injection, MCP tool poisoning, and agentic vulnerabilities before deployment.**
 
-secchecker finds hardcoded secrets, AI/LLM vulnerabilities, and infrastructure misconfigurations before they reach production. It covers the three layers most tools treat separately: source code secrets, AI application security, and infrastructure-as-code hygiene. Zero external dependencies. Runs anywhere Python runs.
+secchecker helps developers catch prompt injection, MCP tool poisoning, unsafe agent behavior, exposed AI credentials, and deployment risks before code reaches production. Secrets scanning and infrastructure-as-code checks remain fully supported as proof points, so one command covers your AI application, your source code, and your deployment configs. Zero external dependencies. Runs anywhere Python runs.
 
-> The only PyPI static analysis tool with a dedicated LLM/AI security scanner.
+> Purpose-built for AI agents, MCP tool servers, and LLM applications — with secrets and DevSecOps coverage alongside.
 
 ---
 
@@ -33,13 +34,16 @@ secchecker audits all three in one pass.
 
 | Scanner | What it detects | Patterns |
 |---------|----------------|---------|
-| Secrets | Cloud keys, private keys, database URIs, payment credentials, service tokens | 52+ |
 | LLM / AI | Prompt injection, RAG leakage, eval of model output, hardcoded AI API keys | 18+ |
+| MCP / Agentic AI | Tool poisoning, tool-output execution, memory injection, PII to external agents | 9 (NEW) |
+| Secrets | Cloud keys, private keys, database URIs, payment credentials, service tokens | 52+ |
 | DevSecOps | Dockerfile, Kubernetes, Terraform, CI/CD misconfigurations | 28+ |
 | Entropy | Unknown secrets with high Shannon entropy — catches what regex misses | — |
 | AST | Hardcoded secrets in Python assignments, eval/exec calls, tainted input to sinks | — |
 
 Every finding is tagged with OWASP Top 10 (2021) and OWASP LLM Top 10 (2025) classifications in SARIF output.
+
+secchecker maps findings to OWASP Top 10 and OWASP LLM Top 10 categories for developer guidance only. This does not imply OWASP certification, endorsement, or compliance.
 
 ---
 
@@ -59,16 +63,22 @@ Requires Python 3.8 or later. No external dependencies.
 
 secchecker accepts a file or directory path and optional flags. Run `secchecker --help` for the full reference.
 
-**Scan a project for secrets:**
-
-```
-secchecker .
-```
-
-**Scan for LLM/AI vulnerabilities:**
+**Scan your AI agent / LLM app for prompt injection, MCP issues, and agentic risks:**
 
 ```
 secchecker . --type llm
+```
+
+**Scan MCP tool servers and agent code, output SARIF:**
+
+```
+secchecker ./mcp_server/ --type llm --format sarif
+```
+
+**Scan a project for secrets:**
+
+```
+secchecker . --type secrets
 ```
 
 **Scan infrastructure configs — Dockerfile, Terraform, Kubernetes:**
@@ -122,6 +132,19 @@ secchecker . --type all --severity-threshold HIGH --format sarif --output report
 | Config passwords | Common password assignment patterns | MEDIUM |
 
 Matches are validated post-regex — credit cards pass the Luhn algorithm, JWT tokens are verified for structural integrity — to reduce false positives.
+
+### MCP / Agentic AI — NEW in v0.4.0
+
+| Risk | Example | OWASP | Severity |
+|---|---|---|---|
+| MCP tool poisoning | Tool result injected into prompt without sanitization | LLM01:2025 | HIGH |
+| Tool output executed | `eval(tool_result)` / `os.system(function_result)` | LLM05:2025 | CRITICAL |
+| Hardcoded MCP server URL | External MCP server URL in source | LLM02:2025 | HIGH |
+| Memory injection | User input stored to agent memory unvalidated | LLM01:2025 | HIGH |
+| PII passed to agent | SSN/credit card passed to external LLM agent | LLM02:2025 | CRITICAL |
+| Function call not validated | LLM tool call result used without schema check | LLM05:2025 | CRITICAL |
+
+secchecker maps findings to OWASP LLM Top 10 categories for developer guidance. This does not imply OWASP certification, endorsement, or compliance.
 
 ### LLM / AI security — 18+ patterns, tagged OWASP LLM Top 10 (2025)
 
@@ -331,6 +354,7 @@ Available reporter functions: `to_json`, `to_markdown`, `to_xml`, `to_sarif`, `t
 
 - **52+ secret patterns** across 15 credential categories
 - **18+ LLM/AI vulnerability checks** — the only PyPI static scanner with a dedicated AI security layer
+- **9 MCP / Agentic AI checks** — tool poisoning, tool-output execution, memory injection, recursive self-invocation, and PII passed to external agents
 - **28+ DevSecOps checks** across Dockerfile, Kubernetes, Terraform, and CI/CD configs
 - **AST-based Python analysis** — structural detection beyond regex, covering hardcoded assignments, eval/exec, and taint flows
 - **OWASP Top 10 (2021) + OWASP LLM Top 10 (2025)** tags on every SARIF rule
@@ -346,6 +370,7 @@ Available reporter functions: `to_json`, `to_markdown`, `to_xml`, `to_sarif`, `t
 | Capability | secchecker | Bandit | detect-secrets | Gitleaks | Checkov |
 |-----------|-----------|--------|----------------|----------|---------|
 | Secret detection | Yes | Partial¹ | Yes | Yes | Partial² |
+| MCP / Agentic AI security | Yes | No | No | No | No |
 | LLM / AI security | Yes | No | No | No | No |
 | Dockerfile / K8s / Terraform | Yes | No | No | No | Yes |
 | AST-based Python analysis | Yes | Yes | No | No | No |
@@ -399,16 +424,18 @@ Three hooks are available: `secchecker` (secrets), `secchecker-llm` (LLM/AI patt
 
 ## Roadmap
 
+**Delivered in 0.4.0:** MCP and agentic AI security patterns, OWASP LLM Top 10 (2025) mappings for the new findings, and the AI/GenAI/MCP-first repositioning.
+
 The following capabilities are planned for upcoming releases:
 
 | Feature | Description | Release target |
 |---------|-------------|----------------|
-| Incremental scan / cache | Hash-based file cache so only changed files are re-scanned — critical for large monorepos | 0.4.0 |
-| Baseline file | `.secchecker-baseline.json` to record accepted findings and suppress them on future runs | 0.4.0 |
-| `--diff` mode | Accept git diff on stdin and scan only changed lines — faster pre-push hook | 0.4.0 |
-| Custom rule DSL | Per-rule severity, description, and enable/disable in `.secchecker.yml` | 0.4.0 |
 | Deeper taint analysis | Track taint through function arguments, return values, and dict assignments in the AST scanner | 0.5.0 |
 | VS Code integration | Document SARIF viewer compatibility; evaluate a minimal diagnostic extension | 0.5.0 |
+| Incremental scan / cache | Hash-based file cache so only changed files are re-scanned — critical for large monorepos | 0.6.0 |
+| Baseline file | `.secchecker-baseline.json` to record accepted findings and suppress them on future runs | 0.6.0 |
+| `--diff` mode | Accept git diff on stdin and scan only changed lines — faster pre-push hook | 0.6.0 |
+| Custom rule DSL | Per-rule severity, description, and enable/disable in `.secchecker.yml` | 0.6.0 |
 
 ---
 
