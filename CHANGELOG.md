@@ -4,7 +4,7 @@ All notable changes to secchecker are documented here.
 
 ---
 
-## [Unreleased]
+## [0.4.1] — 2026-07-11
 
 ### Fixed
 - `exclude_paths` in `.secchecker.yml` is now enforced. Previously it was parsed
