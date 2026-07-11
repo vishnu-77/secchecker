@@ -352,7 +352,7 @@ Available reporter functions: `to_json`, `to_markdown`, `to_xml`, `to_sarif`, `t
 
 ## Why secchecker
 
-- **The only PyPI scanner with a dedicated AI security layer** — prompt injection, MCP tool poisoning, agentic risks, and PII-to-agent flows that Bandit, Gitleaks, and Checkov don't touch
+- **The only PyPI scanner with a dedicated AI security layer** — prompt injection, MCP tool poisoning, agentic risks, and PII-to-agent flows that general-purpose scanners don't touch
 - **One pass, three surfaces** — AI app code, source secrets, and infrastructure-as-code in a single scan
 - **Findings you can act on** — OWASP Top 10 (2021) + OWASP LLM Top 10 (2025) tags on every SARIF rule, straight to the GitHub Security tab
 - **Validated, not noisy** — Luhn and JWT post-match checks cut false positives before results are returned
