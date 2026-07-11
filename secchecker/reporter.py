@@ -122,7 +122,7 @@ def get_scan_metadata() -> Dict[str, Any]:
     """Get metadata about the scan."""
     return {
         "timestamp": datetime.now().isoformat(),
-        "version": "0.4.0",
+        "version": "0.4.1",
         "tool": "secchecker"
     }
 
