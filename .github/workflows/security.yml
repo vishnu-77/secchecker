@@ -1,0 +1,101 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Weekly scan every Monday at 08:00 UTC — catches newly added patterns
+    # against the existing codebase even without a code push
+    - cron: '0 8 * * 1'
+
+jobs:
+  secchecker:
+    name: secchecker — secrets + LLM + IaC
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # required for SARIF upload to Security tab
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install secchecker
+        run: pip install -e .
+
+      - name: Run full security scan
+        id: scan
+        run: |
+          set +e
+          secchecker . \
+            --type all \
+            --format sarif \
+            --output secchecker.sarif \
+            --severity-threshold LOW \
+            --verbose
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      # NOTE: We intentionally do NOT upload this self-scan to the GitHub
+      # Security tab. secchecker scanning its own repo flags its own pattern
+      # definitions (patterns.py, llm_patterns.py), sample reports, test
+      # fixtures, and the intentionally-vulnerable demo/ — so the tab would
+      # fill with false positives and the code-scanning check would fail on
+      # every commit. The SARIF is kept as a downloadable artifact below.
+      # Downstream consumers get real Security-tab integration via the
+      # composite action (action.yml), which uploads their own scan results.
+
+      - name: Upload SARIF as artifact (viewable on every run)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: secchecker-sarif-${{ github.sha }}
+          path: secchecker.sarif
+          retention-days: 90
+
+      - name: Generate HTML report
+        if: always()
+        run: |
+          # Treat exit 0 (clean) and 1 (findings) as success; fail on 2+ (runtime error).
+          rc=0
+          secchecker . \
+            --type all \
+            --format html \
+            --output secchecker_report.html \
+            --severity-threshold LOW || rc=$?
+          if [ $rc -ge 2 ]; then
+            echo "::error::HTML report generation failed with a runtime error (exit $rc)."
+            exit $rc
+          fi
+
+      - name: Upload HTML report as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: secchecker-html-report-${{ github.sha }}
+          path: secchecker_report.html
+          retention-days: 90
+
+      - name: Fail on runtime error
+        if: steps.scan.outputs.exit_code != '0' && steps.scan.outputs.exit_code != '1'
+        run: |
+          echo "::error::secchecker exited with a runtime error (exit ${{ steps.scan.outputs.exit_code }})."
+          exit 1
+
+      # This job scans secchecker's own repository, which unavoidably contains
+      # its own pattern-definition regexes (patterns.py, llm_patterns.py),
+      # sample reports, test fixtures, and the intentionally-vulnerable demo/.
+      # A self-scan therefore always surfaces CRITICAL matches, so findings are
+      # informational: they are published to the Security tab and the SARIF
+      # artifact rather than failing the build. Only runtime errors (exit 2)
+      # fail this workflow. Downstream consumers should gate their own repos on
+      # findings via the composite action's fail-on-findings input.
+      - name: Report findings summary
+        if: steps.scan.outputs.exit_code == '1'
+        run: |
+          echo "::notice::secchecker reported findings — see the Security tab or the SARIF artifact for details."

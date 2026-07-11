@@ -7,160 +7,290 @@
 
 # secchecker
 
-**Lightweight security auditing for DevSecOps and AI systems.**
+> **Static security scanner for AI agents, MCP tools, and LLM applications.
+> Finds prompt injection, MCP tool poisoning, and agentic vulnerabilities before deployment.**
 
-secchecker is a zero-dependency CLI tool and Python library that detects hardcoded secrets, LLM/AI vulnerabilities, and infrastructure misconfigurations in source code. Think Bandit + Checkov — with an AI security layer no other PyPI tool has.
+secchecker helps developers catch prompt injection, MCP tool poisoning, unsafe agent behavior, exposed AI credentials, and deployment risks before code reaches production. Secrets scanning and infrastructure-as-code checks remain fully supported as proof points, so one command covers your AI application, your source code, and your deployment configs. Zero external dependencies. Runs anywhere Python runs.
 
-```bash
-pip install secchecker
-secchecker . --type all --format sarif --output report.sarif
-```
+> Purpose-built for AI agents, MCP tool servers, and LLM applications — with secrets and DevSecOps coverage alongside.
 
 ---
 
-## Why secchecker
+## The problem it solves
 
-Most static scanners stop at secrets. secchecker goes further:
+Modern applications have three distinct attack surfaces that legacy scanners address poorly:
 
-- **52+ secret patterns** — cloud keys, private keys, database URIs, payment credentials, service tokens
-- **18+ LLM/AI checks** — prompt injection via f-strings, jailbreak literals, RAG data leakage, `eval(llm_response)`, hardcoded AI API keys
-- **28+ DevSecOps checks** — Dockerfile, Kubernetes YAML, Terraform, CI/CD pipeline misconfigurations
-- **Entropy detection** — catches unknown secrets that don't match any known pattern
-- **5 output formats** — JSON, Markdown, XML, SARIF (GitHub Security tab), HTML
-- **Zero dependencies** — stdlib only, works anywhere Python runs
+**Source code** — Developers commit API keys, database credentials, and private keys directly into repositories. These persist in git history long after deletion.
+
+**AI and LLM applications** — Teams building on top of OpenAI, Anthropic, or open-source models introduce new vulnerability classes: prompt injection, RAG data leakage, insecure output handling, and hardcoded model API keys. No mainstream PyPI scanner covers these.
+
+**Infrastructure as code** — Terraform modules, Kubernetes manifests, Dockerfiles, and CI/CD pipelines contain misconfigurations that open production environments to privilege escalation, data exposure, and supply chain attacks.
+
+secchecker audits all three in one pass.
 
 ---
 
-## Architecture
+## Coverage at a glance
 
-```
-secchecker
-├── Scanners
-│   ├── secrets      (patterns.py)       40+ hardcoded secret regexes
-│   ├── llm          (llm_scanner.py)    18+ LLM/AI vulnerability patterns
-│   ├── devsecops    (devsecops_scanner) 28+ infra misconfiguration patterns
-│   └── entropy      (entropy.py)        Shannon entropy for unknown secrets
-│
-├── Reporters
-│   ├── JSON   sarif   XML   Markdown   HTML
-│   └── Severity: CRITICAL / HIGH / MEDIUM / LOW
-│
-└── Config  (.secchecker.yml)  exclude paths, custom patterns, thresholds
-```
+| Scanner | What it detects | Patterns |
+|---------|----------------|---------|
+| LLM / AI | Prompt injection, RAG leakage, eval of model output, hardcoded AI API keys | 18+ |
+| MCP / Agentic AI | Tool poisoning, tool-output execution, memory injection, PII to external agents | 9 (NEW) |
+| Secrets | Cloud keys, private keys, database URIs, payment credentials, service tokens | 52+ |
+| DevSecOps | Dockerfile, Kubernetes, Terraform, CI/CD misconfigurations | 28+ |
+| Entropy | Unknown secrets with high Shannon entropy — catches what regex misses | — |
+| AST | Hardcoded secrets in Python assignments, eval/exec calls, tainted input to sinks | — |
 
-All scanners return the same shape: `Dict[filepath, Dict[pattern_name, List[str]]]`.
+Every finding is tagged with OWASP Top 10 (2021) and OWASP LLM Top 10 (2025) classifications in SARIF output.
+
+secchecker maps findings to OWASP Top 10 and OWASP LLM Top 10 categories for developer guidance only. This does not imply OWASP certification, endorsement, or compliance.
 
 ---
 
 ## Installation
 
-```bash
+Install from PyPI:
+
+```
 pip install secchecker
 ```
 
-Requires Python 3.8+. No external dependencies.
+Requires Python 3.8 or later. No external dependencies.
 
 ---
 
-## Usage
+## How to use it
 
-### Scan for secrets (default)
+secchecker accepts a file or directory path and optional flags. Run `secchecker --help` for the full reference.
 
-```bash
-secchecker .
-secchecker /path/to/project --format json --output report.json
-secchecker src/config.py --severity-threshold HIGH
+**Scan your AI agent / LLM app for prompt injection, MCP issues, and agentic risks:**
+
 ```
-
-### Scan for LLM/AI vulnerabilities
-
-```bash
 secchecker . --type llm
-secchecker . --type llm --format html --output llm_report.html
 ```
 
-### Scan infrastructure configs (Dockerfile, Terraform, K8s)
-
-```bash
-secchecker . --type devsecops --format sarif --output report.sarif
-```
-
-### Run all scanners at once
-
-```bash
-secchecker . --type all --format sarif --output report.sarif
-```
-
-### Filter by severity
-
-```bash
-# Only report HIGH and CRITICAL findings
-secchecker . --severity-threshold HIGH
-```
-
-### All options
+**Scan MCP tool servers and agent code, output SARIF:**
 
 ```
-secchecker PATH [options]
-
-  --type {secrets,llm,devsecops,all}   Scan type (default: secrets)
-  --format {json,md,xml,sarif,html}    Output format (default: md)
-  --output, -o FILE                    Output file path
-  --severity-threshold LEVEL           Minimum severity: LOW/MEDIUM/HIGH/CRITICAL
-  --config FILE                        Path to .secchecker.yml
-  --no-entropy                         Disable entropy-based detection
-  --verbose, -v                        Verbose output
-
-Exit codes:
-  0  No findings at or above threshold
-  1  Findings detected
-  2  Runtime error
+secchecker ./mcp_server/ --type llm --format sarif
 ```
+
+**Scan a project for secrets:**
+
+```
+secchecker . --type secrets
+```
+
+**Scan infrastructure configs — Dockerfile, Terraform, Kubernetes:**
+
+```
+secchecker . --type devsecops
+```
+
+**Run all scanners together:**
+
+```
+secchecker . --type all
+```
+
+**Filter findings by severity and write a SARIF report:**
+
+```
+secchecker . --type all --severity-threshold HIGH --format sarif --output report.sarif
+```
+
+**Available flags:**
+
+| Flag | Values | Default |
+|------|--------|---------|
+| `--type` | `secrets`, `llm`, `devsecops`, `all` | `secrets` |
+| `--format` | `json`, `md`, `xml`, `sarif`, `html` | `md` |
+| `--output` / `-o` | file path | `secchecker_report.<format>` |
+| `--severity-threshold` | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` | — |
+| `--config` | path to `.secchecker.yml` | auto-detected |
+| `--no-entropy` | — | entropy enabled |
+| `--verbose` / `-v` | — | — |
+
+**Exit codes:** `0` — no findings at or above threshold. `1` — findings detected. `2` — runtime error.
 
 ---
 
 ## What gets detected
 
-### Secrets (52+ patterns)
+### Secrets — 52+ patterns across 15 credential categories
 
 | Category | Examples | Severity |
 |----------|----------|----------|
 | Private keys | RSA, EC, DSA, PGP, SSH | CRITICAL |
-| Financial | Credit cards, SSN | CRITICAL |
-| Vault tokens | HashiCorp Vault `hvs.*` | CRITICAL |
-| Cloud keys | AWS, Google, Azure | HIGH |
-| Database URIs | PostgreSQL, MySQL, MongoDB | HIGH |
+| Financial | Credit cards (Luhn-validated), SSN | CRITICAL |
+| Vault tokens | HashiCorp Vault | CRITICAL |
+| Cloud keys | AWS, Google Cloud, Azure | HIGH |
+| Database URIs | PostgreSQL, MySQL, MongoDB, Redis | HIGH |
 | Service tokens | Stripe, Twilio, SendGrid, Datadog | HIGH |
 | VCS tokens | GitHub, GitLab | HIGH |
-| Auth tokens | JWT, Bearer, Basic Auth | MEDIUM |
-| Config passwords | `password=`, `db_pass=` | MEDIUM |
+| Auth tokens | JWT (structure-validated), Bearer | MEDIUM |
+| Config passwords | Common password assignment patterns | MEDIUM |
 
-### LLM / AI security (18+ patterns)
+Matches are validated post-regex — credit cards pass the Luhn algorithm, JWT tokens are verified for structural integrity — to reduce false positives.
 
-| Check | What it catches | Severity |
-|-------|----------------|----------|
-| Prompt injection | `f"...{user_input}..."` in LLM calls | HIGH |
-| Jailbreak literals | Hardcoded "ignore previous instructions" strings | HIGH |
-| RAG leakage | Unfiltered DB query / file read fed into LLM context | HIGH |
-| Output execution | `eval(llm_response)`, `exec(response)` | CRITICAL |
-| AI API key exposure | OpenAI `sk-...`, Anthropic `sk-ant-...`, HuggingFace tokens | CRITICAL |
-| Sensitive data in prompt | SSN / credit card concatenated into prompt string | CRITICAL |
+### MCP / Agentic AI — NEW in v0.4.0
 
-### DevSecOps (28+ patterns)
+| Risk | Example | OWASP | Severity |
+|---|---|---|---|
+| MCP tool poisoning | Tool result injected into prompt without sanitization | LLM01:2025 | HIGH |
+| Tool output executed | `eval(tool_result)` / `os.system(function_result)` | LLM05:2025 | CRITICAL |
+| Hardcoded MCP server URL | External MCP server URL in source | LLM02:2025 | HIGH |
+| Memory injection | User input stored to agent memory unvalidated | LLM01:2025 | HIGH |
+| PII passed to agent | SSN/credit card passed to external LLM agent | LLM02:2025 | CRITICAL |
+| Function call not validated | LLM tool call result used without schema check | LLM05:2025 | CRITICAL |
 
-| Category | Examples | Severity |
-|----------|----------|----------|
-| Dockerfile | `FROM *:latest`, secret in `ENV`, `curl \| sh`, `COPY . .` | HIGH |
-| Kubernetes | `privileged: true`, `runAsUser: 0`, `hostNetwork: true` | CRITICAL |
-| Terraform | Open security group `0.0.0.0/0`, public S3 bucket, hardcoded creds | HIGH |
-| CI/CD | Secret echoed to log, `pull_request_target` abuse, unpinned actions | HIGH |
+secchecker maps findings to OWASP LLM Top 10 categories for developer guidance. This does not imply OWASP certification, endorsement, or compliance.
+
+### LLM / AI security — 18+ patterns, tagged OWASP LLM Top 10 (2025)
+
+| Risk | What it catches | OWASP LLM | Severity |
+|------|----------------|-----------|----------|
+| Prompt injection | User input concatenated directly into LLM prompt strings | LLM01:2025 | HIGH |
+| Jailbreak literals | Hardcoded override instructions in source | LLM01:2025 | HIGH |
+| RAG data leakage | Unfiltered database queries or file reads fed into model context | LLM08:2025 | HIGH |
+| Insecure output handling | Model response passed directly to eval or exec | LLM05:2025 | CRITICAL |
+| AI API key exposure | OpenAI, Anthropic, HuggingFace, Pinecone keys in source | LLM02:2025 | CRITICAL |
+| Sensitive data in prompt | PII or financial data concatenated into prompt strings | LLM02:2025 | CRITICAL |
+| System prompt disclosure | Hardcoded system prompts revealing application logic | LLM07:2025 | LOW |
+
+### DevSecOps — 28+ patterns, tagged OWASP Top 10 (2021)
+
+| Category | Risk examples | Severity |
+|----------|--------------|----------|
+| Dockerfile | Unpinned base images, secrets in ENV, curl-pipe-bash, root user | HIGH |
+| Kubernetes | Privileged containers, hostNetwork, allow privilege escalation | CRITICAL |
+| Terraform | Open security groups (0.0.0.0/0), public S3 buckets, plaintext credentials | HIGH |
+| CI/CD | Secrets echoed to logs, pull_request_target misuse, unpinned actions | HIGH |
+
+---
+
+## Output formats
+
+secchecker writes results in five formats, selectable with `--format`:
+
+| Format | Use case |
+|--------|----------|
+| **Markdown** | Human-readable reports, pull request comments |
+| **JSON** | Programmatic consumption, custom dashboards |
+| **SARIF 2.1.0** | GitHub Security tab, IDE integrations, OWASP/CWE tags included |
+| **HTML** | Self-contained audit reports for sharing with stakeholders |
+| **XML** | Legacy toolchain integration |
+
+SARIF output includes OWASP Top 10 2021 categories, OWASP LLM Top 10 2025 categories, and CWE IDs on every rule — compatible with the GitHub Security tab without additional configuration.
+
+---
+
+## Architecture
+
+### Component overview
+
+```
+                        ┌─────────────────────────────────────────┐
+                        │              cli.py  (main)              │
+                        │  --type  --format  --severity-threshold  │
+                        │  --config  --no-entropy  --output        │
+                        └──────────────┬──────────────────────────┘
+                                       │ orchestrates
+              ┌────────────────────────┼────────────────────────┐
+              ▼                        ▼                         ▼
+   ┌──────────────────┐   ┌───────────────────────┐   ┌─────────────────────┐
+   │  core.py         │   │  llm_scanner.py        │   │ devsecops_scanner.py│
+   │  secrets scanner │   │  LLM/AI vuln scanner   │   │ infra config scanner│
+   │  patterns.py     │   │  llm_patterns.py        │   │ devsecops_patterns  │
+   └──────────────────┘   └───────────────────────┘   └─────────────────────┘
+              │                        │                         │
+              └────────────────────────┼─────────────────────────┘
+                                       │ entropy.py (optional, overlaid)
+                                       │
+                        ┌──────────────▼──────────────────────────┐
+                        │   Dict[filepath, Dict[pattern, matches]] │
+                        │          shared result contract          │
+                        └──────────────┬──────────────────────────┘
+                                       │ passed to one reporter
+        ┌──────────┬───────────────────┼──────────────┬──────────────┐
+        ▼          ▼                   ▼               ▼              ▼
+    reporter.py  reporter.py       reporter.py   sarif_reporter  html_reporter
+      to_json()  to_markdown()     to_xml()      to_sarif()      to_html()
+```
+
+### Module map
+
+| Module | Role | Key exports |
+|--------|------|-------------|
+| `cli.py` | Entry point, orchestration | `main()` |
+| `core.py` | Secrets scanner + file filtering | `scan_file()`, `scan_directory()`, `should_skip_file()`, `should_skip_directory()` |
+| `patterns.py` | 52+ secret regexes | `PATTERNS` |
+| `llm_scanner.py` | LLM/AI vulnerability scanner | `scan_file_llm()`, `scan_directory_llm()` |
+| `llm_patterns.py` | 18+ LLM/AI regexes | `LLM_PATTERNS`, `LLM_SEVERITY_MAP` |
+| `devsecops_scanner.py` | Infra config scanner | `scan_file_devsecops()`, `scan_directory_devsecops()` |
+| `devsecops_patterns.py` | 28+ infra regexes | `DEVSECOPS_PATTERNS`, `FILE_TYPE_FILTER` |
+| `entropy.py` | Shannon entropy detection | `scan_file_entropy()`, `shannon_entropy()` |
+| `ast_scanner.py` | Python AST structural analysis | `scan_file_ast()`, `scan_directory_ast()` |
+| `validators.py` | Post-match false-positive reduction | `validate_match()`, `luhn_check()`, `is_valid_jwt()` |
+| `owasp.py` | OWASP Top 10 / LLM Top 10 / CWE mapping | `get_owasp()` |
+| `reporter.py` | JSON / Markdown / XML output | `to_json()`, `to_markdown()`, `to_xml()`, `get_severity()` |
+| `sarif_reporter.py` | SARIF 2.1.0 output | `to_sarif()`, `generate_sarif_report()` |
+| `html_reporter.py` | Self-contained HTML output | `to_html()`, `generate_html_report()` |
+| `config.py` | `.secchecker.yml` loader | `load_config()`, `find_config_file()` |
+
+### Severity pipeline
+
+Every finding flows through a single severity pipeline regardless of which scanner produced it:
+
+```
+Pattern definition          SEVERITY_MAP / LLM_SEVERITY_MAP / DEVSECOPS_SEVERITY_MAP
+        |                           |
+        +-------- get_severity() ---+
+                       |
+               CLI --severity-threshold     <- filter here before reporting
+                       |
+               Reporter (color / SARIF level / HTML badge)
+```
+
+SARIF level mapping: `CRITICAL` and `HIGH` map to `error`. `MEDIUM` maps to `warning`. `LOW` maps to `note`.
+
+### Design principles
+
+- Zero runtime dependencies — stdlib only, no pip install chain to audit
+- Python 3.8–3.12 compatible, tested in CI across all versions
+- All scanners share a single file-filtering contract via `core.py` — no scanner walks files independently
+- Config loading never raises — returns safe defaults on any parse error
+- Reporters are pure functions: identical input always produces identical output
+- Post-match validators (Luhn, JWT structure) reduce false positives before results are returned
+
+---
+
+## Real-world scenarios
+
+### Scenario 1: Block secrets from reaching CI
+
+A team uses secchecker as a pre-commit gate. Any commit that introduces a secret pattern at severity HIGH or above is rejected before it leaves the developer's machine. SARIF output is also uploaded to the GitHub Security tab on every pull request, giving security teams visibility without blocking developers.
+
+### Scenario 2: Audit an LLM-powered application
+
+A FastAPI service wrapping OpenAI is scanned with the LLM scanner before each release. The scanner surfaces prompt strings that concatenate user input without sanitisation, database query results passed directly into model context, and eval calls against model responses — all common patterns in early-stage AI applications that create exploitable injection paths.
+
+### Scenario 3: Harden infrastructure before deployment
+
+Infrastructure code for a Kubernetes-hosted service is scanned with the DevSecOps scanner as part of a Terraform plan stage. The scan catches open security groups, privileged container specs, and CI pipeline steps that echo secrets to logs — before the configuration reaches a production cluster.
+
+### Scenario 4: Continuous monitoring in CI/CD
+
+secchecker runs on every push via GitHub Actions. SARIF results are uploaded directly to the repository's Security tab. Findings at CRITICAL severity fail the build. HIGH findings create annotations on the pull request diff. The team treats the Security tab as their primary finding triage surface.
 
 ---
 
 ## GitHub Action
 
+secchecker ships as a composite GitHub Action. Add it to any workflow:
+
 ```yaml
-- uses: vishnu-77/secchecker@v0.3.0
+- uses: vishnu-77/secchecker@v0.4.0
   with:
     path: '.'
     type: 'all'
@@ -171,7 +301,7 @@ Exit codes:
 
 SARIF output is automatically uploaded to the GitHub Security tab.
 
-**Inputs:**
+**Action inputs:**
 
 | Input | Default | Description |
 |-------|---------|-------------|
@@ -184,9 +314,9 @@ SARIF output is automatically uploaded to the GitHub Security tab.
 
 ---
 
-## Configuration file
+## Configuration
 
-Create `.secchecker.yml` in your project root:
+Create `.secchecker.yml` in your project root to control scan behaviour without passing flags each time:
 
 ```yaml
 severity_threshold: MEDIUM
@@ -204,106 +334,91 @@ custom_patterns:
   "Internal API Key": "myco_[a-zA-Z0-9]{32}"
 ```
 
----
-
-## Python API
-
-```python
-from secchecker import scan_directory, scan_file
-from secchecker.reporter import to_json, to_sarif
-
-# Scan a directory
-results = scan_directory("/path/to/project")
-
-# Scan a single file
-findings = scan_file("/path/to/config.py")
-
-# LLM vulnerability scan
-from secchecker.llm_scanner import scan_directory_llm
-llm_results = scan_directory_llm("/path/to/ai_app")
-
-# DevSecOps scan
-from secchecker.devsecops_scanner import scan_directory_devsecops
-infra_results = scan_directory_devsecops("/path/to/infra")
-
-# Generate reports
-to_json(results, "report.json")
-to_sarif(results, "report.sarif")
-```
+CLI flags take precedence over the config file.
 
 ---
 
-## Real-world use cases
+## Python library
 
-**Use case 1: Pre-commit secret scan**
+secchecker is also importable as a Python library. All scanners are available as functions that accept a file or directory path and return a consistent result structure. All reporters accept that structure and write to a file or return a string.
 
-```yaml
-# .pre-commit-config.yaml
-repos:
-  - repo: local
-    hooks:
-      - id: secchecker
-        name: secchecker
-        entry: secchecker
-        args: ['.', '--severity-threshold', 'HIGH', '--format', 'md']
-        language: system
-```
+The shared result type is `Dict[filepath, Dict[pattern_name, List[matched_strings]]]`. Scanners can be run individually or composed — the CLI merges results from all active scanners before passing them to the selected reporter.
 
-**Use case 2: CI/CD pipeline with SARIF**
+Available scanner functions: `scan_file`, `scan_directory` (secrets), `scan_file_llm`, `scan_directory_llm`, `scan_file_devsecops`, `scan_directory_devsecops`, `scan_file_ast`, `scan_directory_ast`, `scan_file_entropy`.
 
-```yaml
-- name: Security audit
-  run: |
-    pip install secchecker
-    secchecker . --type all --format sarif --output results.sarif
-- name: Upload to GitHub Security tab
-  uses: github/codeql-action/upload-sarif@v3
-  with:
-    sarif_file: results.sarif
-```
-
-**Use case 3: LLM application review**
-
-```bash
-# Scan a FastAPI app that uses OpenAI
-secchecker ./app --type llm --severity-threshold HIGH --format html --output llm_audit.html
-```
+Available reporter functions: `to_json`, `to_markdown`, `to_xml`, `to_sarif`, `to_html`.
 
 ---
 
-## Metrics
+## Why secchecker
 
-- **52+ secret patterns** across 15 credential categories
-- **18+ LLM/AI vulnerability checks** — the only PyPI static scanner in this category
-- **28+ DevSecOps checks** across Dockerfile, Kubernetes, Terraform, and CI/CD
-- **5 output formats**: JSON, Markdown, XML, SARIF, HTML
-- **Python 3.8–3.12** compatibility tested in CI
-- **Zero runtime dependencies**
+- **The only PyPI scanner with a dedicated AI security layer** — prompt injection, MCP tool poisoning, agentic risks, and PII-to-agent flows that general-purpose scanners don't touch
+- **One pass, three surfaces** — AI app code, source secrets, and infrastructure-as-code in a single scan
+- **Findings you can act on** — OWASP Top 10 (2021) + OWASP LLM Top 10 (2025) tags on every SARIF rule, straight to the GitHub Security tab
+- **Validated, not noisy** — Luhn and JWT post-match checks cut false positives before results are returned
+- **Zero runtime dependencies** — nothing to audit, installs anywhere Python runs
 
 ---
 
 ## Contributing
 
-```bash
+Clone the repository, install in editable mode with dev dependencies, and run the test suite:
+
+```
 git clone https://github.com/vishnu-77/secchecker.git
 cd secchecker
 pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-To add new patterns:
+**To add a new secret pattern:** add the regex to `secchecker/patterns.py`, add a severity entry to `SEVERITY_MAP` in `secchecker/reporter.py`, and add OWASP/CWE mappings to `secchecker/owasp.py`. Include a test in `tests/test_patterns.py`.
 
-1. Add the regex to `secchecker/patterns.py` (secrets) or the relevant `*_patterns.py`
-2. Add a severity entry to `SEVERITY_MAP` in `secchecker/reporter.py`
-3. Add a test in `tests/test_patterns.py`
+**To add a new LLM check:** add the pattern to `secchecker/llm_patterns.py` and a severity entry to `LLM_SEVERITY_MAP`. Include a test in `tests/test_llm_scanner.py`.
 
-Pull requests are welcome. Please keep changes focused and include tests.
+Pull requests are welcome. Keep changes focused and include tests for new patterns or behaviour.
 
 ---
 
-## Disclaimer
+## Pre-commit integration
 
-secchecker is intended for security auditing of repositories you own or have explicit permission to test. The author assumes no liability for misuse. Use responsibly.
+secchecker ships a `.pre-commit-hooks.yaml` so it can be used directly with the [pre-commit framework](https://pre-commit.com). Add the following to your `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: https://github.com/vishnu-77/secchecker
+    rev: v0.4.0
+    hooks:
+      - id: secchecker          # secret detection only
+      # - id: secchecker-llm    # LLM/AI security only
+      # - id: secchecker-all    # all scanners
+```
+
+Three hooks are available: `secchecker` (secrets), `secchecker-llm` (LLM/AI patterns), and `secchecker-all` (full audit). All default to failing on HIGH and above.
+
+---
+
+## Roadmap
+
+**Delivered in 0.4.0:** MCP and agentic AI security patterns, OWASP LLM Top 10 (2025) mappings for the new findings, and the AI/GenAI/MCP-first repositioning.
+
+The following capabilities are planned for upcoming releases:
+
+| Feature | Description | Release target |
+|---------|-------------|----------------|
+| Deeper taint analysis | Track taint through function arguments, return values, and dict assignments in the AST scanner | 0.5.0 |
+| VS Code integration | Document SARIF viewer compatibility; evaluate a minimal diagnostic extension | 0.5.0 |
+| Incremental scan / cache | Hash-based file cache so only changed files are re-scanned — critical for large monorepos | 0.6.0 |
+| Baseline file | `.secchecker-baseline.json` to record accepted findings and suppress them on future runs | 0.6.0 |
+| `--diff` mode | Accept git diff on stdin and scan only changed lines — faster pre-push hook | 0.6.0 |
+| Custom rule DSL | Per-rule severity, description, and enable/disable in `.secchecker.yml` | 0.6.0 |
+
+---
+
+## Responsible use
+
+secchecker is intended for security auditing of repositories you own or have explicit written permission to test. It is not a substitute for a full penetration test or security audit. The author assumes no liability for misuse.
+
+If you find a security vulnerability in secchecker itself, see [SECURITY.md](SECURITY.md) for the responsible disclosure process.
 
 ## License
 

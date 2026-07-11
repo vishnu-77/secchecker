@@ -94,15 +94,35 @@ SEVERITY_MAP = {
     "PyPI API Token": "HIGH",
 }
 
+# LLM/AI and DevSecOps patterns carry their own severity maps in their pattern
+# modules. Pull them in here so a single get_severity() lookup covers every
+# scanner. Without this, LLM/MCP/agentic and DevSecOps findings all fall back to
+# LOW in every reporter and in the CLI --severity-threshold filter.
+try:
+    from secchecker.llm_patterns import LLM_SEVERITY_MAP
+except ImportError:
+    LLM_SEVERITY_MAP = {}
+
+try:
+    from secchecker.devsecops_patterns import DEVSECOPS_SEVERITY_MAP
+except ImportError:
+    DEVSECOPS_SEVERITY_MAP = {}
+
 def get_severity(pattern_name: str) -> str:
-    """Get severity level for a pattern."""
-    return SEVERITY_MAP.get(pattern_name, "LOW")
+    """Get severity level for a pattern across secrets, LLM/AI, and DevSecOps maps."""
+    if pattern_name in SEVERITY_MAP:
+        return SEVERITY_MAP[pattern_name]
+    if pattern_name in LLM_SEVERITY_MAP:
+        return LLM_SEVERITY_MAP[pattern_name]
+    if pattern_name in DEVSECOPS_SEVERITY_MAP:
+        return DEVSECOPS_SEVERITY_MAP[pattern_name]
+    return "LOW"
 
 def get_scan_metadata() -> Dict[str, Any]:
     """Get metadata about the scan."""
     return {
         "timestamp": datetime.now().isoformat(),
-        "version": "0.2.0",
+        "version": "0.4.0",
         "tool": "secchecker"
     }
 
