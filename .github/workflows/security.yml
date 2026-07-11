@@ -41,12 +41,14 @@ jobs:
             --verbose
           echo "exit_code=$?" >> $GITHUB_OUTPUT
 
-      - name: Upload SARIF to GitHub Security tab
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: secchecker.sarif
-          category: secchecker
+      # NOTE: We intentionally do NOT upload this self-scan to the GitHub
+      # Security tab. secchecker scanning its own repo flags its own pattern
+      # definitions (patterns.py, llm_patterns.py), sample reports, test
+      # fixtures, and the intentionally-vulnerable demo/ — so the tab would
+      # fill with false positives and the code-scanning check would fail on
+      # every commit. The SARIF is kept as a downloadable artifact below.
+      # Downstream consumers get real Security-tab integration via the
+      # composite action (action.yml), which uploads their own scan results.
 
       - name: Upload SARIF as artifact (viewable on every run)
         if: always()
