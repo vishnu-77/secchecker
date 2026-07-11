@@ -58,9 +58,17 @@ def _parse_scalar(value_str):
         return float(value_str)
     except ValueError:
         pass
-    if (value_str.startswith('"') and value_str.endswith('"')) or \
-       (value_str.startswith("'") and value_str.endswith("'")):
-        return value_str[1:-1]
+    # Quoted scalar: return the content up to the closing quote, ignoring any
+    # trailing inline comment (e.g. '"demo/"  # note' -> 'demo/').
+    if value_str and value_str[0] in ('"', "'"):
+        quote = value_str[0]
+        end = value_str.find(quote, 1)
+        if end != -1:
+            return value_str[1:end]
+    # Unquoted scalar: strip a trailing inline comment introduced by ' #'.
+    hash_idx = value_str.find(' #')
+    if hash_idx != -1:
+        value_str = value_str[:hash_idx].rstrip()
     return value_str
 
 
@@ -95,7 +103,7 @@ def _parse_simple_yaml(text):
                 j = i + 1
                 while j < len(lines):
                     next_line = lines[j].rstrip()
-                    if not next_line:
+                    if not next_line or next_line.lstrip().startswith('#'):
                         j += 1
                         continue
                     list_m = re.match(r'^\s+-\s+(.+)', next_line)

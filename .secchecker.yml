@@ -1,0 +1,22 @@
+# secchecker configuration for scanning secchecker's own repository.
+#
+# A security scanner scanning itself unavoidably flags its own pattern
+# definitions, sample reports, test fixtures, and the intentionally-vulnerable
+# demo. Exclude those so the self-scan (and the SARIF uploaded to the Security
+# tab by .github/workflows/security.yml) reflects only real findings.
+#
+# Note: the config parser does not strip trailing inline comments, so keep
+# comments on their own lines and list entries bare.
+exclude_paths:
+  # intentionally-vulnerable demo app
+  - "demo/"
+  # test fixtures contain sample secrets
+  - "tests/"
+  # example reports echo pattern names
+  - "sample-reports/"
+  # CI YAML embeds test snippets inline
+  - ".github/"
+  # the regex libraries self-match their own definitions
+  - "secchecker/patterns.py"
+  - "secchecker/llm_patterns.py"
+  - "secchecker/devsecops_patterns.py"
