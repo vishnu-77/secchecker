@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: vishnu-77/secchecker@v0.4.1
+      - uses: vishnu-77/secchecker@v0.4.2
         with:
           path: '.'
           type: 'all'
@@ -46,7 +46,7 @@ secchecker ships a `.pre-commit-hooks.yaml` so it can be used directly with the 
 ```yaml
 repos:
   - repo: https://github.com/vishnu-77/secchecker
-    rev: v0.4.1
+    rev: v0.4.2
     hooks:
       - id: secchecker          # secret detection only
       # - id: secchecker-llm    # LLM/AI security only

@@ -20,3 +20,10 @@ exclude_paths:
   - "secchecker/patterns.py"
   - "secchecker/llm_patterns.py"
   - "secchecker/devsecops_patterns.py"
+  # severity/OWASP maps and category-name constants also self-match: their
+  # dict keys are themselves auth-related pattern names (bearer-scheme and
+  # basic-auth entries), and AST_SEVERITY_MAP's category constants look
+  # like a hardcoded secret assignment to the scanner they belong to
+  - "secchecker/reporter.py"
+  - "secchecker/owasp.py"
+  - "secchecker/ast_scanner.py"

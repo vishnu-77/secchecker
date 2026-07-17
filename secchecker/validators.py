@@ -148,8 +148,10 @@ def validate_match(pattern_name, match):
     if 'credit card' in name_lower:
         return luhn_check(match)
 
-    # JWT — apply structural check
-    if 'jwt' in name_lower or 'bearer' in name_lower:
+    # JWT — apply structural check (JWT pattern only; bearer-scheme values
+    # are opaque strings and must not be forced through JWT structural
+    # validation, or every non-JWT bearer-scheme match is silently suppressed)
+    if 'jwt' in name_lower:
         return is_valid_jwt(match)
 
     # Default: accept the match.

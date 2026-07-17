@@ -221,6 +221,26 @@ def is_path_excluded(rel_path, exclude_paths):
     return False
 
 
+def is_pattern_excluded(pattern_name, exclude_patterns):
+    # type: (str, Optional[List[str]]) -> bool
+    """
+    Return True if finding category ``pattern_name`` (e.g. ``"Email"``,
+    ``"LLM - Hardcoded Jailbreak Instruction"``) matches any entry in
+    ``exclude_patterns``. Matching is case-insensitive and supports fnmatch
+    globs (``"LLM - *"``, ``"Docker*"``).
+
+    This excludes finding *categories* (rule names), not file paths — file
+    globs are already covered by ``exclude_paths``.
+    """
+    if not exclude_patterns:
+        return False
+    name = str(pattern_name).lower()
+    for raw in exclude_patterns:
+        if raw and fnmatch.fnmatch(name, str(raw).lower()):
+            return True
+    return False
+
+
 def load_config(config_path=None, scan_root=None):
     # type: (Optional[str], Optional[str]) -> Dict[str, Any]
     """Load config from file or return defaults. Never raises."""

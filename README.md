@@ -42,7 +42,7 @@ secchecker scans for these patterns locally and in CI.
 - Retrieved or external content treated as trusted context (RAG leakage)
 
 **Supporting checks**
-- AI provider credentials (OpenAI, Anthropic, HuggingFace, Pinecone) and 52+ hardcoded secret patterns
+- AI provider credentials (OpenAI, Anthropic, HuggingFace, Pinecone) and 56 hardcoded secret patterns (plus opt-in PII detection via `--pii`)
 - Docker, Kubernetes, Terraform, and CI/CD misconfigurations
 - Shannon-entropy detection for secrets no regex covers
 
@@ -105,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: vishnu-77/secchecker@v0.4.1
+      - uses: vishnu-77/secchecker@v0.4.2
         with:
           type: all
           format: sarif
@@ -137,6 +137,16 @@ pytest tests/ -v
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and the rule-authoring guide in [docs/RULES.md](docs/RULES.md).
+
+## Limitations
+
+secchecker is static regex/AST analysis, not a dataflow-complete analyzer — expect both false positives and false negatives. Specifics:
+
+- AST-based checks (hardcoded secrets in assignments, `eval`/`exec` calls, tainted-sink taint tracking, poisoned tool docstrings/descriptions) run on Python source only.
+- Taint tracking is single-file and simplified; it does not follow values across module boundaries.
+- Entropy detection is heuristic and opt-in (enable via `.secchecker.yml`).
+- OWASP Top 10 and OWASP LLM Top 10 tags are guidance, not a certification or compliance claim.
+- This is not a substitute for secret rotation, code review, or a full security audit.
 
 ## Responsible use
 

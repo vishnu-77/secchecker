@@ -70,12 +70,14 @@ def _extract_notebook_content(filepath):
         return ''
 
 
-def scan_file(filepath: str) -> Dict[str, List[str]]:
+def scan_file(filepath: str, extra_patterns: Dict[str, str] = None) -> Dict[str, List[str]]:
     """
     Scan a single file for secret patterns.
 
     Args:
         filepath: Path to the file to scan
+        extra_patterns: Additional {name: regex} patterns to scan alongside
+            PATTERNS (e.g. opt-in PII patterns, user-defined custom_patterns)
 
     Returns:
         Dictionary with pattern names as keys and matched strings as values
@@ -108,7 +110,8 @@ def scan_file(filepath: str) -> Dict[str, List[str]]:
             return findings
             
         # Scan for patterns
-        for name, pattern in PATTERNS.items():
+        active_patterns = PATTERNS if not extra_patterns else {**PATTERNS, **extra_patterns}
+        for name, pattern in active_patterns.items():
             try:
                 matches = re.findall(pattern, content, re.MULTILINE | re.IGNORECASE)
                 if matches:
@@ -131,43 +134,45 @@ def scan_file(filepath: str) -> Dict[str, List[str]]:
         
     return findings
 
-def scan_directory(directory: str) -> Dict[str, Dict[str, List[str]]]:
+def scan_directory(directory: str, extra_patterns: Dict[str, str] = None) -> Dict[str, Dict[str, List[str]]]:
     """
     Scan a directory recursively for secret patterns.
-    
+
     Args:
         directory: Path to the directory to scan
-        
+        extra_patterns: Additional {name: regex} patterns to scan alongside
+            PATTERNS (e.g. opt-in PII patterns, user-defined custom_patterns)
+
     Returns:
         Dictionary with file paths as keys and findings as values
     """
     results = {}
     directory_path = Path(directory)
-    
+
     if not directory_path.exists():
         raise FileNotFoundError(f"Directory not found: {directory}")
-    
+
     if not directory_path.is_dir():
         # If it's a single file, scan just that file
-        file_findings = scan_file(str(directory_path))
+        file_findings = scan_file(str(directory_path), extra_patterns=extra_patterns)
         if file_findings:
             results[str(directory_path)] = file_findings
         return results
-    
+
     # Recursively scan directory
     for root, dirs, files in os.walk(directory_path):
         root_path = Path(root)
-        
+
         # Skip certain directories
         dirs[:] = [d for d in dirs if not should_skip_directory(Path(d))]
-        
+
         for file in files:
             file_path = root_path / file
-            
+
             if should_skip_file(file_path):
                 continue
-                
-            file_findings = scan_file(str(file_path))
+
+            file_findings = scan_file(str(file_path), extra_patterns=extra_patterns)
             if file_findings:
                 # Use relative path from scan root for cleaner output
                 try:

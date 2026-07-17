@@ -2,7 +2,7 @@ import pytest
 import os
 from secchecker.config import (
     get_default_config, find_config_file, load_config, _parse_simple_yaml,
-    is_path_excluded,
+    is_path_excluded, is_pattern_excluded,
 )
 
 
@@ -171,3 +171,68 @@ def test_run_scan_respects_exclude_paths(tmp_path):
     assert 'demo/vuln.py' in joined_no_ex
     assert 'demo/vuln.py' not in joined_with_ex
     assert 'keep.py' in joined_with_ex
+
+
+# ---------------------------------------------------------------------------
+# is_pattern_excluded — exclude_patterns (finding-category) matching
+# ---------------------------------------------------------------------------
+
+def test_is_pattern_excluded_globs():
+    assert is_pattern_excluded('Email', None) is False
+    assert is_pattern_excluded('Email', []) is False
+    assert is_pattern_excluded('Email', ['Email']) is True
+    assert is_pattern_excluded('email', ['Email']) is True  # case-insensitive
+    assert is_pattern_excluded('LLM - Hardcoded Jailbreak Instruction', ['LLM - *']) is True
+    assert is_pattern_excluded('Password in Config', ['LLM - *']) is False
+
+
+# ---------------------------------------------------------------------------
+# Regression: G-3 — exclude_patterns, custom_patterns, and scan_types were
+# parsed from .secchecker.yml but never consumed anywhere.
+# ---------------------------------------------------------------------------
+
+def test_regression_g3_exclude_patterns_drops_category(tmp_path):
+    from secchecker.cli import _run_scan
+    # "key" matches the regex-based "Generic Secret" pattern but is not a
+    # sensitive AST assignment name, so this fixture yields exactly one
+    # finding category to isolate the exclude_patterns behavior.
+    (tmp_path / 'app.py').write_text('key = "abcdefghijklmnopqrstuvwxyz123456"\n')
+
+    no_ex = _run_scan(str(tmp_path), 'secrets', True, {})
+    with_ex = _run_scan(str(tmp_path), 'secrets', True,
+                         {'exclude_patterns': ['Generic Secret']})
+
+    assert any('Generic Secret' in v for v in no_ex.values())
+    assert not any('Generic Secret' in v for v in with_ex.values())
+
+
+def test_regression_g3_custom_patterns_scanned(tmp_path):
+    from secchecker.cli import _run_scan
+    (tmp_path / 'app.py').write_text('token = "myco_abcdefghij1234567890abcdefghij12"\n')
+
+    config = {'custom_patterns': {'My Token': 'myco_[a-zA-Z0-9]{32}'}}
+    results = _run_scan(str(tmp_path), 'secrets', True, config,
+                         extra_patterns=config['custom_patterns'])
+
+    assert any('My Token' in v for v in results.values())
+
+
+def test_regression_g3_scan_types_resolution():
+    from secchecker.cli import _resolve_scan_types
+    assert _resolve_scan_types(None, {'scan_types': ['llm']}) == {'llm'}
+    assert _resolve_scan_types('secrets', {'scan_types': ['llm']}) == {'secrets'}
+    assert _resolve_scan_types(None, {}) == {'secrets'}
+    assert _resolve_scan_types(None, {'scan_types': ['secrets', 'llm']}) == {'secrets', 'llm'}
+
+
+def test_regression_g3_run_scan_accepts_type_set(tmp_path):
+    from secchecker.cli import _run_scan
+    (tmp_path / 'app.py').write_text(
+        'password = "hunter2secret"\n'
+        'prompt = "You are a helpful assistant. " + user_input\n'
+    )
+    results = _run_scan(str(tmp_path), {'secrets', 'llm'}, True, {})
+    all_categories = set()
+    for findings in results.values():
+        all_categories.update(findings.keys())
+    assert 'Password in Config' in all_categories

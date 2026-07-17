@@ -112,3 +112,24 @@ def test_empty_results():
     
     xml_report = generate_xml_report(results)
     assert "<SecretScanReport" in xml_report
+
+
+# ---------------------------------------------------------------------------
+# Regression: G-2 — AST finding categories were missing from every severity
+# map, so get_severity() defaulted to LOW and --severity-threshold HIGH
+# silently dropped eval/exec, tainted-sink, and hardcoded-secret findings.
+# ---------------------------------------------------------------------------
+
+def test_regression_g2_ast_severities():
+    assert get_severity("AST - eval/exec Call") == "HIGH"
+    assert get_severity("AST - Tainted Input to Dangerous Sink") == "CRITICAL"
+    assert get_severity("AST - Hardcoded Secret Assignment") == "HIGH"
+    assert get_severity("High Entropy String") == "MEDIUM"
+
+
+def test_regression_g2_threshold_keeps_ast_findings():
+    from secchecker.cli import _filter_by_severity
+    results = {"a.py": {"AST - eval/exec Call": ["eval(x)"]}}
+    filtered = _filter_by_severity(results, "HIGH")
+    assert "a.py" in filtered
+    assert "AST - eval/exec Call" in filtered["a.py"]

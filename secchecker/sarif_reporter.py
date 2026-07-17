@@ -1,7 +1,7 @@
 """SARIF 2.1.0 report generator for secchecker."""
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 try:
@@ -131,7 +131,7 @@ def generate_sarif_report(results):
             "results": _build_results(results),
             "invocations": [{
                 "executionSuccessful": True,
-                "startTimeUtc": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "startTimeUtc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             }],
         }]
     }
