@@ -59,8 +59,28 @@ def test_get_scan_stats():
     }
     
     stats = get_scan_stats(mock_results)
-    
+
     assert stats["total_files"] == 2
     assert stats["total_secret_types"] == 3
     assert stats["total_matches"] == 4
     assert stats["pattern_breakdown"]["API Key"] == 2
+
+
+def test_regression_q2_bearer_token_detected_end_to_end(tmp_path):
+    """Bearer tokens must not be silently suppressed by JWT structural validation."""
+    f = tmp_path / "auth.py"
+    f.write_text('headers = {"Authorization": "Bearer 8f4kQ92mNp7xR3vTz1"}')
+    findings = scan_file(str(f))
+    assert "Bearer Token" in findings
+
+
+def test_scan_file_extra_patterns(tmp_path):
+    """extra_patterns (PII / custom_patterns) are opt-in additions to PATTERNS."""
+    from secchecker.patterns import PII_PATTERNS
+
+    f = tmp_path / "contact.py"
+    f.write_text('contact = "a@b.com"')
+
+    assert scan_file(str(f)) == {}
+    findings = scan_file(str(f), extra_patterns=PII_PATTERNS)
+    assert "Email" in findings

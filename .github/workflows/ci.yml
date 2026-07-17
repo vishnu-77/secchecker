@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
 
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
           # Treat exit 0 (clean) and 1 (findings) as success; fail on 2+ (runtime error).
           run_scan() { local rc=0; "$@" || rc=$?; if [ $rc -ge 2 ]; then echo "::error::secchecker exited $rc"; exit $rc; fi; }
           python -m secchecker.cli --help
-          echo 'password="test123"' > test_file.py
+          printf 'password="test123"\nresult = eval("1+1")\n' > test_file.py
           run_scan python -m secchecker.cli . --format json --output test_output.json
           run_scan python -m secchecker.cli . --format md --output test_output.md
           run_scan python -m secchecker.cli . --format xml --output test_output.xml

@@ -6,10 +6,10 @@ Full detection coverage across all scanners. Every finding is tagged with OWASP 
 
 | Scanner | What it detects | Patterns |
 |---------|----------------|---------|
-| MCP / Agentic AI | Tool poisoning, tool-output execution, memory injection, PII to external agents | 9 |
-| LLM / AI | Prompt injection, RAG leakage, eval of model output, hardcoded AI API keys | 18+ |
-| Secrets | Cloud keys, private keys, database URIs, payment credentials, service tokens | 52+ |
-| DevSecOps | Dockerfile, Kubernetes, Terraform, CI/CD misconfigurations | 28+ |
+| MCP / Agentic AI | Tool poisoning (code shape + poisoned docstrings/descriptions), tool-output execution, memory injection, PII to external agents | 11 |
+| LLM / AI | Prompt injection, RAG leakage, eval of model output, hardcoded AI API keys | 18 |
+| Secrets | Cloud keys, private keys, database URIs, payment credentials, service tokens | 56 (+2 opt-in PII via `--pii`) |
+| DevSecOps | Dockerfile, Kubernetes, Terraform, CI/CD misconfigurations | 25 |
 | Entropy | Unknown secrets with high Shannon entropy — catches what regex misses | — |
 | AST | Hardcoded secrets in Python assignments, eval/exec calls, tainted input to sinks | — |
 
@@ -23,10 +23,12 @@ Full detection coverage across all scanners. Every finding is tagged with OWASP 
 | Memory injection | User input stored to agent memory unvalidated | LLM01:2025 | HIGH |
 | PII passed to agent | SSN/credit card passed to external LLM agent | LLM02:2025 | CRITICAL |
 | Function call not validated | LLM tool call result used without schema check | LLM05:2025 | CRITICAL |
+| Poisoned tool docstring | Hidden instructions (`<IMPORTANT>...</IMPORTANT>`, "ignore previous instructions") embedded in a tool function's docstring | LLM01:2025 | HIGH |
+| Poisoned tool description | Same hidden-instruction markers inside a `description=` kwarg or tool-schema dict value | LLM01:2025 | HIGH |
 
 ## LLM / AI security
 
-18+ patterns, tagged OWASP LLM Top 10 (2025):
+18 patterns, tagged OWASP LLM Top 10 (2025):
 
 | Risk | What it catches | OWASP LLM | Severity |
 |------|----------------|-----------|----------|
@@ -40,7 +42,7 @@ Full detection coverage across all scanners. Every finding is tagged with OWASP 
 
 ## Secrets
 
-52+ patterns across 15 credential categories:
+56 patterns across 15 credential categories, plus 2 opt-in PII patterns (Email, Phone Number — enable with `--pii`; off by default to avoid alert fatigue):
 
 | Category | Examples | Severity |
 |----------|----------|----------|
@@ -58,7 +60,7 @@ Matches are validated post-regex — credit cards pass the Luhn algorithm, JWT t
 
 ## DevSecOps
 
-28+ patterns, tagged OWASP Top 10 (2021):
+25 patterns, tagged OWASP Top 10 (2021):
 
 | Category | Risk examples | Severity |
 |----------|--------------|----------|
@@ -69,10 +71,14 @@ Matches are validated post-regex — credit cards pass the Luhn algorithm, JWT t
 
 ## Entropy and AST scanners
 
-- **Entropy** (`entropy.py`) — Shannon-entropy detection of unknown secrets that no regex covers. Enabled by default; disable with `--no-entropy` or via `.secchecker.yml`.
-- **AST** (`ast_scanner.py`) — Python structural analysis: hardcoded secrets in assignments, `eval`/`exec` calls, tainted input reaching dangerous sinks.
+- **Entropy** (`entropy.py`) — Shannon-entropy detection of unknown secrets that no regex covers. Opt-in: enable via `.secchecker.yml` (`entropy: enabled: true`); `--no-entropy` force-disables it even if config enables it.
+- **AST** (`ast_scanner.py`) — Python structural analysis: hardcoded secrets in assignments, `eval`/`exec` calls, tainted input reaching dangerous sinks. Findings and severities: `AST_SEVERITY_MAP` in `ast_scanner.py`.
 
 ## Adding new rules
 
 - **New secret pattern:** add the regex to `secchecker/patterns.py`, a severity entry to `SEVERITY_MAP` in `secchecker/reporter.py`, and OWASP/CWE mappings to `secchecker/owasp.py`. Include a test in `tests/test_patterns.py`.
 - **New LLM check:** add the pattern to `secchecker/llm_patterns.py` and a severity entry to `LLM_SEVERITY_MAP`. Include a test in `tests/test_llm_scanner.py`.
+- **New AST category:** add the category constant and detection logic in `secchecker/ast_scanner.py`, and a severity entry in `AST_SEVERITY_MAP`. Include a test in `tests/test_ast_scanner.py`.
+- **New PII pattern:** add the regex to `PII_PATTERNS` in `secchecker/patterns.py` (opt-in, gated by `--pii`).
+
+Every finding category emitted by any scanner must have an explicit severity entry — `tests/test_severity_contract.py` enforces this so a category can never silently fall back to the `LOW` default.

@@ -79,46 +79,65 @@ OWASP_MAP: Dict[str, Dict[str, List[str]]] = {
     "Admin Password":           {"owasp": ["A02:2021"], "cwe": ["CWE-256"], "owasp_llm": []},
 
     # ------------------------------------------------------------------ #
-    # DevSecOps — Dockerfile                                               #
+    # PII (opt-in --pii)  ->  A01:2021 Broken Access Control              #
     # ------------------------------------------------------------------ #
-    "Docker - Latest Tag":              {"owasp": ["A06:2021"], "cwe": ["CWE-1104"], "owasp_llm": []},
-    "Docker - Secret in ENV":           {"owasp": ["A02:2021"], "cwe": ["CWE-798"],  "owasp_llm": []},
-    "Docker - Curl Pipe Bash":          {"owasp": ["A08:2021"], "cwe": ["CWE-829"],  "owasp_llm": []},
-    "Docker - Copy All Files":          {"owasp": ["A05:2021"], "cwe": ["CWE-552"],  "owasp_llm": []},
-    "Docker - Root User":               {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
-    "Docker - Privileged":              {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
-    "Docker - No Healthcheck":          {"owasp": ["A05:2021"], "cwe": ["CWE-778"],  "owasp_llm": []},
-    "Docker - Hardcoded Secret ARG":    {"owasp": ["A02:2021"], "cwe": ["CWE-798"],  "owasp_llm": []},
+    "Email":                    {"owasp": ["A01:2021"], "cwe": ["CWE-200"], "owasp_llm": []},
+    "Phone Number":             {"owasp": ["A01:2021"], "cwe": ["CWE-200"], "owasp_llm": []},
+
+    # ------------------------------------------------------------------ #
+    # Entropy-based detection                                             #
+    # ------------------------------------------------------------------ #
+    "High Entropy String":      {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": []},
+
+    # ------------------------------------------------------------------ #
+    # AST scanner (structural analysis of Python source)                  #
+    # ------------------------------------------------------------------ #
+    "AST - Hardcoded Secret Assignment":     {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": []},
+    "AST - eval/exec Call":                  {"owasp": ["A03:2021"], "cwe": ["CWE-95"],  "owasp_llm": []},
+    "AST - Tainted Input to Dangerous Sink": {"owasp": ["A03:2021"], "cwe": ["CWE-94"],  "owasp_llm": []},
+
+    # ------------------------------------------------------------------ #
+    # DevSecOps — Dockerfile                                               #
+    # (keys match secchecker.devsecops_patterns.DEVSECOPS_PATTERNS exactly;
+    #  previously stale names here left every DevSecOps SARIF rule untagged)
+    # ------------------------------------------------------------------ #
+    "Dockerfile - FROM latest tag":       {"owasp": ["A06:2021"], "cwe": ["CWE-1104"], "owasp_llm": []},
+    "Dockerfile - FROM without tag":      {"owasp": ["A06:2021"], "cwe": ["CWE-1104"], "owasp_llm": []},
+    "Dockerfile - Explicit root USER":    {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
+    "Dockerfile - ADD with remote URL":   {"owasp": ["A08:2021"], "cwe": ["CWE-829"],  "owasp_llm": []},
+    "Dockerfile - Secret in ENV":         {"owasp": ["A02:2021"], "cwe": ["CWE-798"],  "owasp_llm": []},
+    "Dockerfile - RUN with privileged flag": {"owasp": ["A05:2021"], "cwe": ["CWE-250"], "owasp_llm": []},
+    "Dockerfile - COPY entire context":   {"owasp": ["A05:2021"], "cwe": ["CWE-552"],  "owasp_llm": []},
+    "Dockerfile - curl pipe to shell":    {"owasp": ["A08:2021"], "cwe": ["CWE-829"],  "owasp_llm": []},
 
     # ------------------------------------------------------------------ #
     # DevSecOps — Kubernetes                                               #
     # ------------------------------------------------------------------ #
-    "K8s - Privileged Container":       {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
-    "K8s - Run As Root":                {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
-    "K8s - Host Network":               {"owasp": ["A05:2021"], "cwe": ["CWE-441"],  "owasp_llm": []},
-    "K8s - Host PID":                   {"owasp": ["A05:2021"], "cwe": ["CWE-441"],  "owasp_llm": []},
-    "K8s - Allow Privilege Escalation": {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
-    "K8s - No Resource Limits":         {"owasp": ["A05:2021"], "cwe": ["CWE-400"],  "owasp_llm": []},
-    "K8s - Plaintext Secret":           {"owasp": ["A02:2021"], "cwe": ["CWE-312"],  "owasp_llm": []},
-    "K8s - Default Namespace":          {"owasp": ["A05:2021"], "cwe": ["CWE-16"],   "owasp_llm": []},
+    "K8s - Privileged container":         {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
+    "K8s - allowPrivilegeEscalation":     {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
+    "K8s - runAsUser root":               {"owasp": ["A05:2021"], "cwe": ["CWE-250"],  "owasp_llm": []},
+    "K8s - hostNetwork enabled":          {"owasp": ["A05:2021"], "cwe": ["CWE-441"],  "owasp_llm": []},
+    "K8s - hostPID enabled":              {"owasp": ["A05:2021"], "cwe": ["CWE-441"],  "owasp_llm": []},
+    "K8s - automountServiceAccountToken": {"owasp": ["A05:2021"], "cwe": ["CWE-269"],  "owasp_llm": []},
+    "K8s - Plaintext secret in stringData": {"owasp": ["A02:2021"], "cwe": ["CWE-312"], "owasp_llm": []},
 
     # ------------------------------------------------------------------ #
     # DevSecOps — Terraform                                                #
     # ------------------------------------------------------------------ #
-    "Terraform - Open Security Group":  {"owasp": ["A01:2021"], "cwe": ["CWE-732"],  "owasp_llm": []},
-    "Terraform - Public S3 Bucket":     {"owasp": ["A01:2021"], "cwe": ["CWE-732"],  "owasp_llm": []},
-    "Terraform - Hardcoded Secret":     {"owasp": ["A02:2021"], "cwe": ["CWE-798"],  "owasp_llm": []},
-    "Terraform - Plaintext Password":   {"owasp": ["A02:2021"], "cwe": ["CWE-256"],  "owasp_llm": []},
-    "Terraform - HTTP Backend":         {"owasp": ["A02:2021"], "cwe": ["CWE-319"],  "owasp_llm": []},
+    "Terraform - Hardcoded AWS access key": {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": []},
+    "Terraform - Hardcoded AWS secret key": {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": []},
+    "Terraform - S3 bucket public ACL":     {"owasp": ["A01:2021"], "cwe": ["CWE-732"], "owasp_llm": []},
+    "Terraform - Open security group ingress": {"owasp": ["A01:2021"], "cwe": ["CWE-732"], "owasp_llm": []},
+    "Terraform - RDS publicly accessible":  {"owasp": ["A01:2021"], "cwe": ["CWE-732"], "owasp_llm": []},
+    "Terraform - Hardcoded DB password":    {"owasp": ["A02:2021"], "cwe": ["CWE-256"], "owasp_llm": []},
 
     # ------------------------------------------------------------------ #
     # DevSecOps — CI/CD                                                    #
     # ------------------------------------------------------------------ #
-    "CI - Secret in Log":               {"owasp": ["A09:2021"], "cwe": ["CWE-532"],  "owasp_llm": []},
-    "CI - pull_request_target":         {"owasp": ["A01:2021"], "cwe": ["CWE-863"],  "owasp_llm": []},
-    "CI - Unpinned Action":             {"owasp": ["A08:2021"], "cwe": ["CWE-829"],  "owasp_llm": []},
-    "CI - Hardcoded Token":             {"owasp": ["A02:2021"], "cwe": ["CWE-798"],  "owasp_llm": []},
-    "CI - Curl Pipe Bash":              {"owasp": ["A08:2021"], "cwe": ["CWE-829"],  "owasp_llm": []},
+    "CI - Secret echoed to log":          {"owasp": ["A09:2021"], "cwe": ["CWE-532"],  "owasp_llm": []},
+    "CI - pull_request_target trigger":   {"owasp": ["A01:2021"], "cwe": ["CWE-863"],  "owasp_llm": []},
+    "CI - Unpinned GitHub Action":        {"owasp": ["A08:2021"], "cwe": ["CWE-829"],  "owasp_llm": []},
+    "Docker Compose - Secret in environment": {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": []},
 
     # ------------------------------------------------------------------ #
     # LLM / AI  ->  OWASP LLM Top 10 2025                                 #
@@ -149,6 +168,8 @@ OWASP_MAP: Dict[str, Dict[str, List[str]]] = {
     "MCP - Tool Call Output Executed Directly":   {"owasp": ["A03:2021"], "cwe": ["CWE-94"],  "owasp_llm": ["LLM05:2025"]},
     "MCP - Hardcoded MCP Server URL":             {"owasp": ["A05:2021"], "cwe": ["CWE-200"], "owasp_llm": ["LLM02:2025"]},
     "MCP - Untrusted Tool Description in Prompt": {"owasp": ["A03:2021"], "cwe": ["CWE-20"],  "owasp_llm": ["LLM01:2025"]},
+    "MCP - Poisoned Tool Docstring":               {"owasp": ["A03:2021"], "cwe": ["CWE-20"],  "owasp_llm": ["LLM01:2025"]},
+    "MCP - Poisoned Tool Description":             {"owasp": ["A03:2021"], "cwe": ["CWE-20"],  "owasp_llm": ["LLM01:2025"]},
 
     # ------------------------------------------------------------------ #
     # Agentic AI  ->  OWASP LLM Top 10 2025                               #

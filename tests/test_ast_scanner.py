@@ -1,4 +1,6 @@
 """Tests for secchecker.ast_scanner AST-based Python scanner."""
+import warnings
+
 import pytest
 from secchecker.ast_scanner import scan_file_ast, scan_directory_ast
 
@@ -123,3 +125,23 @@ def test_scan_directory_skips_non_py(tmp_path):
     _write(tmp_path, "readme.md", 'password = "supersecret"\n')
     results = scan_directory_ast(str(tmp_path))
     assert results == {}
+
+
+# ---------------------------------------------------------------------------
+# Regression: G-1 — ast.Constant.s is removed in Python 3.14 and deprecated
+# on 3.12/3.13. _get_string_value must use node.value, never node.s.
+# ---------------------------------------------------------------------------
+
+def test_regression_g1_no_deprecated_constant_attrs(tmp_path):
+    src = (
+        'password = "supersecretpassword"\n'
+        'count = 42\n'
+        'other = do_thing()\n'
+        'result = eval("1+1")\n'
+    )
+    path = _write(tmp_path, "g1.py", src)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        findings = scan_file_ast(path)
+    assert "AST - Hardcoded Secret Assignment" in findings
+    assert "AST - eval/exec Call" in findings

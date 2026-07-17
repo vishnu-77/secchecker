@@ -105,3 +105,18 @@ def test_validate_unknown_pattern_passes():
 def test_validate_repeated_chars_suppressed():
     # Value with < 3 unique chars after stripping dashes/underscores
     assert validate_match("AWS Access Key", "aaaaaaaaaaaaaaaa") is False
+
+
+# ---------------------------------------------------------------------------
+# Regression: Q-2 — JWT structural validation must not apply to Bearer
+# tokens. The Bearer regex match includes the "Bearer " prefix, so running
+# it through is_valid_jwt() always failed, suppressing every Bearer finding.
+# ---------------------------------------------------------------------------
+
+def test_regression_q2_bearer_token_not_jwt_validated():
+    assert validate_match("Bearer Token", "Bearer 8f4kQ92mNp7xR3vTz1") is True
+
+
+def test_regression_q2_jwt_still_validated():
+    assert validate_match("JWT Token", "not.a.jwt") is False
+    assert validate_match("JWT Token", _VALID_JWT) is True
