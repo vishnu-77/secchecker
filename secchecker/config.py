@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 CONFIG_FILENAME = '.secchecker.yml'
-VALID_SCAN_TYPES = {'secrets', 'llm', 'devsecops', 'all'}
+VALID_SCAN_TYPES = {'secrets', 'llm', 'devsecops', 'dependency', 'all'}
 VALID_SEVERITIES = {'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'}
 
 
@@ -24,6 +24,13 @@ def get_default_config():
             'enabled': False,
             'threshold': 4.5,
             'min_length': 20,
+        },
+        'dependency_scan': {
+            # Static, offline pre-install scanning of node_modules/lockfiles.
+            'check_registry': False,   # opt-in network call for package age/provenance — see THREAT_MODEL.md
+            'block_at': 'CRITICAL',
+            'review_at': 'HIGH',
+            'warn_at': 'MEDIUM',
         },
     }
 
@@ -169,6 +176,15 @@ def _validate_and_normalize(raw):
             config['entropy']['threshold'] = float(entropy['threshold'])
         if isinstance(entropy.get('min_length'), int):
             config['entropy']['min_length'] = entropy['min_length']
+
+    dep_scan = raw.get('dependency_scan')
+    if isinstance(dep_scan, dict):
+        if isinstance(dep_scan.get('check_registry'), bool):
+            config['dependency_scan']['check_registry'] = dep_scan['check_registry']
+        for key in ('block_at', 'review_at', 'warn_at'):
+            val = dep_scan.get(key)
+            if isinstance(val, str) and val.upper() in VALID_SEVERITIES:
+                config['dependency_scan'][key] = val.upper()
 
     return config
 

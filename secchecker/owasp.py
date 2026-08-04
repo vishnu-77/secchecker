@@ -179,6 +179,28 @@ OWASP_MAP: Dict[str, Dict[str, List[str]]] = {
     "Agentic - Function Call Result Not Validated": {"owasp": ["A03:2021"], "cwe": ["CWE-20"],  "owasp_llm": ["LLM05:2025"]},
     "Agentic - Recursive Self-Invocation Risk":     {"owasp": ["A04:2021"], "cwe": ["CWE-674"], "owasp_llm": ["LLM06:2025"]},
     "Agentic - PII Passed to External Agent":       {"owasp": ["A01:2021"], "cwe": ["CWE-200"], "owasp_llm": ["LLM02:2025"]},
+
+    # ------------------------------------------------------------------ #
+    # Dependency (npm/pnpm/Yarn supply-chain)                             #
+    # (keys match secchecker.dependency_patterns.DEPENDENCY_PATTERNS      #
+    #  exactly)                                                           #
+    # ------------------------------------------------------------------ #
+    "Dependency - eval of decoded string":               {"owasp": ["A03:2021"], "cwe": ["CWE-95"],   "owasp_llm": []},
+    "Dependency - Function constructor from string":     {"owasp": ["A03:2021"], "cwe": ["CWE-95"],   "owasp_llm": []},
+    "Dependency - eval of variable":                      {"owasp": ["A03:2021"], "cwe": ["CWE-95"],   "owasp_llm": []},
+    "Dependency - hex-escape-heavy string literal":       {"owasp": ["A06:2021"], "cwe": ["CWE-506"],  "owasp_llm": []},
+    "Dependency - child_process exec":                    {"owasp": ["A03:2021"], "cwe": ["CWE-78"],   "owasp_llm": []},
+    "Dependency - execSync/spawnSync call":               {"owasp": ["A03:2021"], "cwe": ["CWE-78"],   "owasp_llm": []},
+    "Dependency - spawn with shell true":                 {"owasp": ["A03:2021"], "cwe": ["CWE-78"],   "owasp_llm": []},
+    "Dependency - raw http/https/net module":             {"owasp": ["A06:2021"], "cwe": ["CWE-1104"], "owasp_llm": []},
+    "Dependency - fetch/XHR call":                        {"owasp": ["A06:2021"], "cwe": ["CWE-1104"], "owasp_llm": []},
+    "Dependency - outbound request to raw IP":             {"owasp": ["A10:2021"], "cwe": ["CWE-918"],  "owasp_llm": []},
+    "Dependency - bulk process.env read":                 {"owasp": ["A02:2021"], "cwe": ["CWE-798"],  "owasp_llm": []},
+    "Dependency - SSH/cloud credential path reference":   {"owasp": ["A02:2021"], "cwe": ["CWE-798"],  "owasp_llm": []},
+    "Dependency - npm auth token pattern":                {"owasp": ["A02:2021"], "cwe": ["CWE-798"],  "owasp_llm": []},
+    "Dependency - Lifecycle hook script present":         {"owasp": ["A06:2021"], "cwe": ["CWE-1104"], "owasp_llm": []},
+    "Dependency - Suspicious binary in package":          {"owasp": ["A06:2021"], "cwe": ["CWE-1104"], "owasp_llm": []},
+    "Dependency - Lockfile integrity mismatch":           {"owasp": ["A08:2021"], "cwe": ["CWE-494"],  "owasp_llm": []},
 }
 
 

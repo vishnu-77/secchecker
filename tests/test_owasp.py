@@ -98,6 +98,16 @@ def test_all_devsecops_patterns_have_owasp_entries():
         assert result["cwe"], "Missing CWE mapping for: {}".format(name)
 
 
+def test_all_dependency_patterns_have_owasp_entries():
+    """Same regression class as the DevSecOps check above, for the
+    dependency (npm/pnpm/Yarn) scanner."""
+    from secchecker.dependency_patterns import DEPENDENCY_PATTERNS
+    for name in DEPENDENCY_PATTERNS:
+        result = get_owasp(name)
+        assert result["owasp"], "Missing OWASP mapping for: {}".format(name)
+        assert result["cwe"], "Missing CWE mapping for: {}".format(name)
+
+
 def test_poisoned_tool_categories_map_to_llm01():
     for name in ("MCP - Poisoned Tool Docstring", "MCP - Poisoned Tool Description"):
         result = get_owasp(name)
