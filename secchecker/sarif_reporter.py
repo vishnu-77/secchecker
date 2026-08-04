@@ -124,7 +124,7 @@ def generate_sarif_report(results):
                 "driver": {
                     "name": "secchecker",
                     "version": _VERSION,
-                    "informationUri": "https://github.com/vishnu-77/secchecker",
+                    "informationUri": "https://github.com/eltise-cyber/secchecker",
                     "rules": _build_rules(all_patterns),
                 }
             },

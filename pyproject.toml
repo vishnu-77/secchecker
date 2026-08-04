@@ -66,11 +66,11 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/vishnu-77/secchecker"
-Documentation = "https://github.com/vishnu-77/secchecker#readme"
-Repository = "https://github.com/vishnu-77/secchecker.git"
-"Bug Tracker" = "https://github.com/vishnu-77/secchecker/issues"
-Changelog = "https://github.com/vishnu-77/secchecker/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/eltise-cyber/secchecker"
+Documentation = "https://github.com/eltise-cyber/secchecker#readme"
+Repository = "https://github.com/eltise-cyber/secchecker.git"
+"Bug Tracker" = "https://github.com/eltise-cyber/secchecker/issues"
+Changelog = "https://github.com/eltise-cyber/secchecker/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 include = ["secchecker*"]

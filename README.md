@@ -1,9 +1,13 @@
+<p align="center">
+  <img src="docs/assets/banner.png" alt="secchecker — static checks for the moment untrusted context becomes trusted action" width="100%">
+</p>
+
 [![PyPI version](https://img.shields.io/pypi/v/secchecker.svg)](https://pypi.org/project/secchecker/)
 [![Python versions](https://img.shields.io/pypi/pyversions/secchecker.svg)](https://pypi.org/project/secchecker/)
 [![Downloads](https://img.shields.io/pypi/dm/secchecker.svg)](https://pypi.org/project/secchecker/)
-[![Build Status](https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnu-77/secchecker/actions)
+[![Build Status](https://github.com/eltise-cyber/secchecker/actions/workflows/ci.yml/badge.svg)](https://github.com/eltise-cyber/secchecker/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![codecov](https://codecov.io/gh/vishnu-77/secchecker/branch/main/graph/badge.svg)](https://codecov.io/gh/vishnu-77/secchecker)
+[![codecov](https://codecov.io/gh/eltise-cyber/secchecker/branch/main/graph/badge.svg)](https://codecov.io/gh/eltise-cyber/secchecker)
 
 # secchecker
 
@@ -105,7 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: vishnu-77/secchecker@v0.4.2
+      - uses: eltise-cyber/secchecker@v0.4.2
         with:
           type: all
           format: sarif
@@ -130,7 +134,7 @@ Drop a `.secchecker.yml` in your project root to set severity thresholds, exclud
 ## Contributing
 
 ```bash
-git clone https://github.com/vishnu-77/secchecker.git
+git clone https://github.com/eltise-cyber/secchecker.git
 cd secchecker
 pip install -e ".[dev]"
 pytest tests/ -v
