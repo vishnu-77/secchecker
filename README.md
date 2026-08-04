@@ -45,6 +45,7 @@ secchecker scans for these patterns locally and in CI.
 - AI provider credentials (OpenAI, Anthropic, HuggingFace, Pinecone) and 56 hardcoded secret patterns (plus opt-in PII detection via `--pii`)
 - Docker, Kubernetes, Terraform, and CI/CD misconfigurations
 - Shannon-entropy detection for secrets no regex covers
+- npm/pnpm/Yarn dependency scanning: obfuscated code, shell execution, undisclosed install hooks, suspicious binaries, and lockfile integrity drift — static and offline, see [Dependency scanning](#dependency-scanning)
 
 Full rule catalog: [docs/RULES.md](docs/RULES.md)
 
@@ -64,6 +65,22 @@ secchecker . --type all --format sarif --output secchecker.sarif
 ```
 
 Requires Python 3.8+. No external dependencies. All flags: [docs/CONFIGURATION.md](docs/CONFIGURATION.md)
+
+## Dependency scanning
+
+Static, offline pre-install checks for npm/pnpm/Yarn — parses your lockfile and, if
+present, `node_modules/`. Never runs an install, never executes a lifecycle script.
+
+```bash
+secchecker . --type dependency              # scan node_modules for supply-chain risk
+secchecker package inspect left-pad         # inspect one resolved package
+secchecker scripts review                   # list every preinstall/install/postinstall/prepare hook, unexecuted
+secchecker verify                           # check lockfile integrity drift vs git HEAD
+```
+
+Each check maps its worst finding to a verdict — `ALLOW` / `WARN` / `REVIEW` / `BLOCK` — configurable
+via `dependency_scan` in `.secchecker.yml`. Full scope and what it deliberately does not do
+(sandboxed installs, runtime monitoring): [THREAT_MODEL.md](THREAT_MODEL.md#dependency-scanning-exactly-what-it-does-and-doesnt-touch).
 
 ## Example findings
 
@@ -145,6 +162,7 @@ secchecker is static regex/AST analysis, not a dataflow-complete analyzer — ex
 - AST-based checks (hardcoded secrets in assignments, `eval`/`exec` calls, tainted-sink taint tracking, poisoned tool docstrings/descriptions) run on Python source only.
 - Taint tracking is single-file and simplified; it does not follow values across module boundaries.
 - Entropy detection is heuristic and opt-in (enable via `.secchecker.yml`).
+- Dependency scanning is static and offline: it cannot verify a package's *tarball* integrity against `node_modules/` contents (npm's hash is over the archive, not the extracted files — attempting that would produce false positives), it does not do CVE matching, and hook detection only works for packages already installed, not ones fetched fresh.
 - OWASP Top 10 and OWASP LLM Top 10 tags are guidance, not a certification or compliance claim.
 - This is not a substitute for secret rotation, code review, or a full security audit.
 

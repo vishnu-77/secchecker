@@ -125,8 +125,13 @@ try:
 except ImportError:
     AST_SEVERITY_MAP = {}
 
+try:
+    from secchecker.dependency_patterns import DEPENDENCY_SEVERITY_MAP
+except ImportError:
+    DEPENDENCY_SEVERITY_MAP = {}
+
 def get_severity(pattern_name: str) -> str:
-    """Get severity level for a pattern across secrets, LLM/AI, DevSecOps, and AST maps."""
+    """Get severity level for a pattern across secrets, LLM/AI, DevSecOps, AST, and dependency maps."""
     if pattern_name in SEVERITY_MAP:
         return SEVERITY_MAP[pattern_name]
     if pattern_name in LLM_SEVERITY_MAP:
@@ -135,6 +140,8 @@ def get_severity(pattern_name: str) -> str:
         return DEVSECOPS_SEVERITY_MAP[pattern_name]
     if pattern_name in AST_SEVERITY_MAP:
         return AST_SEVERITY_MAP[pattern_name]
+    if pattern_name in DEPENDENCY_SEVERITY_MAP:
+        return DEPENDENCY_SEVERITY_MAP[pattern_name]
     return "LOW"
 
 def get_scan_metadata() -> Dict[str, Any]:
