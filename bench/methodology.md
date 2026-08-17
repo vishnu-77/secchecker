@@ -24,17 +24,29 @@ python bench/run.py [--version X.Y.Z]
 ```
 Writes `bench/results/<version>.json` (per-file breakdown + aggregate metrics) and prints a summary.
 
-## Current corpus: seed, not final
-12 vulnerable / 12 safe (2 pairs per category, 6 categories) — a starting corpus, not the target
-size. It currently scores 1.00 precision / 1.00 recall, and **that number should not be quoted
-as evidence of general accuracy.** Every fixture here is a direct restatement of a pattern already
-implemented in `secchecker/llm_patterns.py` — this corpus is a regression suite ("did this release
-break detection of what it already claims to detect?"), not an adversarial benchmark.
+## Current corpus: complete pattern coverage, not yet an accuracy claim
+23 vulnerable / 23 safe (46 fixtures). Sized and organized by a specific rule, not an arbitrary
+round number: **every LLM/MCP/agentic detection pattern relevant to the six risk categories below
+has at least one vulnerable/safe pair**, covering each category's distinct sub-mechanisms (e.g.
+prompt injection alone spans 5 separate patterns — f-string, `.format()`, hardcoded jailbreak,
+role override, delimiter injection — each with its own pair, not 5 copies of the same shape).
+
+It currently scores 1.00 precision / 1.00 recall, and **that number should not be quoted as
+evidence of general accuracy.** Every fixture here is authored with the pattern it's meant to
+trigger already in mind (by the same person who wrote the detector) — this corpus answers "does
+this release still detect every case it was built to detect?" (a regression suite), not "how well
+does it detect real, unseen vulnerable code?" (an accuracy benchmark). Those are different
+questions; only the second one supports an external accuracy claim.
+
+One data point on why running the corpus against the real scanner matters, not just reasoning
+about the regexes by hand: the first version of this corpus had a false positive — a safe
+fixture's own explanatory *comment* used the word "SSN" in prose, which the PII-detection pattern
+correctly flagged as PII near an agent-call. Caught by `bench/run.py`, not by inspection.
 
 ## What's still missing before this is a credible accuracy claim
-- **Scale:** grow toward 50 vulnerable / 50 safe per the project roadmap, covering variation
-  within each category (different variable names, indirection through a helper function,
-  multi-line construction) — not just one canonical shape per pattern.
+- **Scale beyond one example per pattern:** multiple independent phrasings/shapes per pattern —
+  different variable names, indirection through a helper function, multi-line construction — not
+  just the one canonical shape used here.
 - **Adversarial cases:** fixtures the pattern author didn't write with the regex already in mind —
   obfuscated or paraphrased variants that a real vulnerable codebase would actually contain, where
   a false negative is a real possibility rather than a near-impossibility.

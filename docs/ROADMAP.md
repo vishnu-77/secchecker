@@ -60,9 +60,10 @@ instead of a feature list — and be explicit about what static analysis structu
   injection, unsafe function-call handling).
 - `bench/run.py` — scans every fixture, classifies TP/FP/TN/FN, reports precision/recall/F1,
   writes `bench/results/<version>.json`. Deterministic, offline, no LLM judge.
-- Seed corpus (12 vulnerable / 12 safe, delivered) is a **regression suite**, not yet an accuracy
-  claim — see `bench/methodology.md`. Grow toward 50/50 with adversarial and independently
-  authored/reviewed cases before quoting the numbers externally.
+- Corpus (23 vulnerable / 23 safe, delivered) has one pair per every implemented LLM/MCP/agentic
+  pattern in these six categories — pattern-complete, not yet an accuracy claim, see
+  `bench/methodology.md`. Still needed before quoting the numbers externally: multiple phrasings
+  per pattern (not just one canonical shape), adversarial cases, and independent authorship/review.
 
 **Acceptance:** `python bench/run.py` runs clean, and the published precision/recall in
 `docs/EVALUATION.md` matches an actual `bench/results/*.json` run, not a hand-written estimate.
