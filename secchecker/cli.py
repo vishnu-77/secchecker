@@ -388,21 +388,10 @@ def _cmd_package_inspect(args):
               '(nothing installed to inspect yet).'.format(args.name))
         sys.exit(0)
 
-    findings = {}
-    for root, dirs, files in os.walk(pkg_dir):
-        dirs[:] = [d for d in dirs if d not in ('.git', '__pycache__', '.bin')]
-        for filename in files:
-            fpath = os.path.join(root, filename)
-            file_findings = scan_file_dependency(fpath) \
-                if filename.rsplit('.', 1)[-1] in ('js', 'mjs', 'cjs', 'ts', 'jsx', 'tsx') else {}
-            if filename == 'package.json':
-                hooks = find_lifecycle_hooks(root)
-                if hooks:
-                    file_findings['Dependency - Lifecycle hook script present'] = [
-                        '{}: {}'.format(k, v) for k, v in hooks.items()
-                    ]
-            if file_findings:
-                findings[os.path.relpath(fpath, project_root)] = file_findings
+    # Reuse the real dependency scanner (same content/hook/suspicious-binary
+    # checks as `--type dependency`) instead of re-walking by hand, so this
+    # command can't drift out of parity with it.
+    findings = scan_directory_dependency(pkg_dir)
 
     if not findings:
         print('[+] No findings for {}. Verdict: ALLOW'.format(args.name))
@@ -492,13 +481,14 @@ def _cmd_verify(args):
             continue
 
         import tempfile
-        with tempfile.NamedTemporaryFile('w', suffix='_' + fname, delete=False, encoding='utf-8') as tf:
-            tf.write(git_show.stdout)
-            tmp_path = tf.name
-        try:
+        # parse_lockfile() dispatches on exact basename (e.g. 'package-lock.json'),
+        # so the temp copy must keep that name -- a random-prefixed filename would
+        # never match and silently parse as {} (no drift, always).
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = os.path.join(tmp_dir, fname)
+            with open(tmp_path, 'w', encoding='utf-8') as tf:
+                tf.write(git_show.stdout)
             previous = parse_lockfile(tmp_path)
-        finally:
-            os.unlink(tmp_path)
 
         drift = diff_lockfiles(previous, current)
         if drift:
@@ -562,9 +552,13 @@ Exit codes:
     # Preserve `secchecker <path> --type ...` as shorthand for
     # `secchecker scan <path> --type ...` — inject the implicit subcommand
     # before parsing whenever the first token isn't a known subcommand name.
+    # A real file/directory takes priority over the subcommand names even
+    # when it happens to be spelled 'scan'/'package'/'scripts'/'verify'
+    # (e.g. a `scripts/` folder), so those common names still scan correctly.
     known_commands = {'scan', 'package', 'scripts', 'verify'}
     argv = sys.argv[1:]
-    if not argv or (argv[0] not in known_commands and argv[0] not in ('-h', '--help')):
+    if not argv or (argv[0] not in ('-h', '--help') and
+                     (argv[0] not in known_commands or os.path.exists(argv[0]))):
         argv = ['scan'] + argv
 
     args = parser.parse_args(argv)

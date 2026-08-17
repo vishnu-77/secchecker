@@ -19,6 +19,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from secchecker.core import should_skip_directory
 from secchecker.dependency_patterns import (
     DEPENDENCY_PATTERNS,
     STRUCTURAL_CATEGORIES,
@@ -347,8 +348,11 @@ def scan_directory_dependency(directory, lockfile_entries=None):
 
     for root, dirs, files in os.walk(directory_path):
         root_path = Path(root)
-        # Skip VCS/cache noise only — deliberately do NOT prune node_modules.
-        dirs[:] = [d for d in dirs if d not in ('.git', '__pycache__', '.bin')]
+        # Reuse the shared skip-list (VCS, caches, .venv, dist, ...) but
+        # deliberately do NOT prune node_modules — that's exactly what this
+        # scanner exists to look inside.
+        dirs[:] = [d for d in dirs if d == 'node_modules' or
+                   (d != '.bin' and not should_skip_directory(Path(d)))]
 
         # This is a *dependency* scanner: only look at files that are
         # actually inside a node_modules tree. Without this, "suspicious
