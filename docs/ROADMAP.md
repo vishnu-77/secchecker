@@ -18,9 +18,10 @@
 | Phase | Version | Theme | Status |
 |---|---|---|---|
 | 0 | 0.4.2 | Credibility fixes + test foundation | **Delivered** |
-| 1 | 0.5.0 | Agent-native: MCP server + `init` scaffolding | Planned |
-| 2 | 0.6.0 | Deepen the moat: agentic taint + framework packs + prompt linter | Planned |
-| 3 | 0.7.0+ | Discoverability & trust at scale | Planned |
+| 1 | 0.5.0 | AI security validation: reproducible benchmark + threat-model boundary | Planned |
+| 2 | 0.6.0 | Agent-native: MCP server + `init` scaffolding | Planned |
+| 3 | 0.7.0 | Deepen the moat: agentic taint + framework packs + prompt linter | Planned |
+| 4 | 0.8.0+ | Discoverability & trust at scale | Planned |
 
 Phases are sequential on the critical path; the **Testing foundation** and **Trust/supply-chain** tracks run in parallel from Phase 0.
 
@@ -49,10 +50,44 @@ An independent audit of an earlier release found the tool's default scan crashin
 
 ---
 
-## Phase 1 — 0.5.0 · Agent-native adoption
+## Phase 1 — 0.5.0 · AI security validation
+**Goal:** back up the "catches AI/MCP vulnerabilities" claim with a reproducible, published number
+instead of a feature list — and be explicit about what static analysis structurally can't answer.
+
+### 1a. Reproducible precision/recall benchmark
+- `bench/fixtures/vulnerable/<category>/` + `bench/fixtures/safe/` — paired examples per risk
+  category (prompt injection, RAG leakage, MCP tool poisoning, tool-output execution, memory
+  injection, unsafe function-call handling).
+- `bench/run.py` — scans every fixture, classifies TP/FP/TN/FN, reports precision/recall/F1,
+  writes `bench/results/<version>.json`. Deterministic, offline, no LLM judge.
+- Seed corpus (12 vulnerable / 12 safe, delivered) is a **regression suite**, not yet an accuracy
+  claim — see `bench/methodology.md`. Grow toward 50/50 with adversarial and independently
+  authored/reviewed cases before quoting the numbers externally.
+
+**Acceptance:** `python bench/run.py` runs clean, and the published precision/recall in
+`docs/EVALUATION.md` matches an actual `bench/results/*.json` run, not a hand-written estimate.
+
+### 1b. `docs/EVALUATION.md` + `THREAT_MODEL.md` runtime boundary (delivered)
+- `docs/EVALUATION.md` — research question, method, current numbers, and an explicit "don't
+  over-read this yet" interpretation section.
+- `THREAT_MODEL.md` — added the AI-agent runtime boundary: delegated-authority escalation,
+  memory/context expanding authority, multi-hop consequence chains, and other risks that need
+  runtime governance rather than static scanning, stated as such rather than silently uncovered.
+
+### 1c. Drop unsupported exclusivity language
+Replace "no mainstream PyPI scanner covers these"-style claims in README with what's actually
+defensible: secchecker combines AI/LLM/MCP static analysis with conventional secret/IaC/dependency
+scanning in one lightweight pre-deployment workflow. No "first" or "only" claims.
+
+**Acceptance:** README contains no unqualified exclusivity claim that a single counter-example
+(e.g. another LLM-code-scanning tool) would falsify.
+
+---
+
+## Phase 2 — 0.6.0 · Agent-native adoption
 **Goal:** any MCP-enabled coding agent can call secchecker natively, and any repo can self-instruct an agent to run it.
 
-### 1a. `secchecker-mcp` server (highest-leverage feature)
+### 2a. `secchecker-mcp` server (highest-leverage feature)
 - Expose MCP tools:
   - `scan_code(path, type)` → structured findings JSON
   - `scan_mcp_manifest(path)` → tool-poisoning / rug-pull findings
@@ -68,7 +103,7 @@ An independent audit of an earlier release found the tool's default scan crashin
 - **CLI/MCP parity:** golden test — same fixture through CLI and through `scan_code` must yield identical findings.
 - **Fault handling:** malformed input, oversized files, non-existent paths → structured error, never a crash.
 
-### 1b. `secchecker init` scaffolding
+### 2b. `secchecker init` scaffolding
 Writes, idempotently, into the target repo:
 - `.pre-commit-config.yaml` hook entry
 - `.github/workflows/secchecker.yml` (SARIF upload to code scanning)
@@ -83,7 +118,7 @@ Writes, idempotently, into the target repo:
 - Generated GitHub Action is linted (actionlint) and dry-run validated.
 - Generated pre-commit config validated with `pre-commit validate-config`.
 
-### 1c. CI ergonomics
+### 2c. CI ergonomics
 - `--baseline` allowlist file so teams accept known findings and gate only on new ones.
 - `uvx` / `pipx run` zero-install path documented and tested.
 
@@ -93,7 +128,7 @@ Writes, idempotently, into the target repo:
 
 ---
 
-## Phase 2 — 0.6.0 · Deepen the moat
+## Phase 3 — 0.7.0 · Deepen the moat
 **Goal:** detection that generic scanners structurally cannot replicate.
 
 ### Deliverables
@@ -113,7 +148,7 @@ Writes, idempotently, into the target repo:
 
 ---
 
-## Phase 3 — 0.7.0+ · Discoverability & trust at scale
+## Phase 4 — 0.8.0+ · Discoverability & trust at scale
 **Goal:** agents reach for it unprompted; users trust it by default.
 
 ### Deliverables
@@ -155,14 +190,17 @@ Writes, idempotently, into the target repo:
 
 ### Fixture corpus layout
 ```
-tests/fixtures/
+bench/fixtures/                   # v0.5.0: precision/recall benchmark (this repo's GTV/accuracy
+  vulnerable/<category>/          # evidence corpus) — LLM/MCP/agentic only, see bench/methodology.md
+  safe/
+tests/fixtures/                   # v0.7.0: broader per-scanner unit-test corpus
   secrets/{positive,negative}/
   llm/{positive,negative}/
   mcp/{positive,negative}/        # incl. poisoned docstrings, rug-pull diffs
   devsecops/{positive,negative}/
   agentic/{positive,negative}/    # cross-function taint cases
 tests/golden/                     # expected report outputs
-tests/benchmark/labels.json       # ground-truth for precision/recall
+tests/benchmark/labels.json       # ground-truth for precision/recall, whole-suite scale
 ```
 
 ---
@@ -172,15 +210,16 @@ tests/benchmark/labels.json       # ground-truth for precision/recall
 | Priority | Move | Phase |
 |---|---|---|
 | 1 | Fix credibility bugs | 0 (done) |
-| 2 | MCP server + registry listings | 1 / 3 |
-| 3 | `uvx`/`pipx` zero-install | 1 |
-| 4 | `secchecker init` rule-files + pre-commit + Action | 1 |
-| 5 | SARIF-first CI + JSON schema | 1 |
-| 6 | Signed releases + SBOM + SECURITY.md | 3 |
-| 7 | MCP Security Checklist (be the standard) | 3 |
-| 8 | Corpus seeding (awesome-lists, OWASP, posts) | 3 |
+| 2 | Reproducible benchmark + threat-model boundary | 1 |
+| 3 | MCP server + registry listings | 2 / 4 |
+| 4 | `uvx`/`pipx` zero-install | 2 |
+| 5 | `secchecker init` rule-files + pre-commit + Action | 2 |
+| 6 | SARIF-first CI + JSON schema | 2 |
+| 7 | Signed releases + SBOM + SECURITY.md | 4 |
+| 8 | MCP Security Checklist (be the standard) | 4 |
+| 9 | Corpus seeding (awesome-lists, OWASP, posts) | 4 |
 
-**The honest constraint:** MCP server buys *immediate* adoption for MCP-enabled agents; corpus presence (stars, repos using it, references) is what makes future agents reach for it *unprompted* — that's a slower flywheel, seeded in Phase 3.
+**The honest constraint:** MCP server buys *immediate* adoption for MCP-enabled agents; corpus presence (stars, repos using it, references) is what makes future agents reach for it *unprompted* — that's a slower flywheel, seeded in Phase 4.
 
 ---
 
@@ -198,8 +237,9 @@ tests/benchmark/labels.json       # ground-truth for precision/recall
 | MCP server maintenance burden | Thin wrapper over the same core; CLI/MCP parity tests |
 | Solo-maintainer bandwidth | Prioritise Phase 1 (highest leverage); automate CI/release |
 | Registry/standard adoption is slow | Treat as flywheel, not a launch dependency |
+| Benchmark numbers read as self-serving | Publish the corpus and scoring code, not just the score; get an external reviewer to challenge it before quoting it externally |
 
 ---
 
 ## Next step
-Phase 1 (0.5.0): the `secchecker-mcp` server and `secchecker init` scaffolding are the highest-leverage next steps — they turn secchecker from "a CLI you remember to run" into "a tool an agent reaches for on its own."
+Phase 1 (0.5.0): grow the benchmark corpus past its 12/12 seed and get it externally reviewed — that's what turns "a reproducible method exists" into a number worth quoting. The `secchecker-mcp` server and `secchecker init` scaffolding (now Phase 2 / 0.6.0) remain the highest-leverage adoption move after that.

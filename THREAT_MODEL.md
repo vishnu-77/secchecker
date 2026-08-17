@@ -112,6 +112,35 @@ secchecker is a **pre-deployment static scanner**. It intentionally does not cov
   `pip-audit`, `safety`, or `npm audit` for that
 - **DAST / penetration testing** — use OWASP ZAP or Burp Suite for live application testing
 
+### The runtime boundary for AI agents specifically
+
+The risks above are "use a different *kind* of tool." This one is narrower and worth stating on
+its own: even a perfect static scanner cannot evaluate agent/MCP risks that only exist once a
+system is actually running, because they depend on state that doesn't exist until runtime —
+which identity is acting, what it was actually delegated versus what it's requesting, and what
+happened earlier in this specific session:
+
+- **Delegated authority escalation** — whether a sub-agent's *effective* permissions exceed what
+  its parent actually delegated is a runtime relationship between two live sessions, not something
+  visible in a tool's source code.
+- **Memory/context expanding authority** — whether an agent granted itself a capability because an
+  untrusted memory or RAG document *told* it to is a property of what got written to memory at
+  runtime, not of the code that reads memory.
+- **Multi-hop / multi-agent consequence chains** — three individually-safe tool grants (read
+  customer DB → export CSV → send external email) composing into a real data-exfiltration path is
+  a property of what actually got invoked in sequence, not of any one function's source.
+- **Runtime privilege changes** — a capability added, removed, or elevated mid-session.
+- **Semantic indirect prompt injection in unknown content** — instructions hidden in a document,
+  webpage, or tool result the model *will* retrieve, where the content doesn't exist at scan time.
+- **Dynamic business impact** — whether a given action is "safe" often depends on what already
+  happened this session (a first refund request differs from a fifth), not on the action in isolation.
+
+These need runtime governance — evaluating identity, delegated authority, and consequence *as
+actions actually happen* — not static analysis. secchecker's job stops at flagging the
+pre-deployment conditions above (unvalidated tool output, poisoned descriptions, unsanitized
+writes to memory) that make those runtime failures *possible*; catching the failure itself once a
+system is live is a different, complementary control.
+
 ---
 
 ## Known Limitations

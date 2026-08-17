@@ -1,0 +1,185 @@
+{
+  "secchecker_version": "0.4.2",
+  "total_fixtures": 24,
+  "true_positives": 12,
+  "false_positives": 0,
+  "true_negatives": 12,
+  "false_negatives": 0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "execution_time_seconds": 0.0288,
+  "files": [
+    {
+      "file": "fixtures\\vulnerable\\mcp_tool_poisoning\\poisoned_description.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "LLM - Hardcoded Jailbreak Instruction",
+        "MCP - Poisoned Tool Description"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\mcp_tool_poisoning\\poisoned_docstring.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "LLM - Hardcoded Jailbreak Instruction",
+        "MCP - Poisoned Tool Docstring"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\memory_injection\\raw_query_to_vector_store.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "Agentic - Unsanitized Input to Agent Memory"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\memory_injection\\raw_user_input_to_memory.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "Agentic - Unsanitized Input to Agent Memory"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\prompt_injection\\fstring_concat.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "LLM - Prompt Injection via f-string"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\prompt_injection\\hardcoded_jailbreak.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "LLM - Hardcoded Jailbreak Instruction"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\rag_leakage\\db_query_in_context.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "LLM - RAG DB Query in Context"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\rag_leakage\\raw_file_read.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "LLM - RAG Raw File in Prompt"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\tool_output_execution\\eval_llm_output.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "LLM - Eval of LLM Output"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\tool_output_execution\\tool_result_shell.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "MCP - Tool Call Output Executed Directly"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\unsafe_function_calls\\json_loads_response.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "Agentic - Function Call Result Not Validated"
+      ]
+    },
+    {
+      "file": "fixtures\\vulnerable\\unsafe_function_calls\\literal_eval_completion.py",
+      "expected": "vulnerable",
+      "flagged": true,
+      "categories": [
+        "Agentic - Function Call Result Not Validated",
+        "LLM - Eval of LLM Output"
+      ]
+    },
+    {
+      "file": "fixtures\\safe\\mcp_tool_poisoning_poisoned_description.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\mcp_tool_poisoning_poisoned_docstring.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\memory_injection_raw_query_to_vector_store.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\memory_injection_raw_user_input_to_memory.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\prompt_injection_fstring_concat.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\prompt_injection_hardcoded_jailbreak.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\rag_leakage_db_query_in_context.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\rag_leakage_raw_file_read.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\tool_output_execution_eval_llm_output.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\tool_output_execution_tool_result_shell.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\unsafe_function_calls_json_loads_response.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    },
+    {
+      "file": "fixtures\\safe\\unsafe_function_calls_literal_eval_completion.py",
+      "expected": "safe",
+      "flagged": false,
+      "categories": []
+    }
+  ]
+}
