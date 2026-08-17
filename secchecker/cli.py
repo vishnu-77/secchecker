@@ -264,7 +264,7 @@ def _add_scan_args(scan_parser):
 
 def _cmd_scan(args):
     """The original flat-CLI scan behavior, unchanged, now reached via the
-    `scan` subcommand (or its argv-shimmed shorthand — see main())."""
+    `scan` subcommand (or its argv-shimmed shorthand - see main())."""
     config = {}
     if load_config is not None:
         try:
@@ -350,7 +350,7 @@ def _find_lockfiles(project_root):
 
 
 def _cmd_package_inspect(args):
-    """`secchecker package inspect <name>` — resolve one package from the
+    """`secchecker package inspect <name>` - resolve one package from the
     project's lockfile, run static checks against node_modules/<name> if
     present, print its verdict. Fully offline unless --check-registry."""
     if scan_directory_dependency is None:
@@ -379,12 +379,12 @@ def _cmd_package_inspect(args):
             args.name, project_root, ', '.join(lockfiles) or 'none present'))
 
     if args.check_registry:
-        print('[!] --check-registry is not implemented in this phase (see THREAT_MODEL.md) — '
+        print('[!] --check-registry is not implemented in this phase (see THREAT_MODEL.md) - '
               'no network call was made.', file=sys.stderr)
 
     pkg_dir = os.path.join(project_root, 'node_modules', args.name)
     if not os.path.isdir(pkg_dir):
-        print('[*] {} not present in node_modules/ — static content/hook checks skipped '
+        print('[*] {} not present in node_modules/ - static content/hook checks skipped '
               '(nothing installed to inspect yet).'.format(args.name))
         sys.exit(0)
 
@@ -409,7 +409,7 @@ def _cmd_package_inspect(args):
 
 
 def _cmd_scripts_review(args):
-    """`secchecker scripts review [path]` — list every preinstall/install/
+    """`secchecker scripts review [path]` - list every preinstall/install/
     postinstall/prepare hook across node_modules, with its static findings.
     Never executes anything."""
     if find_lifecycle_hooks is None:
@@ -418,7 +418,7 @@ def _cmd_scripts_review(args):
 
     node_modules = os.path.join(args.path, 'node_modules')
     if not os.path.isdir(node_modules):
-        print('[*] No node_modules/ found at {} — nothing to review.'.format(args.path))
+        print('[*] No node_modules/ found at {} - nothing to review.'.format(args.path))
         sys.exit(0)
 
     any_hooks = False
@@ -449,10 +449,10 @@ def _cmd_scripts_review(args):
 
 
 def _cmd_verify(args):
-    """`secchecker verify [path]` — lockfile-drift check only (fully
+    """`secchecker verify [path]` - lockfile-drift check only (fully
     offline): compares the working-tree lockfile against its last committed
     git version and reports any integrity-hash changes under an unchanged
-    version. Does NOT monitor installed files/network/processes at runtime —
+    version. Does NOT monitor installed files/network/processes at runtime -
     see THREAT_MODEL.md for why that's out of scope this phase."""
     if parse_lockfile is None:
         print('[!] Dependency scanner not available', file=sys.stderr)
@@ -477,7 +477,7 @@ def _cmd_verify(args):
             git_show = None
 
         if git_show is None or git_show.returncode != 0:
-            print('[*] {}: not in git history (or not a git repo) — nothing to diff against.'.format(fname))
+            print('[*] {}: not in git history (or not a git repo) - nothing to diff against.'.format(fname))
             continue
 
         import tempfile
@@ -506,7 +506,7 @@ def main():
     """Main CLI entry point for secchecker."""
     parser = argparse.ArgumentParser(
         prog='secchecker',
-        description='secchecker — static security scanner for AI agents, MCP tools, and LLM applications',
+        description='secchecker - static security scanner for AI agents, MCP tools, and LLM applications',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -539,7 +539,7 @@ Exit codes:
     inspect_parser.add_argument('--path', default='.', help='Project root (default: current directory)')
     inspect_parser.add_argument('--check-registry', action='store_true',
                                  help='Also check package age/provenance via the npm registry '
-                                      '(makes a network call — off by default, see THREAT_MODEL.md)')
+                                      '(makes a network call - off by default, see THREAT_MODEL.md)')
 
     scripts_parser = subparsers.add_parser('scripts', help='Lifecycle-script operations')
     scripts_sub = scripts_parser.add_subparsers(dest='scripts_command')
@@ -550,7 +550,7 @@ Exit codes:
     verify_parser.add_argument('path', nargs='?', default='.', help='Project root (default: current directory)')
 
     # Preserve `secchecker <path> --type ...` as shorthand for
-    # `secchecker scan <path> --type ...` — inject the implicit subcommand
+    # `secchecker scan <path> --type ...` - inject the implicit subcommand
     # before parsing whenever the first token isn't a known subcommand name.
     # A real file/directory takes priority over the subcommand names even
     # when it happens to be spelled 'scan'/'package'/'scripts'/'verify'
