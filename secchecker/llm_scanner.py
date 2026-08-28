@@ -1,12 +1,21 @@
 """LLM/AI Security scanner — scans source code for LLM vulnerability patterns."""
+import ast
 import re
 import json
 import os
 from pathlib import Path
 from typing import Dict, List
 
-from secchecker.llm_patterns import LLM_PATTERNS
+from secchecker.llm_patterns import (
+    LLM_PATTERNS, TOOL_POISONING_MARKERS,
+    CAT_POISONED_DOCSTRING, CAT_POISONED_DESCRIPTION,
+)
 from secchecker.core import should_skip_directory, should_skip_file
+
+_POISON_RE = re.compile(TOOL_POISONING_MARKERS)
+
+# kwarg/dict-key names that hold an MCP/tool-schema description string
+_DESCRIPTION_KEYS = {'description', 'tool_description'}
 
 LLM_RELEVANT_EXTENSIONS = {
     '.py', '.js', '.ts', '.tsx', '.jsx',
@@ -51,6 +60,62 @@ def _scan_content(content):
     return findings
 
 
+def _get_str_const(node):
+    # type: (ast.expr) -> str
+    """Return the string value of a Constant node, or empty string."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    return ""
+
+
+def _scan_python_docstrings(content):
+    # type: (str) -> Dict[str, List[str]]
+    """Detect MCP tool-poisoning: hidden instructions embedded in a tool
+    function's docstring, or in a description= kwarg / dict-literal value.
+
+    AST-based rather than regex-only so matches are scoped to genuine
+    docstring/description contexts, not any occurrence of the marker text
+    in the file (comments, unrelated strings, this scanner's own patterns).
+    """
+    findings = {}  # type: Dict[str, List[str]]
+    try:
+        tree = ast.parse(content)
+    except (SyntaxError, ValueError):
+        return findings
+
+    def _add(category, detail):
+        findings.setdefault(category, [])
+        if detail not in findings[category]:
+            findings[category].append(detail)
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            doc = ast.get_docstring(node, clean=False)
+            if doc and _POISON_RE.search(doc):
+                name = getattr(node, 'name', '<module>')
+                snippet = _POISON_RE.search(doc).group(0)[:60]
+                _add(CAT_POISONED_DOCSTRING, "{}: {!r}".format(name, snippet))
+
+        elif isinstance(node, ast.Call):
+            for kw in node.keywords:
+                if kw.arg in _DESCRIPTION_KEYS:
+                    val = _get_str_const(kw.value)
+                    if val and _POISON_RE.search(val):
+                        snippet = _POISON_RE.search(val).group(0)[:60]
+                        _add(CAT_POISONED_DESCRIPTION, "{}={!r}".format(kw.arg, snippet))
+
+        elif isinstance(node, ast.Dict):
+            for key, value in zip(node.keys, node.values):
+                key_str = _get_str_const(key) if key is not None else ""
+                if key_str.lower() in _DESCRIPTION_KEYS:
+                    val = _get_str_const(value)
+                    if val and _POISON_RE.search(val):
+                        snippet = _POISON_RE.search(val).group(0)[:60]
+                        _add(CAT_POISONED_DESCRIPTION, "{}={!r}".format(key_str, snippet))
+
+    return findings
+
+
 def _scan_notebook(filepath):
     # type: (str) -> Dict[str, List[str]]
     """Extract source from Jupyter notebook cells and scan."""
@@ -67,7 +132,14 @@ def _scan_notebook(filepath):
                 all_source.append(''.join(source))
             elif isinstance(source, str):
                 all_source.append(source)
-        return _scan_content('\n'.join(all_source))
+        joined = '\n'.join(all_source)
+        findings = _scan_content(joined)
+        for category, matches in _scan_python_docstrings(joined).items():
+            findings.setdefault(category, [])
+            for m in matches:
+                if m not in findings[category]:
+                    findings[category].append(m)
+        return findings
     except (ValueError, KeyError, TypeError):
         raw = _read_file(filepath)
         return _scan_content(raw) if raw else {}
@@ -92,7 +164,14 @@ def scan_file_llm(filepath):
     content = _read_file(filepath)
     if content is None:
         return {}
-    return _scan_content(content)
+    findings = _scan_content(content)
+    if path.suffix.lower() == '.py':
+        for category, matches in _scan_python_docstrings(content).items():
+            findings.setdefault(category, [])
+            for m in matches:
+                if m not in findings[category]:
+                    findings[category].append(m)
+    return findings
 
 
 def scan_directory_llm(directory):

@@ -1,11 +1,12 @@
 """Config file loader for secchecker — parses .secchecker.yml using stdlib only."""
 import os
 import re
+import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 CONFIG_FILENAME = '.secchecker.yml'
-VALID_SCAN_TYPES = {'secrets', 'llm', 'devsecops', 'all'}
+VALID_SCAN_TYPES = {'secrets', 'llm', 'devsecops', 'dependency', 'all'}
 VALID_SEVERITIES = {'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'}
 
 
@@ -23,6 +24,13 @@ def get_default_config():
             'enabled': False,
             'threshold': 4.5,
             'min_length': 20,
+        },
+        'dependency_scan': {
+            # Static, offline pre-install scanning of node_modules/lockfiles.
+            'check_registry': False,   # opt-in network call for package age/provenance — see THREAT_MODEL.md
+            'block_at': 'CRITICAL',
+            'review_at': 'HIGH',
+            'warn_at': 'MEDIUM',
         },
     }
 
@@ -57,9 +65,17 @@ def _parse_scalar(value_str):
         return float(value_str)
     except ValueError:
         pass
-    if (value_str.startswith('"') and value_str.endswith('"')) or \
-       (value_str.startswith("'") and value_str.endswith("'")):
-        return value_str[1:-1]
+    # Quoted scalar: return the content up to the closing quote, ignoring any
+    # trailing inline comment (e.g. '"demo/"  # note' -> 'demo/').
+    if value_str and value_str[0] in ('"', "'"):
+        quote = value_str[0]
+        end = value_str.find(quote, 1)
+        if end != -1:
+            return value_str[1:end]
+    # Unquoted scalar: strip a trailing inline comment introduced by ' #'.
+    hash_idx = value_str.find(' #')
+    if hash_idx != -1:
+        value_str = value_str[:hash_idx].rstrip()
     return value_str
 
 
@@ -94,7 +110,7 @@ def _parse_simple_yaml(text):
                 j = i + 1
                 while j < len(lines):
                     next_line = lines[j].rstrip()
-                    if not next_line:
+                    if not next_line or next_line.lstrip().startswith('#'):
                         j += 1
                         continue
                     list_m = re.match(r'^\s+-\s+(.+)', next_line)
@@ -161,7 +177,84 @@ def _validate_and_normalize(raw):
         if isinstance(entropy.get('min_length'), int):
             config['entropy']['min_length'] = entropy['min_length']
 
+    dep_scan = raw.get('dependency_scan')
+    if isinstance(dep_scan, dict):
+        if isinstance(dep_scan.get('check_registry'), bool):
+            config['dependency_scan']['check_registry'] = dep_scan['check_registry']
+        for key in ('block_at', 'review_at', 'warn_at'):
+            val = dep_scan.get(key)
+            if isinstance(val, str) and val.upper() in VALID_SEVERITIES:
+                config['dependency_scan'][key] = val.upper()
+
     return config
+
+
+def is_path_excluded(rel_path, exclude_paths):
+    # type: (str, Optional[List[str]]) -> bool
+    """
+    Return True if ``rel_path`` matches any entry in ``exclude_paths``.
+
+    Matching rules (case-sensitive, separator-agnostic):
+      * A glob entry (contains ``*``, ``?`` or ``[``) is matched with fnmatch
+        against both the full path and its basename — e.g. ``*.mock.*`` or
+        ``build/*``.
+      * A plain entry (``tests/``, ``node_modules``, ``sample-reports``) matches
+        when it appears as a full path component anywhere in the path, or when
+        the path equals it or is nested beneath it — e.g. ``tests/`` excludes
+        ``tests/test_x.py`` and ``a/tests/x.py``.
+      * A multi-segment literal (``secchecker/patterns.py``) matches that exact
+        file or anything nested beneath it.
+    """
+    if not exclude_paths:
+        return False
+
+    norm = str(rel_path).replace('\\', '/').strip('/')
+    if not norm:
+        return False
+    segments = norm.split('/')
+
+    for raw in exclude_paths:
+        if not raw:
+            continue
+        pat = str(raw).replace('\\', '/').strip().strip('/')
+        if not pat:
+            continue
+
+        if any(ch in pat for ch in '*?['):
+            if fnmatch.fnmatch(norm, pat) or fnmatch.fnmatch(segments[-1], pat):
+                return True
+            continue
+
+        if '/' in pat:
+            # Multi-segment literal: exact file or a nested path.
+            if norm == pat or norm.startswith(pat + '/'):
+                return True
+        else:
+            # Single token: match as a full path component anywhere.
+            if pat in segments:
+                return True
+
+    return False
+
+
+def is_pattern_excluded(pattern_name, exclude_patterns):
+    # type: (str, Optional[List[str]]) -> bool
+    """
+    Return True if finding category ``pattern_name`` (e.g. ``"Email"``,
+    ``"LLM - Hardcoded Jailbreak Instruction"``) matches any entry in
+    ``exclude_patterns``. Matching is case-insensitive and supports fnmatch
+    globs (``"LLM - *"``, ``"Docker*"``).
+
+    This excludes finding *categories* (rule names), not file paths — file
+    globs are already covered by ``exclude_paths``.
+    """
+    if not exclude_patterns:
+        return False
+    name = str(pattern_name).lower()
+    for raw in exclude_patterns:
+        if raw and fnmatch.fnmatch(name, str(raw).lower()):
+            return True
+    return False
 
 
 def load_config(config_path=None, scan_root=None):

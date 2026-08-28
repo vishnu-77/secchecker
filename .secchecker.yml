@@ -1,0 +1,31 @@
+# secchecker configuration for scanning secchecker's own repository.
+#
+# A security scanner scanning itself unavoidably flags its own pattern
+# definitions, sample reports, test fixtures, and the intentionally-vulnerable
+# demo. Exclude those so the self-scan (and the SARIF uploaded to the Security
+# tab by .github/workflows/security.yml) reflects only real findings.
+#
+# Note: the config parser does not strip trailing inline comments, so keep
+# comments on their own lines and list entries bare.
+exclude_paths:
+  # intentionally-vulnerable demo app
+  - "demo/"
+  # test fixtures contain sample secrets
+  - "tests/"
+  # benchmark fixtures are intentionally vulnerable/safe pairs, by design
+  - "bench/fixtures/"
+  # example reports echo pattern names
+  - "sample-reports/"
+  # CI YAML embeds test snippets inline
+  - ".github/"
+  # the regex libraries self-match their own definitions
+  - "secchecker/patterns.py"
+  - "secchecker/llm_patterns.py"
+  - "secchecker/devsecops_patterns.py"
+  # severity/OWASP maps and category-name constants also self-match: their
+  # dict keys are themselves auth-related pattern names (bearer-scheme and
+  # basic-auth entries), and AST_SEVERITY_MAP's category constants look
+  # like a hardcoded secret assignment to the scanner they belong to
+  - "secchecker/reporter.py"
+  - "secchecker/owasp.py"
+  - "secchecker/ast_scanner.py"

@@ -53,9 +53,7 @@ PATTERNS = {
     # Other Sensitive Data
     "Credit Card": r"\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b",
     "Social Security Number": r"\b\d{3}-\d{2}-\d{4}\b",
-    "Phone Number": r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b",
-    "Email": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
-    
+
     # URLs with embedded credentials
     "HTTP URL with Credentials": r"https?://[^:\s]+:[^@\s]+@[^\s]+",
     "FTP URL with Credentials": r"ftp://[^:\s]+:[^@\s]+@[^\s]+",
@@ -85,6 +83,14 @@ PATTERNS = {
     "HashiCorp Vault Token": r"hvs\.[a-zA-Z0-9]{24,}",
     "npm Access Token": r"(?i)npm[_\-]?token['\"\s:=]+[a-zA-Z0-9\-_]{36}",
     "PyPI API Token": r"pypi-[a-zA-Z0-9\-_]{36,}",
+}
+
+# Opt-in PII detection (CLI --pii). Off by default: emails and phone numbers
+# appear legitimately in most codebases (comments, test fixtures, contact
+# info) and produce alert fatigue when treated as secrets.
+PII_PATTERNS = {
+    "Phone Number": r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b",
+    "Email": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
 }
 
 # Patterns that commonly produce false positives - used for filtering

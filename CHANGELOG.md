@@ -4,6 +4,90 @@ All notable changes to secchecker are documented here.
 
 ---
 
+## [0.4.2] — 2026-07-17
+
+An independent audit of 0.4.0 found the default scan crashing on current Python, a
+severity-filtering bug that could report a dirty repo as clean, and several config
+options that were parsed but silently ignored. This release fixes all of it and adds
+a regression test per bug.
+
+### Fixed
+- **Default scan crashed on Python 3.14** (`ast_scanner.py`) — the AST scanner read
+  the deprecated `ast.Constant.s` alias, which was removed in Python 3.14. `secchecker
+  <path>` (the default `secrets` scan) and `--type all` now run cleanly on Python
+  3.8–3.14 instead of crashing with exit code 2 and no report.
+- **`--severity-threshold` could silently drop real findings** — AST-detected
+  `eval`/`exec` calls, hardcoded secrets, and tainted-sink findings (plus several
+  secrets patterns and the entropy finding) had no explicit severity and defaulted to
+  `LOW`, so `--severity-threshold HIGH` dropped them and reported a clean scan for a
+  vulnerable file. Every finding category now has an explicit severity, enforced by a
+  new contract test (`tests/test_severity_contract.py`) so this class of bug can't
+  silently recur.
+- **Bearer-scheme findings were always suppressed** (`validators.py`) — JWT structural
+  validation was incorrectly applied to bearer-scheme values as well as JWTs; since a
+  match includes the literal `Bearer` prefix plus a following value, it could never
+  pass JWT validation. These findings are now validated only against the universal
+  placeholder filter.
+- **Entropy scan results used inconsistent keys** — the entropy walk keyed findings by
+  absolute path while the regex/AST scanners use paths relative to the scan root, so
+  the same file could appear twice in results, and entropy scanning skipped none of
+  the usual excluded directories (`node_modules`, `.git`, etc.). Entropy now shares
+  the same relative-path keys and skip filters as the other scanners, and honors
+  `entropy.threshold` / `entropy.min_length` from `.secchecker.yml` (previously parsed
+  but never applied).
+- **DevSecOps findings shipped with empty OWASP/CWE tags in SARIF** — `owasp.py`'s
+  DevSecOps entries used stale pattern names that no longer matched
+  `DEVSECOPS_PATTERNS`. All 25 DevSecOps rules are now correctly tagged.
+
+### Added
+- **MCP tool-poisoning detection for the canonical attack** — hidden instructions
+  embedded in a tool function's docstring or a `description=`/tool-schema value
+  (e.g. `<IMPORTANT>ignore previous instructions...</IMPORTANT>`), the way a poisoned
+  tool actually hijacks a calling LLM. Two new findings, both HIGH:
+  `MCP - Poisoned Tool Docstring` and `MCP - Poisoned Tool Description`. AST-based and
+  runs under `--type llm`.
+- **`--pii` flag** — Email and Phone Number detection moved out of the default secrets
+  scan (previously produced alert fatigue on ordinary codebases) into an opt-in flag.
+- **`exclude_patterns` config key wired up** — case-insensitive glob exclusion of
+  finding *categories* by rule name (e.g. `"Email"`, `"LLM - *"`), applied after all
+  scanners run. Distinct from `exclude_paths`, which excludes files.
+- **`custom_patterns` config key wired up** — user-defined `{name: regex}` patterns
+  are now merged into the secrets scan instead of being parsed and discarded.
+- **`scan_types` config key wired up** — used as the default scan type when `--type`
+  is not passed on the command line; `--type` always takes precedence.
+- CI matrix extended to Python 3.13 and 3.14 (previously stopped at 3.12, which is why
+  the Python 3.14 crash above shipped undetected).
+
+### Changed
+- Documentation counts corrected to match actual pattern counts: 56 secrets patterns
+  (was documented as "52+") plus 2 opt-in PII patterns via `--pii`; 18 LLM patterns
+  plus 11 MCP/agentic patterns (was "9"); 25 DevSecOps patterns (was documented as
+  "28+", an over-claim). Entropy scanning documented as config opt-in, not
+  enabled-by-default. README gained a Limitations section.
+
+---
+
+## [0.4.1] — 2026-07-11
+
+### Fixed
+- `exclude_paths` in `.secchecker.yml` is now enforced. Previously it was parsed
+  from config but never applied, so configured exclusions had no effect. Findings
+  in matching files are now dropped after scanning, covering every scanner
+  (secrets, LLM/MCP/agentic, DevSecOps, AST, entropy) with one rule. Supports
+  directory prefixes (`tests/`), path components (`node_modules`), globs
+  (`*.mock.*`), and multi-segment literals (`secchecker/patterns.py`).
+- Config parser now strips trailing inline comments (`- "demo/"  # note`) and
+  skips full-line comments interspersed between list items, so commented
+  `.secchecker.yml` files parse as intended instead of silently dropping entries.
+
+### Changed
+- The repository now ships a `.secchecker.yml` that excludes its own pattern
+  definitions, fixtures, sample reports, and demo from the self-scan. The
+  Security Scan workflow again uploads SARIF to the GitHub Security tab, now
+  free of self-referential false positives.
+
+---
+
 ## [0.4.0] — 2026-07-08
 
 ### Added

@@ -103,3 +103,16 @@ def test_service_patterns():
     assert "PyPI API Token" in patterns.PATTERNS
     assert "Twilio Account SID" in patterns.PATTERNS
     assert len(patterns.PATTERNS) > 45
+
+
+# ---------------------------------------------------------------------------
+# Regression: Q-1 — Email/Phone Number are opt-in PII, not default secrets.
+# ---------------------------------------------------------------------------
+
+def test_regression_q1_pii_opt_in():
+    assert 'Email' not in patterns.PATTERNS
+    assert 'Phone Number' not in patterns.PATTERNS
+    assert 'Email' in patterns.PII_PATTERNS
+    assert 'Phone Number' in patterns.PII_PATTERNS
+    assert len(patterns.PATTERNS) == 56
+    assert len(patterns.PII_PATTERNS) == 2

@@ -1,7 +1,9 @@
+import os
+
 import pytest
 from secchecker.entropy import (
     shannon_entropy, get_high_entropy_strings, scan_file_entropy,
-    BASE64_CHARS, HEX_CHARS,
+    scan_directory_entropy, BASE64_CHARS, HEX_CHARS,
 )
 
 
@@ -54,3 +56,61 @@ def test_entropy_threshold_respected(tmp_path):
     f.write_text('key = "passwordpasswordpassword123"')
     result = scan_file_entropy(str(f), threshold=4.9)
     assert result == {} or "High Entropy String" not in result
+
+
+# ---------------------------------------------------------------------------
+# Regression: Q-3 — the entropy directory walk keyed results by absolute
+# path while regex/AST scanners key by path relative to the scan root, so
+# the same file appeared under two different keys and skip filters were
+# never applied to the entropy walk.
+# ---------------------------------------------------------------------------
+
+def test_regression_q3_entropy_keys_are_relative(tmp_path):
+    sub = tmp_path / "sub"
+    sub.mkdir()
+    (sub / "app.py").write_text('db_password = "xK9mP2nQ8rL5vJ3wY7tB4cZ1aE6hF0iG"')
+
+    results = scan_directory_entropy(str(tmp_path))
+
+    assert results, "expected at least one high-entropy finding"
+    for key in results:
+        assert not os.path.isabs(key)
+        assert not key.startswith(str(tmp_path))
+    assert any("High Entropy String" in v for v in results.values())
+
+
+def test_regression_q3_entropy_respects_skip_dirs(tmp_path):
+    skip_dir = tmp_path / "node_modules"
+    skip_dir.mkdir()
+    (skip_dir / "bundle.py").write_text('db_password = "xK9mP2nQ8rL5vJ3wY7tB4cZ1aE6hF0iG"')
+
+    results = scan_directory_entropy(str(tmp_path))
+
+    assert not any("node_modules" in key for key in results)
+
+
+def test_regression_q3_entropy_threshold_from_config(tmp_path):
+    (tmp_path / "config.py").write_text('key = "passwordpasswordpassword123"')
+
+    results = scan_directory_entropy(str(tmp_path), threshold=7.9)
+
+    assert results == {}
+
+
+def test_regression_q3_entropy_merges_with_regex_scanner(tmp_path):
+    from secchecker.cli import _run_scan
+
+    f = tmp_path / "config.py"
+    f.write_text(
+        'password="hunter2secret"\n'
+        'db_password = "xK9mP2nQ8rL5vJ3wY7tB4cZ1aE6hF0iG"\n'
+    )
+    config = {"entropy": {"enabled": True}}
+
+    results = _run_scan(str(tmp_path), "secrets", False, config)
+
+    matching_keys = [k for k in results if "config.py" in k]
+    assert len(matching_keys) == 1
+    key = matching_keys[0]
+    assert "High Entropy String" in results[key]
+    assert "Password in Config" in results[key]

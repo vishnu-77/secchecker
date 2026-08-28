@@ -92,6 +92,18 @@ SEVERITY_MAP = {
     "HashiCorp Vault Token": "CRITICAL",
     "npm Access Token": "HIGH",
     "PyPI API Token": "HIGH",
+    # Previously unmapped — defaulted to LOW (audit G-2 backfill)
+    "Google Cloud Service Account": "HIGH",
+    "Generic API Key": "MEDIUM",
+    "Generic Secret": "MEDIUM",
+    "Hex Encoded Secret": "MEDIUM",
+    "Docker Config": "LOW",
+    "Kubernetes Secret": "MEDIUM",
+    "X509 Certificate": "LOW",
+    "PKCS12 Certificate": "MEDIUM",
+    "High Entropy String": "MEDIUM",   # entropy.py finding category
+    "Email": "LOW",                    # opt-in PII (--pii)
+    "Phone Number": "LOW",             # opt-in PII (--pii)
 }
 
 # LLM/AI and DevSecOps patterns carry their own severity maps in their pattern
@@ -108,21 +120,35 @@ try:
 except ImportError:
     DEVSECOPS_SEVERITY_MAP = {}
 
+try:
+    from secchecker.ast_scanner import AST_SEVERITY_MAP
+except ImportError:
+    AST_SEVERITY_MAP = {}
+
+try:
+    from secchecker.dependency_patterns import DEPENDENCY_SEVERITY_MAP
+except ImportError:
+    DEPENDENCY_SEVERITY_MAP = {}
+
 def get_severity(pattern_name: str) -> str:
-    """Get severity level for a pattern across secrets, LLM/AI, and DevSecOps maps."""
+    """Get severity level for a pattern across secrets, LLM/AI, DevSecOps, AST, and dependency maps."""
     if pattern_name in SEVERITY_MAP:
         return SEVERITY_MAP[pattern_name]
     if pattern_name in LLM_SEVERITY_MAP:
         return LLM_SEVERITY_MAP[pattern_name]
     if pattern_name in DEVSECOPS_SEVERITY_MAP:
         return DEVSECOPS_SEVERITY_MAP[pattern_name]
+    if pattern_name in AST_SEVERITY_MAP:
+        return AST_SEVERITY_MAP[pattern_name]
+    if pattern_name in DEPENDENCY_SEVERITY_MAP:
+        return DEPENDENCY_SEVERITY_MAP[pattern_name]
     return "LOW"
 
 def get_scan_metadata() -> Dict[str, Any]:
     """Get metadata about the scan."""
     return {
         "timestamp": datetime.now().isoformat(),
-        "version": "0.4.0",
+        "version": "0.4.2",
         "tool": "secchecker"
     }
 

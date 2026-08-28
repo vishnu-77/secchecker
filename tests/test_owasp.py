@@ -52,18 +52,18 @@ def test_all_map_entries_have_required_keys():
 
 
 def test_k8s_privileged_maps_to_a05():
-    result = get_owasp("K8s - Privileged Container")
+    result = get_owasp("K8s - Privileged container")
     assert "A05:2021" in result["owasp"]
 
 
 def test_ci_unpinned_action_maps_to_a08():
-    result = get_owasp("CI - Unpinned Action")
+    result = get_owasp("CI - Unpinned GitHub Action")
     assert "A08:2021" in result["owasp"]
     assert "CWE-829" in result["cwe"]
 
 
 def test_terraform_open_sg_maps_to_a01():
-    result = get_owasp("Terraform - Open Security Group")
+    result = get_owasp("Terraform - Open security group ingress")
     assert "A01:2021" in result["owasp"]
     assert "CWE-732" in result["cwe"]
 
@@ -85,3 +85,48 @@ def test_all_new_llm_patterns_have_owasp_entries():
     from secchecker.llm_patterns import LLM_PATTERNS
     for name in LLM_PATTERNS:
         assert name in OWASP_MAP, "Missing OWASP mapping for: {}".format(name)
+
+
+def test_all_devsecops_patterns_have_owasp_entries():
+    """Regression (planning discovery): OWASP_MAP DevSecOps keys previously
+    didn't match DEVSECOPS_PATTERNS names, so every DevSecOps SARIF rule
+    shipped with empty OWASP/CWE tags."""
+    from secchecker.devsecops_patterns import DEVSECOPS_PATTERNS
+    for name in DEVSECOPS_PATTERNS:
+        result = get_owasp(name)
+        assert result["owasp"], "Missing OWASP mapping for: {}".format(name)
+        assert result["cwe"], "Missing CWE mapping for: {}".format(name)
+
+
+def test_all_dependency_patterns_have_owasp_entries():
+    """Same regression class as the DevSecOps check above, for the
+    dependency (npm/pnpm/Yarn) scanner."""
+    from secchecker.dependency_patterns import DEPENDENCY_PATTERNS
+    for name in DEPENDENCY_PATTERNS:
+        result = get_owasp(name)
+        assert result["owasp"], "Missing OWASP mapping for: {}".format(name)
+        assert result["cwe"], "Missing CWE mapping for: {}".format(name)
+
+
+def test_poisoned_tool_categories_map_to_llm01():
+    for name in ("MCP - Poisoned Tool Docstring", "MCP - Poisoned Tool Description"):
+        result = get_owasp(name)
+        assert "LLM01:2025" in result["owasp_llm"]
+        assert "CWE-20" in result["cwe"]
+
+
+def test_ast_categories_have_owasp_entries():
+    for name in (
+        "AST - Hardcoded Secret Assignment",
+        "AST - eval/exec Call",
+        "AST - Tainted Input to Dangerous Sink",
+    ):
+        result = get_owasp(name)
+        assert result["owasp"]
+        assert result["cwe"]
+
+
+def test_pii_categories_have_owasp_entries():
+    for name in ("Email", "Phone Number"):
+        result = get_owasp(name)
+        assert "A01:2021" in result["owasp"]
