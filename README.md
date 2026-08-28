@@ -103,12 +103,8 @@ custom_patterns:
 
 CLI flags override the config file.
 
-## Also a library
-
-Every scanner (`scan_file`, `scan_file_llm`, `scan_file_devsecops`,
-`scan_file_ast`, `scan_file_entropy`, …) and reporter (`to_json`, `to_markdown`,
-`to_sarif`, `to_html`, `to_xml`) is importable directly and composable outside
-the CLI.
+Also usable as a Python library (every scanner/reporter is importable
+directly) — module map and internals: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Contributing
 
