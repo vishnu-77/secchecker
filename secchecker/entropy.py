@@ -5,6 +5,15 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List
 
+try:
+    from secchecker.core import should_skip_file, should_skip_directory
+except ImportError:
+    def should_skip_file(p):
+        return False
+
+    def should_skip_directory(p):
+        return False
+
 BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
 HEX_CHARS = '0123456789abcdefABCDEF'
 
@@ -122,3 +131,41 @@ def scan_file_entropy(filepath, threshold=4.5, min_len=20):
         for h in hits
     ]
     return {"High Entropy String": matches}
+
+
+def scan_directory_entropy(directory, threshold=4.5, min_len=20):
+    # type: (str, float, int) -> Dict[str, Dict[str, List[str]]]
+    """Entropy-scan all files in *directory* recursively.
+
+    Mirrors core.scan_directory: applies the same skip filters and keys
+    results by path relative to *directory* so entropy findings merge into
+    the same file keys the regex/AST scanners use.
+    """
+    results = {}
+    directory_path = Path(directory)
+
+    if not directory_path.exists():
+        raise FileNotFoundError("Directory not found: {}".format(directory))
+
+    if not directory_path.is_dir():
+        findings = scan_file_entropy(str(directory_path), threshold=threshold, min_len=min_len)
+        if findings:
+            results[str(directory_path)] = findings
+        return results
+
+    for root, dirs, files in os.walk(directory_path):
+        root_path = Path(root)
+        dirs[:] = [d for d in dirs if not should_skip_directory(Path(d))]
+        for filename in files:
+            file_path = root_path / filename
+            if should_skip_file(file_path):
+                continue
+            findings = scan_file_entropy(str(file_path), threshold=threshold, min_len=min_len)
+            if findings:
+                try:
+                    rel = file_path.relative_to(directory_path)
+                    results[str(rel)] = findings
+                except ValueError:
+                    results[str(file_path)] = findings
+
+    return results

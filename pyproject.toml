@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.4.0"
+version = "0.4.2"
 description = "Static security scanner for AI agents, MCP tools, and LLM applications. Finds prompt injection, tool poisoning, and agentic vulnerabilities. OWASP LLM Top 10 (2025) tagged."
 readme = "README.md"
 authors = [
@@ -44,6 +44,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent"
 ]
 dependencies = [

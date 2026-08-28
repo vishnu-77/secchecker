@@ -88,6 +88,25 @@ LLM_PATTERNS: Dict[str, str] = {
     ),
 }
 
+# ---------------------------------------------------------------------------
+# MCP tool poisoning — hidden instructions embedded in a tool's docstring or
+# description (the canonical MCP tool-poisoning vector: an LLM reads the
+# tool's description/docstring as part of its context and can be hijacked
+# by instructions hidden there, invisible to the human calling the tool).
+# Consumed by secchecker.llm_scanner._scan_python_docstrings via ast.
+# ---------------------------------------------------------------------------
+
+TOOL_POISONING_MARKERS = (
+    r'(?is)(?:ignore\s+(?:previous|prior|all)\s+instructions'
+    r'|<\s*/?\s*important\s*>'
+    r'|do\s+not\s+(?:tell|inform|mention|reveal|show)\s+(?:this\s+to\s+)?the\s+user'
+    r'|(?:^|\n)\s*system\s*:'
+    r'|disregard\s+(?:your\s+)?(?:system\s+)?prompt)'
+)
+
+CAT_POISONED_DOCSTRING = "MCP - Poisoned Tool Docstring"
+CAT_POISONED_DESCRIPTION = "MCP - Poisoned Tool Description"
+
 LLM_SEVERITY_MAP: Dict[str, str] = {
     "LLM - Eval of LLM Output": "CRITICAL",
     "LLM - Secret Passed to LLM": "CRITICAL",
@@ -118,6 +137,8 @@ LLM_SEVERITY_MAP: Dict[str, str] = {
     "MCP - Untrusted Tool Description in Prompt": "HIGH",
     "Agentic - Unsanitized Input to Agent Memory": "HIGH",
     "Agentic - Recursive Self-Invocation Risk": "HIGH",
+    CAT_POISONED_DOCSTRING: "HIGH",
+    CAT_POISONED_DESCRIPTION: "HIGH",
 
     "Agentic - Agent Loop Without Exit Condition": "MEDIUM",
 }

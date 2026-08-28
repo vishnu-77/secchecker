@@ -66,6 +66,20 @@ _DANGEROUS_SINKS = {
 # Minimum length for a string literal to be reported as a hardcoded secret
 _MIN_SECRET_LEN = 8
 
+# ---------------------------------------------------------------------------
+# Finding categories + severities (consumed by secchecker.reporter.get_severity())
+# ---------------------------------------------------------------------------
+
+CAT_HARDCODED_SECRET = "AST - Hardcoded Secret Assignment"
+CAT_EVAL_EXEC = "AST - eval/exec Call"
+CAT_TAINTED_SINK = "AST - Tainted Input to Dangerous Sink"
+
+AST_SEVERITY_MAP = {
+    CAT_HARDCODED_SECRET: "HIGH",
+    CAT_EVAL_EXEC: "HIGH",
+    CAT_TAINTED_SINK: "CRITICAL",
+}
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -91,12 +105,9 @@ def _node_to_call_path(node):
 
 def _get_string_value(node):
     # type: (ast.expr) -> str
-    """Return string value from a Constant/Str node, or empty string."""
-    if isinstance(node, ast.Constant) and isinstance(node.s, str):
-        return node.s
-    # Python 3.7 compatibility
-    if hasattr(ast, 'Str') and isinstance(node, ast.Str):
-        return node.s
+    """Return string value from a Constant node, or empty string."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
     return ""
 
 
@@ -136,7 +147,7 @@ class _SecurityVisitor(ast.NodeVisitor):
                     # Truncate for display
                     display = val[:60] + "..." if len(val) > 60 else val
                     self._add(
-                        "AST - Hardcoded Secret Assignment",
+                        CAT_HARDCODED_SECRET,
                         "{}={!r}".format(target_name, display),
                     )
         # Taint tracking: mark names that receive user-controlled values
@@ -176,7 +187,7 @@ class _SecurityVisitor(ast.NodeVisitor):
 
         if call_path in ('eval', 'exec'):
             arg_repr = self._arg_summary(node)
-            self._add("AST - eval/exec Call", "{}({})".format(call_path, arg_repr))
+            self._add(CAT_EVAL_EXEC, "{}({})".format(call_path, arg_repr))
 
         # Dangerous sink called with tainted argument
         if call_path in _DANGEROUS_SINKS or any(
@@ -186,14 +197,14 @@ class _SecurityVisitor(ast.NodeVisitor):
                 tainted_arg = self._tainted_arg_name(arg)
                 if tainted_arg and tainted_arg in self._tainted_names:
                     self._add(
-                        "AST - Tainted Input to Dangerous Sink",
+                        CAT_TAINTED_SINK,
                         "{}({}) [tainted: {}]".format(call_path, tainted_arg, tainted_arg),
                     )
             for kw in node.keywords:
                 if kw.value and self._tainted_arg_name(kw.value) in self._tainted_names:
                     tainted = self._tainted_arg_name(kw.value)
                     self._add(
-                        "AST - Tainted Input to Dangerous Sink",
+                        CAT_TAINTED_SINK,
                         "{}({}={}) [tainted]".format(call_path, kw.arg or '**', tainted),
                     )
 

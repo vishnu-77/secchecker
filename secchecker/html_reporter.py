@@ -1,6 +1,6 @@
 """HTML report generator for secchecker — produces self-contained single-file reports."""
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 
 try:
@@ -76,7 +76,7 @@ def generate_html_report(results, scan_type="secrets"):
             s = get_severity(name)
             counts[s] = counts.get(s, 0) + 1
 
-    ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     parts = [
         "<!DOCTYPE html><html lang='en'><head>",
