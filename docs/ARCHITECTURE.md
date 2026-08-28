@@ -2,33 +2,24 @@
 
 ## Component overview
 
-```
-                        ┌─────────────────────────────────────────┐
-                        │              cli.py  (main)              │
-                        │  --type  --format  --severity-threshold  │
-                        │  --config  --no-entropy  --output        │
-                        └──────────────┬──────────────────────────┘
-                                       │ orchestrates
-              ┌────────────────────────┼────────────────────────┐
-              ▼                        ▼                         ▼
-   ┌──────────────────┐   ┌───────────────────────┐   ┌─────────────────────┐
-   │  core.py         │   │  llm_scanner.py        │   │ devsecops_scanner.py│
-   │  secrets scanner │   │  LLM/AI vuln scanner   │   │ infra config scanner│
-   │  patterns.py     │   │  llm_patterns.py        │   │ devsecops_patterns  │
-   └──────────────────┘   └───────────────────────┘   └─────────────────────┘
-              │                        │                         │
-              └────────────────────────┼─────────────────────────┘
-                                       │ entropy.py (optional, overlaid)
-                                       │
-                        ┌──────────────▼──────────────────────────┐
-                        │   Dict[filepath, Dict[pattern, matches]] │
-                        │          shared result contract          │
-                        └──────────────┬──────────────────────────┘
-                                       │ passed to one reporter
-        ┌──────────┬───────────────────┼──────────────┬──────────────┐
-        ▼          ▼                   ▼               ▼              ▼
-    reporter.py  reporter.py       reporter.py   sarif_reporter  html_reporter
-      to_json()  to_markdown()     to_xml()      to_sarif()      to_html()
+```mermaid
+flowchart TD
+    CLI["cli.py (main)<br/>--type --format --severity-threshold<br/>--config --no-entropy --output"]
+
+    CLI --> Secrets["core.py<br/>secrets scanner<br/>(patterns.py)"]
+    CLI --> LLM["llm_scanner.py<br/>LLM/AI vuln scanner<br/>(llm_patterns.py)"]
+    CLI --> DevSecOps["devsecops_scanner.py<br/>infra config scanner<br/>(devsecops_patterns.py)"]
+
+    Secrets --> Result
+    LLM --> Result
+    DevSecOps --> Result
+    Entropy["entropy.py<br/>(optional, overlaid)"] --> Result
+
+    Result["Dict[filepath, Dict[pattern, matches]]<br/>shared result contract"] --> JSON["reporter.py<br/>to_json()"]
+    Result --> MD["reporter.py<br/>to_markdown()"]
+    Result --> XML["reporter.py<br/>to_xml()"]
+    Result --> SARIF["sarif_reporter.py<br/>to_sarif()"]
+    Result --> HTML["html_reporter.py<br/>to_html()"]
 ```
 
 ## Module map
@@ -54,7 +45,7 @@
 ## Design principles
 
 - Zero runtime dependencies — stdlib only, no pip install chain to audit
-- Python 3.8–3.12 compatible, tested in CI across all versions
+- Python 3.8–3.14 compatible, tested in CI across all versions
 - All scanners share a single file-filtering contract via `core.py` — no scanner walks files independently
 - Config loading never raises — returns safe defaults on any parse error
 - Reporters are pure functions: identical input always produces identical output
