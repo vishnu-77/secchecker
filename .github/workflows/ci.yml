@@ -97,6 +97,24 @@ jobs:
           run_scan python -m secchecker.cli test_file.py --severity-threshold HIGH --format json --output /dev/null
           rm -f test_file.py
 
+      - name: Benchmark — precision/recall/adversarial + scan throughput
+        # Informational only, one Python version - matches this job's own
+        # exit-code policy (0/1 pass, 2+ fails); these scripts always exit 0/1
+        # so they never fail the build, they just surface drift in the
+        # uploaded artifact. See bench/methodology.md.
+        if: matrix.python-version == '3.11'
+        continue-on-error: true
+        run: |
+          python bench/run.py
+          python bench/perf.py
+
+      - name: Upload benchmark results
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-results
+          path: bench/results/*.json
+
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.10'
         uses: codecov/codecov-action@v3

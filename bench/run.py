@@ -66,6 +66,21 @@ def classify(fixtures_dir):
     return rows, tp, fp, tn, fn
 
 
+def scan_only(paths):
+    """Scan a flat list of files with no vulnerable/safe pairing - used for
+    the adversarial (recall-only) and benign_realistic (FP-only) corpora,
+    which aren't structured as twin pairs like the regression corpus."""
+    rows = []
+    for path in paths:
+        findings = scan_file_llm(str(path))
+        rows.append({
+            'file': str(path.relative_to(BENCH_DIR)),
+            'flagged': bool(findings),
+            'categories': sorted(findings.keys()),
+        })
+    return rows
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--version', default=SECCHECKER_VERSION,
@@ -75,6 +90,23 @@ def main():
     fixtures_dir = BENCH_DIR / 'fixtures'
     start = time.perf_counter()
     rows, tp, fp, tn, fn = classify(fixtures_dir)
+
+    # Adversarial: deliberately varied phrasing/shape of the same vulnerable
+    # patterns (not structural twins) - recall-only, no safe counterpart.
+    # Low numbers here are expected and honest, not a regression - see
+    # methodology.md.
+    adversarial_rows = scan_only(sorted((fixtures_dir / 'adversarial').rglob('*.py')))
+    adversarial_caught = sum(1 for r in adversarial_rows if r['flagged'])
+    adversarial_recall = (
+        adversarial_caught / len(adversarial_rows) if adversarial_rows else 0.0
+    )
+
+    # benign_realistic: a curated set of plausible-false-positive shapes
+    # (not a random benign sample) - reports how many of THOSE known-risky
+    # shapes still trigger today, not a general false-positive rate.
+    benign_rows = scan_only(sorted((fixtures_dir / 'benign_realistic').glob('*.py')))
+    benign_flagged = sum(1 for r in benign_rows if r['flagged'])
+
     elapsed = time.perf_counter() - start
 
     precision = tp / (tp + fp) if (tp + fp) else 0.0
@@ -83,36 +115,63 @@ def main():
 
     summary = {
         'secchecker_version': SECCHECKER_VERSION,
-        'total_fixtures': len(rows),
-        'true_positives': tp,
-        'false_positives': fp,
-        'true_negatives': tn,
-        'false_negatives': fn,
-        'precision': round(precision, 4),
-        'recall': round(recall, 4),
-        'f1': round(f1, 4),
+        'regression_corpus': {
+            'total_fixtures': len(rows),
+            'true_positives': tp,
+            'false_positives': fp,
+            'true_negatives': tn,
+            'false_negatives': fn,
+            'precision': round(precision, 4),
+            'recall': round(recall, 4),
+            'f1': round(f1, 4),
+            'files': rows,
+        },
+        'adversarial_corpus': {
+            'total_fixtures': len(adversarial_rows),
+            'caught': adversarial_caught,
+            'recall': round(adversarial_recall, 4),
+            'files': adversarial_rows,
+        },
+        'benign_realistic_corpus': {
+            'total_fixtures': len(benign_rows),
+            'still_flagged': benign_flagged,
+            'files': benign_rows,
+        },
         'execution_time_seconds': round(elapsed, 4),
-        'files': rows,
     }
 
     out_path = BENCH_DIR / 'results' / '{}.json'.format(args.version)
     out_path.write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
 
     print('secchecker v{} - LLM/MCP/agentic benchmark'.format(SECCHECKER_VERSION))
-    print('  fixtures: {} ({} vulnerable, {} safe)'.format(
+    print('regression corpus: {} fixtures ({} vulnerable, {} safe)'.format(
         len(rows), tp + fn, fp + tn))
     print('  TP={} FP={} TN={} FN={}'.format(tp, fp, tn, fn))
     print('  precision={:.2f}  recall={:.2f}  f1={:.2f}'.format(precision, recall, f1))
-    print('  scan time: {:.3f}s'.format(elapsed))
-    print('  results written to {}'.format(out_path.relative_to(REPO_ROOT)))
+    print('adversarial corpus (varied phrasing, recall-only): {}/{} caught ({:.0%})'.format(
+        adversarial_caught, len(adversarial_rows), adversarial_recall))
+    print('benign_realistic corpus (known plausible-FP shapes): {}/{} still flagged'.format(
+        benign_flagged, len(benign_rows)))
+    print('scan time: {:.3f}s'.format(elapsed))
+    print('results written to {}'.format(out_path.relative_to(REPO_ROOT)))
 
     if fn or fp:
-        print('\nMisses:')
+        print('\nRegression corpus misses:')
         for row in rows:
             if row['expected'] == 'vulnerable' and not row['flagged']:
                 print('  FN (missed):     {}'.format(row['file']))
             elif row['expected'] == 'safe' and row['flagged']:
                 print('  FP (false alarm): {} -> {}'.format(row['file'], row['categories']))
+
+    print('\nAdversarial corpus misses (paraphrase/shape not caught):')
+    for row in adversarial_rows:
+        if not row['flagged']:
+            print('  MISSED: {}'.format(row['file']))
+
+    print('\nbenign_realistic corpus still-flagged (known limitation, not a bug):')
+    for row in benign_rows:
+        if row['flagged']:
+            print('  FLAGGED: {} -> {}'.format(row['file'], row['categories']))
 
 
 if __name__ == '__main__':

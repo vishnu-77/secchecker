@@ -151,7 +151,7 @@ system is live is a different, complementary control.
 | Shannon entropy has false positives on base64 non-secret data | Some legitimate base64 strings flagged as high-entropy secrets | Use `--no-entropy` or tune threshold in `.secchecker.yml` |
 | LLM patterns are heuristic | Adversarially crafted prompts using unusual encodings or string construction may evade regex | Defence-in-depth: also add runtime input validation |
 | Regex-based secret detection has false negatives | Novel secret formats not covered by current patterns may be missed | Contribute new patterns via issue/PR |
-| Taint tracking is best-effort | AST taint analysis tracks single-hop flows; multi-hop data flows are not fully traced | Planned improvement in v0.5.0 |
+| Taint tracking is best-effort | AST taint analysis tracks single-hop flows; multi-hop data flows are not fully traced | Planned improvement in v0.7.0 (see docs/ROADMAP.md) |
 
 ---
 

@@ -1,0 +1,30 @@
+{
+  "secchecker_version": "0.4.2",
+  "results": [
+    {
+      "files": 100,
+      "seconds": 0.9632,
+      "files_per_second": 103.8
+    },
+    {
+      "files": 400,
+      "seconds": 3.2983,
+      "files_per_second": 121.3
+    },
+    {
+      "files": 1600,
+      "seconds": 13.2376,
+      "files_per_second": 120.9
+    }
+  ],
+  "scaling_ratios": [
+    {
+      "size_ratio": 4.0,
+      "time_ratio": 3.42
+    },
+    {
+      "size_ratio": 4.0,
+      "time_ratio": 4.01
+    }
+  ]
+}

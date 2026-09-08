@@ -18,6 +18,14 @@ except ImportError:
     def _validate_match(pattern_name, match):
         return True
 
+_SCAN_FLAGS = re.MULTILINE | re.IGNORECASE
+# Compiled once at import instead of re-passing raw strings to re.findall()
+# per file per pattern. Only covers the built-in PATTERNS - a caller's
+# extra_patterns (custom .secchecker.yml patterns, opt-in PII patterns) fall
+# back to re.findall()'s own implicit compile-and-cache, since those aren't
+# known ahead of time.
+_COMPILED_PATTERNS = {name: re.compile(p, _SCAN_FLAGS) for name, p in PATTERNS.items()}
+
 # File extensions to skip for performance and accuracy
 SKIP_EXTENSIONS = {
     '.pyc', '.pyo', '.pyd', '.so', '.dll', '.exe', '.bin', '.jpg', '.jpeg', 
@@ -113,7 +121,13 @@ def scan_file(filepath: str, extra_patterns: Dict[str, str] = None) -> Dict[str,
         active_patterns = PATTERNS if not extra_patterns else {**PATTERNS, **extra_patterns}
         for name, pattern in active_patterns.items():
             try:
-                matches = re.findall(pattern, content, re.MULTILINE | re.IGNORECASE)
+                # Only use the precompiled cache when a custom_patterns entry
+                # hasn't overridden this name with a different regex string.
+                compiled = _COMPILED_PATTERNS.get(name) if PATTERNS.get(name) == pattern else None
+                if compiled is not None:
+                    matches = compiled.findall(content)
+                else:
+                    matches = re.findall(pattern, content, _SCAN_FLAGS)
                 if matches:
                     # Remove duplicates while preserving order
                     unique_matches = list(dict.fromkeys(matches))

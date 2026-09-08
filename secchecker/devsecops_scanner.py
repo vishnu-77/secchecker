@@ -11,6 +11,10 @@ from secchecker.core import should_skip_directory
 DEVSECOPS_EXTENSIONS = {'.tf', '.tfvars', '.yaml', '.yml', '.sh', '.dockerfile'}
 DEVSECOPS_EXACT_NAMES = {'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml'}
 
+# Compiled once at import instead of re-passing raw strings to re.findall()
+# per file per pattern (flags are already inline in each pattern string).
+_COMPILED_DEVSECOPS_PATTERNS = {name: re.compile(p) for name, p in DEVSECOPS_PATTERNS.items()}
+
 
 def matches_file_filter(filepath, pattern_name):
     # type: (str, str) -> bool
@@ -66,7 +70,7 @@ def scan_file_devsecops(filepath):
         if not matches_file_filter(filepath, pattern_name):
             continue
         try:
-            matches = re.findall(pattern_regex, content)
+            matches = _COMPILED_DEVSECOPS_PATTERNS[pattern_name].findall(content)
             if matches:
                 flat = []
                 for m in matches:

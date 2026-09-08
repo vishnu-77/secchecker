@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "secchecker"
 version = "0.4.2"
-description = "Static security scanner for AI agents, MCP tools, and LLM applications. Finds prompt injection, tool poisoning, and agentic vulnerabilities. OWASP LLM Top 10 (2025) tagged."
+description = "Static checks for risky context-to-action flows in AI agents, MCP tools, and LLM applications. Detects patterns associated with prompt injection, tool poisoning, and unsafe agent memory/output handling. OWASP LLM Top 10 (2025) tagged."
 readme = "README.md"
 authors = [
     {name = "Vishnu Prashanth", email = "vishnu7stanite@gmail.com"}
@@ -58,11 +58,13 @@ dev = [
     "pytest-cov>=2.0",
     "flake8>=3.8",
     "black>=21.0",
-    "mypy>=0.800"
+    "mypy>=0.800",
+    "jsonschema>=4.0"
 ]
 test = [
     "pytest>=6.0",
-    "pytest-cov>=2.0"
+    "pytest-cov>=2.0",
+    "jsonschema>=4.0"
 ]
 
 [project.urls]
