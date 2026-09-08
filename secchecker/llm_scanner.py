@@ -21,6 +21,16 @@ _COMPILED_LLM_PATTERNS = {name: re.compile(p) for name, p in LLM_PATTERNS.items(
 # kwarg/dict-key names that hold an MCP/tool-schema description string
 _DESCRIPTION_KEYS = {'description', 'tool_description'}
 
+CAT_UNBOUNDED_LOOP = "Agentic - Agent Loop Without Exit Condition"
+CAT_RECURSIVE_SUBAGENT = "Agentic - Recursive Self-Invocation Risk"
+
+_LOOP_SINK_VERBS = {'run', 'invoke', 'call', 'complete'}
+_UNBOUNDED_ITER_FUNCS = {'count', 'cycle'}  # itertools.count()/cycle(), however imported
+_AGENT_LIKE_NAMES = {'agent', 'executor', 'agentexecutor', 'reactagent'}
+_INVOKE_VERBS = {'run', 'invoke'}
+# Nodes whose own break/return doesn't exit an *enclosing* loop.
+_LOOP_SCOPE_BOUNDARY = (ast.For, ast.While, ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)
+
 LLM_RELEVANT_EXTENSIONS = {
     '.py', '.js', '.ts', '.tsx', '.jsx',
     '.ipynb', '.yaml', '.yml', '.json',
@@ -72,8 +82,8 @@ def _get_str_const(node):
     return ""
 
 
-def _scan_python_docstrings(content):
-    # type: (str) -> Dict[str, List[str]]
+def _scan_python_docstrings(tree):
+    # type: (ast.AST) -> Dict[str, List[str]]
     """Detect MCP tool-poisoning: hidden instructions embedded in a tool
     function's docstring, or in a description= kwarg / dict-literal value.
 
@@ -82,10 +92,6 @@ def _scan_python_docstrings(content):
     in the file (comments, unrelated strings, this scanner's own patterns).
     """
     findings = {}  # type: Dict[str, List[str]]
-    try:
-        tree = ast.parse(content)
-    except (SyntaxError, ValueError):
-        return findings
 
     def _add(category, detail):
         findings.setdefault(category, [])
@@ -120,6 +126,177 @@ def _scan_python_docstrings(content):
     return findings
 
 
+def _walk_stopping_at(node, stop_types):
+    # type: (ast.AST, tuple) -> Any
+    """Yield every descendant of `node`, without descending into the children
+    of a node whose type is in `stop_types` (the boundary node itself is still
+    yielded once). Used to scope a check to "this loop" without also matching
+    inside a nested loop/function that has its own, unrelated control flow."""
+    stack = list(ast.iter_child_nodes(node))
+    while stack:
+        child = stack.pop()
+        yield child
+        if not isinstance(child, stop_types):
+            stack.extend(ast.iter_child_nodes(child))
+
+
+def _call_name(call):
+    # type: (ast.Call) -> str
+    """The bare function/method name of a Call node's callee, e.g. 'run' for
+    both `run(...)` and `obj.run(...)`."""
+    func = call.func
+    if isinstance(func, ast.Attribute):
+        return func.attr
+    if isinstance(func, ast.Name):
+        return func.id
+    return ""
+
+
+def _is_agent_like(name):
+    # type: (str) -> bool
+    return isinstance(name, str) and name.lower() in _AGENT_LIKE_NAMES
+
+
+def _loop_has_sink_call(loop_node):
+    # type: (ast.AST) -> bool
+    """Any call to a .run()/.invoke()/.call()/.complete()-shaped sink,
+    anywhere in the loop (including nested scopes - the risk is the same
+    regardless of nesting depth)."""
+    for node in _walk_stopping_at(loop_node, ()):
+        if isinstance(node, ast.Call) and _call_name(node) in _LOOP_SINK_VERBS:
+            return True
+    return False
+
+
+def _loop_has_exit(loop_node):
+    # type: (ast.AST) -> bool
+    """A break/return reachable without passing through a nested loop or
+    function def - those have their own control flow and don't exit this
+    loop."""
+    for node in _walk_stopping_at(loop_node, _LOOP_SCOPE_BOUNDARY):
+        if isinstance(node, (ast.Break, ast.Return)):
+            return True
+    return False
+
+
+def _is_unbounded_iter_call(expr):
+    # type: (ast.expr) -> bool
+    """True for itertools.count(...)/cycle(...), however imported (module-
+    qualified or bare via `from itertools import count`)."""
+    return isinstance(expr, ast.Call) and _call_name(expr) in _UNBOUNDED_ITER_FUNCS
+
+
+def _scan_unbounded_agent_loops(tree):
+    # type: (ast.AST) -> Dict[str, List[str]]
+    """Detect an agent-call sink inside a loop that can never terminate:
+    `while True` or an unbounded iterator (itertools.count/cycle), with no
+    break/return anywhere in its body.
+
+    Replaces a DOTALL regex (`while\\s+True.*?\\.(run|invoke|call|complete)`)
+    that matched across the whole file regardless of distance, had no
+    break-awareness at all (would have flagged a properly-exited `while True`
+    loop too), and was measured to blow up polynomially on adversarial input.
+    """
+    findings = {}  # type: Dict[str, List[str]]
+
+    def _add(detail):
+        findings.setdefault(CAT_UNBOUNDED_LOOP, [])
+        if detail not in findings[CAT_UNBOUNDED_LOOP]:
+            findings[CAT_UNBOUNDED_LOOP].append(detail)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.While):
+            test = node.test
+            unbounded = isinstance(test, ast.Constant) and bool(test.value) is True
+        elif isinstance(node, ast.For):
+            unbounded = _is_unbounded_iter_call(node.iter)
+        else:
+            continue
+
+        if unbounded and _loop_has_sink_call(node) and not _loop_has_exit(node):
+            _add("line {}".format(node.lineno))
+
+    return findings
+
+
+def _scan_recursive_subagent_spawn(tree):
+    # type: (ast.AST) -> Dict[str, List[str]]
+    """Detect a function that both holds an agent/executor (as a parameter or
+    a freshly-instantiated AgentExecutor/ReActAgent) and invokes an
+    agent/executor-named object's .run()/.invoke() - spawning or driving
+    another agent with no visible recursion-depth guard.
+
+    Replaces a DOTALL regex requiring only an agent/executor-shaped word
+    *somewhere* before a .run(/.invoke( call and another *somewhere* after it,
+    anywhere in the whole file - which is what let it cross-match two
+    unrelated functions separated by hundreds of lines (see
+    bench/fixtures/benign_realistic/support_ticket_routing.py). Scoping to one
+    function at a time is the actual fix; it isn't full recursion analysis
+    (that belongs to the taint-engine work), just the same heuristic properly
+    bounded.
+    """
+    findings = {}  # type: Dict[str, List[str]]
+
+    def _add(detail):
+        findings.setdefault(CAT_RECURSIVE_SUBAGENT, [])
+        if detail not in findings[CAT_RECURSIVE_SUBAGENT]:
+            findings[CAT_RECURSIVE_SUBAGENT].append(detail)
+
+    for func in ast.walk(tree):
+        if not isinstance(func, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+
+        has_agent_instantiation = False
+        has_invoke_on_agent_like = False
+
+        for node in ast.walk(func):
+            if node is func or not isinstance(node, ast.Call):
+                continue
+            callee = node.func
+            if isinstance(callee, ast.Name) and _is_agent_like(callee.id):
+                has_agent_instantiation = True
+            if isinstance(callee, ast.Attribute) and callee.attr in _INVOKE_VERBS:
+                receiver = callee.value
+                receiver_name = receiver.id if isinstance(receiver, ast.Name) else None
+                if _is_agent_like(receiver_name):
+                    has_invoke_on_agent_like = True
+
+        # Merely receiving an agent as a parameter and calling .run() on it
+        # once is normal, safe agent usage - the risk is specifically
+        # *spawning a new* agent-like instance from within the function.
+        if has_agent_instantiation and has_invoke_on_agent_like:
+            _add("{}: line {}".format(func.name, func.lineno))
+
+    return findings
+
+
+def _merge_findings(target, source):
+    # type: (Dict[str, List[str]], Dict[str, List[str]]) -> None
+    """Merge `source` findings into `target` in place, deduplicating matches
+    within each category."""
+    for category, matches in source.items():
+        target.setdefault(category, [])
+        for m in matches:
+            if m not in target[category]:
+                target[category].append(m)
+
+
+def _scan_python_ast_checks(content):
+    # type: (str) -> Dict[str, List[str]]
+    """Every AST-based check that applies to Python source: tool-poisoning
+    docstrings/descriptions, unbounded agent loops, recursive sub-agent
+    spawning. Shared between scan_file_llm's .py path and notebook cells."""
+    try:
+        tree = ast.parse(content)
+    except (SyntaxError, ValueError):
+        return {}
+    findings = {}  # type: Dict[str, List[str]]
+    _merge_findings(findings, _scan_python_docstrings(tree))
+    _merge_findings(findings, _scan_unbounded_agent_loops(tree))
+    _merge_findings(findings, _scan_recursive_subagent_spawn(tree))
+    return findings
+
+
 def _scan_notebook(filepath):
     # type: (str) -> Dict[str, List[str]]
     """Extract source from Jupyter notebook cells and scan."""
@@ -138,11 +315,7 @@ def _scan_notebook(filepath):
                 all_source.append(source)
         joined = '\n'.join(all_source)
         findings = _scan_content(joined)
-        for category, matches in _scan_python_docstrings(joined).items():
-            findings.setdefault(category, [])
-            for m in matches:
-                if m not in findings[category]:
-                    findings[category].append(m)
+        _merge_findings(findings, _scan_python_ast_checks(joined))
         return findings
     except (ValueError, KeyError, TypeError):
         raw = _read_file(filepath)
@@ -170,11 +343,7 @@ def scan_file_llm(filepath):
         return {}
     findings = _scan_content(content)
     if path.suffix.lower() == '.py':
-        for category, matches in _scan_python_docstrings(content).items():
-            findings.setdefault(category, [])
-            for m in matches:
-                if m not in findings[category]:
-                    findings[category].append(m)
+        _merge_findings(findings, _scan_python_ast_checks(content))
     return findings
 
 

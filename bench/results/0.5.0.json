@@ -1,5 +1,5 @@
 {
-  "secchecker_version": "0.4.2",
+  "secchecker_version": "0.5.0",
   "regression_corpus": {
     "total_fixtures": 46,
     "true_positives": 23,
@@ -341,8 +341,8 @@
   },
   "adversarial_corpus": {
     "total_fixtures": 14,
-    "caught": 3,
-    "recall": 0.2143,
+    "caught": 4,
+    "recall": 0.2857,
     "files": [
       {
         "file": "fixtures\\adversarial\\mcp_tool_poisoning\\lowercase_directive.py",
@@ -412,8 +412,10 @@
       },
       {
         "file": "fixtures\\adversarial\\unsafe_function_calls\\itertools_count_loop.py",
-        "flagged": false,
-        "categories": []
+        "flagged": true,
+        "categories": [
+          "Agentic - Agent Loop Without Exit Condition"
+        ]
       },
       {
         "file": "fixtures\\adversarial\\unsafe_function_calls\\national_insurance_number.py",
@@ -424,7 +426,7 @@
   },
   "benign_realistic_corpus": {
     "total_fixtures": 4,
-    "still_flagged": 3,
+    "still_flagged": 2,
     "files": [
       {
         "file": "fixtures\\benign_realistic\\non_secret_env_in_context.py",
@@ -442,10 +444,8 @@
       },
       {
         "file": "fixtures\\benign_realistic\\support_ticket_routing.py",
-        "flagged": true,
-        "categories": [
-          "Agentic - Recursive Self-Invocation Risk"
-        ]
+        "flagged": false,
+        "categories": []
       },
       {
         "file": "fixtures\\benign_realistic\\validated_langchain_input.py",
@@ -454,5 +454,5 @@
       }
     ]
   },
-  "execution_time_seconds": 0.5281
+  "execution_time_seconds": 0.0666
 }

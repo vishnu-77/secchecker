@@ -159,6 +159,10 @@ OWASP_MAP: Dict[str, Dict[str, List[str]]] = {
     "LLM - HuggingFace Token":                {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
     "LLM - Pinecone API Key":                 {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
     "LLM - Weaviate API Key":                 {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
+    "LLM - Groq API Key":                     {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
+    "LLM - OpenRouter API Key":               {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
+    "LLM - xAI API Key":                      {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
+    "LLM - LangSmith API Key":                {"owasp": ["A02:2021"], "cwe": ["CWE-798"], "owasp_llm": ["LLM02:2025"]},
     "LLM - System Prompt Hardcoded":          {"owasp": ["A05:2021"], "cwe": ["CWE-312"], "owasp_llm": ["LLM07:2025"]},
 
     # ------------------------------------------------------------------ #

@@ -1,10 +1,15 @@
-# Benign but a plausible false-positive: a customer-support ticket router.
-# "agent" here means a human support agent throughout, and .run() belongs to
-# an unrelated management-command class - nothing here calls an LLM agent
-# framework. The recursive-self-invocation pattern scans the whole file in
-# DOTALL mode, so any human-agent mention before a .run(/.invoke( call, plus
-# another agent/executor mention anywhere after it, matches - regardless of
-# whether either mention is actually related to the call in between.
+# Regression fixture: a customer-support ticket router. "agent" here means a
+# human support agent throughout, and .run() belongs to an unrelated
+# management-command class - nothing here calls an LLM agent framework.
+#
+# This used to be a real false positive: the recursive-self-invocation check
+# was a whole-file DOTALL regex, so any human-agent mention before a
+# .run(/.invoke( call, plus another agent/executor mention anywhere after it
+# - regardless of distance or relatedness - matched. Rewriting that check as
+# an AST scan scoped to one function at a time (llm_scanner.py,
+# _scan_recursive_subagent_spawn) fixed it outright rather than leaving it as
+# a documented limitation. Kept here as a regression check against that bug
+# recurring, not as a currently-active false positive.
 
 
 def assign_to_agent(ticket):
