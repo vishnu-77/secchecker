@@ -52,17 +52,25 @@ misrepresent both numbers):
   underlying vulnerability as an existing regression fixture, written with a different variable
   name, sink, or trigger phrase than the pattern's regex enumerates — indirect assignment, `%`
   formatting instead of `.format()`, `subprocess.call` instead of `.run`, a UK NI number instead of
-  an SSN, and so on. **Result: 3/14 caught (21%).** This is the honest number the regression
+  an SSN, and so on. **Result: 4/14 caught (29%).** This is the honest number the regression
   corpus's 1.00 recall can't show: the scanner generalizes well within a pattern's own vocabulary
   but not across even mild paraphrase or a different-but-equally-common stdlib call. Each miss is
-  labeled with which specific vocabulary gap it demonstrates (see the fixture's own comment).
+  labeled with which specific vocabulary gap it demonstrates (see the fixture's own comment). One
+  fixture (`unsafe_function_calls/itertools_count_loop.py`) moved from missed to caught when the
+  agent-loop check was rewritten from regex to AST (an unbounded `itertools.count()` loop is now
+  recognized as equivalent to `while True`, not just the literal token match).
 - **`benign_realistic/`** (4 fixtures, false-positive-only): not a random benign sample — a
   curated set of plausible real-world shapes chosen because they're likely to trip a specific
-  pattern despite being safe (a human-support-agent module using the word "agent" near an unrelated
-  `.run()` call; a trusted, repo-bundled prompt template loaded via `open()`; a non-secret env var
-  folded into context). **Result: 3/4 still flagged.** These aren't scanner bugs so much as the
-  documented limitation that regex matching can't verify actual trust/sensitivity of a source - see
-  `THREAT_MODEL.md`.
+  pattern despite being safe (a trusted, repo-bundled prompt template loaded via `open()`; a
+  non-secret env var folded into context). **Result: 2/4 still flagged.** These aren't scanner
+  bugs so much as the documented limitation that regex matching can't verify actual trust/
+  sensitivity of a source - see `THREAT_MODEL.md`. A third fixture
+  (`support_ticket_routing.py`, a human-support-agent module using the word "agent" near an
+  unrelated `.run()` call) is no longer flagged: the recursive-self-invocation check moved from a
+  whole-file DOTALL regex (which could match an agent-shaped word in one function against an
+  unrelated `.run()` call in a different one, hundreds of lines away) to an AST check scoped to
+  one function at a time. That was a real bug, not an acceptable limitation, so it's fixed rather
+  than kept as a documented gap.
 
 Building these fixtures surfaced the same lesson as the SSN false positive below, twice: an early
 draft of several `adversarial/` fixtures had their own explanatory comment accidentally quote the

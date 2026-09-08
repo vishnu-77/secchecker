@@ -204,13 +204,90 @@ def test_agentic_pii_passed_to_external_agent():
     assert "Agentic - PII Passed to External Agent" in findings
 
 
-def test_agentic_loop_without_exit_condition_multiline():
-    code = '''
-while True:
-    result = agent.invoke(task)
-'''
-    findings = _scan_content(code)
+def test_agentic_loop_without_exit_condition_multiline(tmp_path):
+    # Moved from regex to AST (see llm_scanner._scan_unbounded_agent_loops) -
+    # exercised through scan_file_llm now, not the raw regex-only _scan_content.
+    f = tmp_path / "agent.py"
+    f.write_text("def run(agent, task):\n    while True:\n        result = agent.invoke(task)\n")
+    findings = scan_file_llm(str(f))
     assert "Agentic - Agent Loop Without Exit Condition" in findings
+
+
+def test_agentic_loop_with_break_not_flagged(tmp_path):
+    f = tmp_path / "agent.py"
+    f.write_text(
+        "def run(agent, task):\n"
+        "    while True:\n"
+        "        result = agent.invoke(task)\n"
+        "        if result.done:\n"
+        "            break\n"
+    )
+    findings = scan_file_llm(str(f))
+    assert "Agentic - Agent Loop Without Exit Condition" not in findings
+
+
+def test_agentic_unbounded_iterator_loop_flagged(tmp_path):
+    # itertools.count()/cycle() - unbounded, same risk as while True.
+    f = tmp_path / "agent.py"
+    f.write_text(
+        "import itertools\n"
+        "def run(agent, task):\n"
+        "    for _ in itertools.count():\n"
+        "        agent.run(task)\n"
+    )
+    findings = scan_file_llm(str(f))
+    assert "Agentic - Agent Loop Without Exit Condition" in findings
+
+
+def test_agentic_bounded_for_loop_not_flagged(tmp_path):
+    f = tmp_path / "agent.py"
+    f.write_text(
+        "def run(agent, task, max_iterations=10):\n"
+        "    for _ in range(max_iterations):\n"
+        "        result = agent.run(task)\n"
+        "        if result.is_done():\n"
+        "            break\n"
+    )
+    findings = scan_file_llm(str(f))
+    assert "Agentic - Agent Loop Without Exit Condition" not in findings
+
+
+def test_recursive_subagent_spawn_flagged(tmp_path):
+    f = tmp_path / "agent.py"
+    f.write_text(
+        "def run_with_subagent(executor):\n"
+        "    result = executor.run()\n"
+        "    if result.needs_followup:\n"
+        "        sub_executor = AgentExecutor()\n"
+        "        return sub_executor.run()\n"
+    )
+    findings = scan_file_llm(str(f))
+    assert "Agentic - Recursive Self-Invocation Risk" in findings
+
+
+def test_recursive_subagent_scoped_to_one_function(tmp_path):
+    # The old whole-file regex cross-matched an agent/executor word in one
+    # function with an unrelated .run()/.invoke() call in a different one,
+    # separated by hundreds of lines. Confirm the AST check is properly
+    # scoped per-function and doesn't do that.
+    f = tmp_path / "app.py"
+    f.write_text(
+        "def assign_to_agent(ticket):\n"
+        "    ticket.queue = 'agent-pool'\n"
+        "    return ticket\n"
+        "\n"
+        "class SyncTicketsCommand:\n"
+        "    def handle(self, *args, **options):\n"
+        "        self.run(*args, **options)\n"
+        "\n"
+        "    def run(self, *args, **options):\n"
+        "        return sync_all_open_tickets()\n"
+        "\n"
+        "def notify_agent(ticket):\n"
+        "    send_email(ticket.assigned_agent.email, 'New ticket assigned')\n"
+    )
+    findings = scan_file_llm(str(f))
+    assert "Agentic - Recursive Self-Invocation Risk" not in findings
 
 
 def test_agentic_function_call_result_not_validated():

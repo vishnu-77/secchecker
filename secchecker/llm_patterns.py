@@ -85,14 +85,20 @@ LLM_PATTERNS: Dict[str, str] = {
     "Agentic - Unsanitized Input to Agent Memory": (
         r'(?i)(memory|agent_memory|long_term_memory|vector_store)\.(add|store|save|insert|append)\s*\(\s*(user_?input|query|request|message)\s*\)'
     ),
-    "Agentic - Agent Loop Without Exit Condition": (
-        r'(?is)while\s+True.*?\.(run|invoke|call|complete)\s*\('
-    ),
+    # "Agentic - Agent Loop Without Exit Condition" and "Agentic - Recursive
+    # Self-Invocation Risk" moved to AST checks in llm_scanner.py
+    # (_scan_unbounded_agent_loops / _scan_recursive_subagent_spawn). Both were
+    # DOTALL regexes spanning the whole file with two lazy `.*?` spans each -
+    # confirmed by direct measurement to blow up polynomially (~quadratic) on
+    # adversarial input (a few hundred KB of repeated near-misses took minutes),
+    # and cross-matched unrelated code separated by hundreds of lines (see the
+    # git history of bench/fixtures/benign_realistic/support_ticket_routing.py,
+    # a real false positive this AST rewrite retires). Removed from this dict
+    # since they're no longer regex-matched; their category-name strings still
+    # have entries in LLM_SEVERITY_MAP below and in owasp.py, now populated by
+    # the AST findings instead.
     "Agentic - Function Call Result Not Validated": (
         r'(?i)(function_call|tool_call|action)\s*=\s*.*\b(json\.loads|ast\.literal_eval)\s*\(.*\b(response|completion|llm_output|model_output)\b'
-    ),
-    "Agentic - Recursive Self-Invocation Risk": (
-        r'(?is)\b(agent|executor|AgentExecutor|ReActAgent)\b.*?\.(run|invoke)\s*\(.*?\b(agent|executor|AgentExecutor|ReActAgent)\b'
     ),
     "Agentic - PII Passed to External Agent": (
         r'(?i)(ssn|social_security|credit_card|passport|dob|date_of_birth)\b.*\b(agent|llm|openai|anthropic|completion)\b'

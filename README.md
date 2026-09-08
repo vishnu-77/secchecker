@@ -160,8 +160,8 @@ Reproducible, offline, no LLM judge — `python bench/run.py`:
 | Corpus | Result | What it measures |
 |---|---|---|
 | Regression (23 vulnerable / 23 safe pairs) | 1.00 precision / 1.00 recall | Does this release still catch every case it was built to catch? |
-| Adversarial (14 paraphrased/reshaped variants) | 3/14 caught (21%) | Does it generalize past the exact phrasing it was built to catch? |
-| benign_realistic (4 plausible-FP shapes) | 3/4 still flagged | Known static-analysis limitation, not a bug |
+| Adversarial (14 paraphrased/reshaped variants) | 4/14 caught (29%) | Does it generalize past the exact phrasing it was built to catch? |
+| benign_realistic (4 plausible-FP shapes) | 2/4 still flagged | Known static-analysis limitation, not a bug |
 
 The 1.00/1.00 regression number is not an accuracy claim — full
 methodology and what would make it one: [bench/methodology.md](bench/methodology.md) /
