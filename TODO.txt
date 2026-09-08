@@ -1,6 +1,8 @@
 ================================================================================
 secchecker — Project TODO & Progress Tracker
-Last updated: 2026-07-08
+Last updated: 2026-08-30
+Forward-looking roadmap (0.5.0+) lives in docs/ROADMAP.md — this file tracks
+what's actually landed, not the plan. Sync it here instead of hand-copying it.
 ================================================================================
 
 LEGEND
@@ -129,65 +131,107 @@ NOTE: The hybrid plan reassigned what "v0.4.0" means. It is now the AI/MCP-first
 [x] demo/ (intentionally vulnerable app) + .github/workflows/security.yml
       cherry-picked from the prior stash; security.yml hardened for exit-2
 
-[!] Not published — no PyPI release, no git tag, no GitHub release (by request).
-      Prepared for review only. NEXT ACTION (you): review, then tag/publish
-      v0.4.0 when ready.
+[x] Published — v0.4.0, then audit-fix releases v0.4.1 and v0.4.2, all shipped
+      (see CHANGELOG.md). pyproject.toml currently at 0.4.2.
 
 ================================================================================
-PHASE 5 — Deeper scanner foundation / technical depth (v0.5.0)
-                                                          STATUS: NOT STARTED
+PHASE 4.5 — Dependency scanning module (unreleased, on this branch)
+                                                          STATUS: COMPLETE
 ================================================================================
 
-[ ] Deeper taint analysis in AST scanner
-      Track taint through: function arguments, return values, dict assignments
-      Currently: one-level only (assignment -> sink)
-      Approach: inter-procedural taint with call graph (stdlib ast only)
-      File to modify: ast_scanner.py
-
-[ ] VS Code integration documentation
-      secchecker SARIF output natively supported by vscode-sarif extension
-      Document the workflow: secchecker -> .sarif -> VS Code viewer
-      Stretch: evaluate a minimal diagnostic extension using LSP or task runner
-
-[ ] Scan speed benchmark in README
-      Run secchecker against CPython or Django source tree
-      Record: file count, scan time, findings count
-      Add to README metrics: "Scans X files in Y seconds"
-      Action needed: run the benchmark locally, update README
+[x] npm/pnpm/Yarn pre-install dependency scanner, static and offline
+      Parses package-lock.json (v2/v3), pnpm-lock.yaml, yarn.lock
+      New files: dependency_scanner.py, dependency_patterns.py, dependency_policy.py
+[x] secchecker/firewall/* (LLM prompt/response guard) and secchecker/plugins/base.py
+      (extension scaffold) briefly restored from an abandoned stash, then
+      dropped again by commit f4521b8: real, tested code but nothing in the
+      CLI/public API wires them up. Not shipped, not on the packages.find
+      include list in practice — ship as their own reviewed feature once
+      there's an actual entry point.
+[x] verify/CLI-shim/package-inspect bugs found in review, fixed
+[x] tests/test_dependency_scanner.py — 33 passing
+[!] Not yet version-bumped or released — bundled into the v0.5.0 branch below,
+      no CHANGELOG entry yet.
 
 ================================================================================
-PHASE 6 — Robustness features (v0.6.0)                    STATUS: NOT STARTED
+PHASE 5 — AI security validation (v0.5.0)      STATUS: COMPLETE, unreleased
+================================================================================
+Roadmap re-sequenced this phase (see docs/ROADMAP.md Phase 1) away from the
+original "deeper taint analysis / VS Code docs / scan speed benchmark" plan
+below — those three items were dropped or reassigned, not done:
+  - deeper taint analysis -> moved to v0.7.0 (ROADMAP Phase 3)
+  - VS Code integration docs -> dropped, not on any roadmap phase
+  - scan speed benchmark in README -> dropped, superseded by the precision/
+    recall benchmark below
+
+[x] bench/ — 23 vulnerable / 23 safe paired fixtures, one pair per implemented
+      LLM/MCP/agentic pattern across 6 risk categories (regression corpus)
+[x] bench/fixtures/adversarial/ — 14 varied-phrasing/shape fixtures per
+      pattern (recall-only). Result: 3/14 caught (21%) — the honest recall
+      number the regression corpus's 1.00 can't show. See bench/methodology.md.
+[x] bench/fixtures/benign_realistic/ — 4 curated plausible-false-positive
+      shapes. Result: 3/4 still flagged — documented static-analysis
+      limitation, not a bug.
+[x] bench/run.py — scans all three corpora, reports regression precision/
+      recall/F1 + adversarial recall + benign_realistic flag rate to
+      bench/results/0.5.0.json (regression: 1.00/1.00, a regression-suite
+      score, not an accuracy claim; adversarial/benign numbers above are the
+      first real accuracy-relevant data point — still self-authored, not yet
+      independently reviewed)
+[x] docs/EVALUATION.md + THREAT_MODEL.md runtime-boundary section
+[x] bench/perf.py — scan-throughput benchmark, reinstated (line 164 above
+      dropped it as "superseded by precision/recall"; re-added because the
+      regex-precompilation fix needed a benchmark to prove/guard the win —
+      a different justification than the original plan, not a reversal of it)
+[!] Not yet tagged/released. Still needed before quoting the benchmark
+      externally: independent review (docs/ROADMAP.md Phase 1a) — multiple
+      phrasings and adversarial cases are now started, not yet done at scale.
+
+[x] Drop unsupported exclusivity language in README ("no mainstream PyPI
+      scanner covers these" style claims) — docs/ROADMAP.md Phase 1c.
+      Confirmed absent in the redesigned README (see PHASE 5.5 below).
+
+================================================================================
+PHASE 5.5 — Maintainer audit + README redesign (2026-09-08)   STATUS: COMPLETE
+================================================================================
+[x] SARIF region.startLine hardcoded-to-1 bug fixed; real match line now
+      reported (best-effort re-location, no scanner-wide data model change)
+[x] tests/test_sarif_schema.py — output validated against the vendored,
+      official SARIF 2.1.0 JSON Schema (jsonschema, test/dev extra only)
+[x] Scanner regex patterns pre-compiled once at import (core.py,
+      llm_scanner.py, devsecops_scanner.py, dependency_scanner.py) instead
+      of re-passed as raw strings per file per pattern
+[x] bench/perf.py — scan-throughput benchmark, confirms the precompilation
+      fix (~121 files/s, flat 400->1600 files)
+[x] bench/fixtures/adversarial/ (14) + bench/fixtures/benign_realistic/ (4)
+      — see PHASE 5 above for results (3/14 recall, 3/4 still-flagged)
+[x] README fully redesigned around a 20-second quickstart (name -> one-
+      sentence what -> one-sentence problem -> diagram -> install -> real
+      example -> real output, everything else pushed below the fold);
+      pyproject.toml description softened to match ("detects patterns
+      associated with", not "finds")
+[!] Not done this pass (out of "keep changes minimal" scope, tracked
+      separately): git history rewrite to strip 14 pre-existing
+      Co-Authored-By: Claude trailers (prepared locally, force-push gated on
+      explicit go-ahead — see the audit's final summary, not this file)
+
+================================================================================
+NEXT UP — see docs/ROADMAP.md for full detail, not duplicated here
 ================================================================================
 
-NOTE: Previously slated as v0.4.0. Reassigned to v0.6.0 after the hybrid plan
-      claimed v0.4.0 for the AI/MCP repositioning (PHASE 4).
+Phase 2 / v0.6.0 — Agent-native adoption (PLANNED)
+      secchecker-mcp server (scan_code/scan_mcp_manifest/check_snippet/
+      explain_finding tools), `secchecker init` scaffolding, --baseline
+      allowlist, uvx/pipx zero-install path.
 
-[ ] Incremental scan / hash cache
-      --cache flag, .secchecker_cache.json per-file hash store
-      Only re-scan files that changed since last run
-      Target: large monorepos (1000+ files), significant speed gain
-      Files to modify: core.py, cli.py
-      New file: secchecker/cache.py
+Phase 3 / v0.7.0 — Deepen the moat (PLANNED)
+      Cross-function agentic taint, framework sink packs (LangChain,
+      LlamaIndex, CrewAI, AutoGen, OpenAI-Agents SDK, FastMCP), prompt-
+      template linter, rug-pull detection.
 
-[ ] Baseline / ignore file
-      secchecker baseline --update writes .secchecker-baseline.json
-      Accepted findings are suppressed on subsequent runs
-      Prevents alert fatigue — this is what detect-secrets built on
-      Files to modify: cli.py, core.py
-      New file: secchecker/baseline.py
-
-[ ] --diff mode for CI
-      Accept git diff on stdin: git diff HEAD | secchecker --diff
-      Only scan lines prefixed with + in the diff
-      Files to modify: cli.py
-      New file: secchecker/diff_scanner.py
-
-[ ] Custom rule DSL (YAML)
-      Extend .secchecker.yml custom_patterns to support:
-        - severity per custom pattern
-        - description field
-        - per-pattern enable/disable
-      Files to modify: config.py, reporter.py, owasp.py
+Phase 4 / v0.8.0+ — Discoverability & trust at scale (PLANNED)
+      Signed releases + SBOM, MCP registry listings, awesome-list/OWASP
+      corpus seeding, MCP Security Checklist.
 
 ================================================================================
 VISIBILITY & ADOPTION                                      STATUS: NOT STARTED
@@ -226,11 +270,9 @@ VISIBILITY & ADOPTION                                      STATUS: NOT STARTED
 KNOWN TECHNICAL DEBT
 ================================================================================
 
-[-] datetime.utcnow() deprecation warning
-      sarif_reporter.py:134 and html_reporter.py:79 use deprecated utcnow()
-      Replace with: datetime.now(datetime.timezone.utc)
-      Python 3.8 compatible: use datetime.timezone.utc directly
-      Low priority — warning only, not a failure
+[x] datetime.utcnow() deprecation warning — fixed
+      No more utcnow() calls in secchecker/*.py (resolved alongside the
+      Python 3.14 AST-scanner crash fix in 0.4.2)
 
 [ ] test_scan_file_multiple_patterns no longer asserts JWT Token
       JWT test value in fixtures is not structurally valid (fails is_valid_jwt)
@@ -238,9 +280,10 @@ KNOWN TECHNICAL DEBT
       Tracked as known gap, not a regression
 
 ================================================================================
-CURRENT VERSION:     0.4.0 — prepared for review, NOT yet tagged or published
-LAST SHIPPED (PyPI): 0.3.0 (Production/Stable)
-NEXT RELEASE TARGET: 0.5.0 — Deeper scanner foundation
-                     (inter-procedural taint, VS Code docs, scan benchmark)
-LATER:               0.6.0 — Robustness (cache, baseline, --diff, custom DSL)
+CURRENT VERSION:     0.4.2 (pyproject.toml) — last version-bumped release
+CURRENT BRANCH:      feat/v0.5.0-validation-release — dependency scanner +
+                     v0.5.0 benchmark work complete, unreleased, untagged
+NEXT ACTION:         version-bump + CHANGELOG entry + tag for v0.5.0, then
+                     start docs/ROADMAP.md Phase 2 (v0.6.0 MCP server)
+TEST STATUS:         213 passed, 0 failed (2026-09-08)
 ================================================================================

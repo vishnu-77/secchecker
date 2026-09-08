@@ -74,18 +74,37 @@ def _build_rules(pattern_names):
     return rules
 
 
+def _line_of(content, text):
+    # type: (str, str) -> int
+    """Best-effort 1-based line number of ``text``'s first occurrence in
+    ``content``. The scanner pipeline (core.scan_file et al.) only returns
+    matched substrings, not match positions, so this re-locates the first
+    occurrence rather than threading a real offset through every scanner and
+    reporter. Repeated identical matches all resolve to the same (first)
+    line - an accepted imprecision, still strictly more useful than the
+    hardcoded 1 this replaces."""
+    pos = content.find(text)
+    return content.count('\n', 0, pos) + 1 if pos != -1 else 1
+
+
 def _build_results(results):
     # type: (Dict[str, Dict[str, List[str]]]) -> List[Dict[str, Any]]
     """Build SARIF results array."""
     sarif_results = []
     for filepath, patterns in results.items():
         uri = _normalize_path(filepath)
+        try:
+            with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+        except (OSError, IOError):
+            content = None
         for pattern_name, matches in patterns.items():
             severity = get_severity(pattern_name)
             level = SARIF_LEVEL_MAP.get(severity, "warning")
             msg = "{} ({} occurrence{})".format(
                 pattern_name, len(matches), "s" if len(matches) != 1 else ""
             )
+            start_line = _line_of(content, matches[0]) if content is not None else 1
             sarif_results.append({
                 "ruleId": pattern_name,
                 "level": level,
@@ -96,7 +115,7 @@ def _build_results(results):
                             "uri": uri,
                             "uriBaseId": "%SRCROOT%",
                         },
-                        "region": {"startLine": 1},
+                        "region": {"startLine": start_line},
                     }
                 }],
                 "properties": {

@@ -64,3 +64,25 @@ def test_to_sarif_file(tmp_path):
     assert out.exists()
     data = json.loads(out.read_text())
     assert data["version"] == "2.1.0"
+
+
+def test_sarif_region_reports_the_real_match_line(tmp_path):
+    src = tmp_path / "app.py"
+    src.write_text(
+        "import os\n"
+        "\n"
+        "AWS_KEY = 'AKIAIOSFODNN7EXAMPLE'\n",
+        encoding="utf-8",
+    )
+    results = {str(src): {"AWS Access Key": ["AKIAIOSFODNN7EXAMPLE"]}}
+    data = json.loads(generate_sarif_report(results))
+    region = data["runs"][0]["results"][0]["locations"][0]["physicalLocation"]["region"]
+    assert region["startLine"] == 3
+
+
+def test_sarif_region_falls_back_to_line_1_when_file_unreadable():
+    # SAMPLE's paths don't exist on disk - must not crash, must still emit a
+    # valid (if imprecise) region rather than erroring the whole report.
+    data = json.loads(generate_sarif_report(SAMPLE))
+    region = data["runs"][0]["results"][0]["locations"][0]["physicalLocation"]["region"]
+    assert region["startLine"] == 1

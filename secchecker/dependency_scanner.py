@@ -29,6 +29,12 @@ from secchecker.dependency_patterns import (
 CONTENT_EXTENSIONS = {'.js', '.mjs', '.cjs', '.ts', '.jsx', '.tsx'}
 LIFECYCLE_HOOK_NAMES = ('preinstall', 'install', 'postinstall', 'prepare')
 
+# Compiled once at import instead of re-passing raw strings to re.findall()
+# per file per pattern (flags are already inline in each pattern string).
+# STRUCTURAL_CATEGORIES entries are never matched against file content (see
+# scan_file_dependency below) - harmless to compile, just unused.
+_COMPILED_DEPENDENCY_PATTERNS = {name: re.compile(p) for name, p in DEPENDENCY_PATTERNS.items()}
+
 
 # ---------------------------------------------------------------------------
 # Lockfile / manifest parsers (stdlib only — no PyYAML, matching config.py's
@@ -307,7 +313,7 @@ def scan_file_dependency(filepath):
         if pattern_name in STRUCTURAL_CATEGORIES:
             continue
         try:
-            matches = re.findall(pattern_regex, content)
+            matches = _COMPILED_DEPENDENCY_PATTERNS[pattern_name].findall(content)
         except re.error:
             continue
         if matches:

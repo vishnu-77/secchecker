@@ -43,17 +43,42 @@ about the regexes by hand: the first version of this corpus had a false positive
 fixture's own explanatory *comment* used the word "SSN" in prose, which the PII-detection pattern
 correctly flagged as PII near an agent-call. Caught by `bench/run.py`, not by inspection.
 
+## Adversarial and benign_realistic corpora (added alongside this, still self-authored)
+Two more corpora under `bench/fixtures/`, scored separately by `bench/run.py` (not folded into the
+regression corpus's precision/recall — they aren't paired the same way and mixing them would
+misrepresent both numbers):
+
+- **`adversarial/<category>/`** (14 fixtures, recall-only, no safe twin): each is the *same*
+  underlying vulnerability as an existing regression fixture, written with a different variable
+  name, sink, or trigger phrase than the pattern's regex enumerates — indirect assignment, `%`
+  formatting instead of `.format()`, `subprocess.call` instead of `.run`, a UK NI number instead of
+  an SSN, and so on. **Result: 3/14 caught (21%).** This is the honest number the regression
+  corpus's 1.00 recall can't show: the scanner generalizes well within a pattern's own vocabulary
+  but not across even mild paraphrase or a different-but-equally-common stdlib call. Each miss is
+  labeled with which specific vocabulary gap it demonstrates (see the fixture's own comment).
+- **`benign_realistic/`** (4 fixtures, false-positive-only): not a random benign sample — a
+  curated set of plausible real-world shapes chosen because they're likely to trip a specific
+  pattern despite being safe (a human-support-agent module using the word "agent" near an unrelated
+  `.run()` call; a trusted, repo-bundled prompt template loaded via `open()`; a non-secret env var
+  folded into context). **Result: 3/4 still flagged.** These aren't scanner bugs so much as the
+  documented limitation that regex matching can't verify actual trust/sensitivity of a source - see
+  `THREAT_MODEL.md`.
+
+Building these fixtures surfaced the same lesson as the SSN false positive below, twice: an early
+draft of several `adversarial/` fixtures had their own explanatory comment accidentally quote the
+literal trigger phrase they were testing the *absence* of (e.g. describing "the jailbreak pattern's
+vocabulary does not include X" by literally writing out a real trigger phrase), which self-matched
+and produced a false "still caught" result. Caught the same way as the SSN case — by running
+`bench/run.py` and checking actual matched substrings, not by reasoning about the regex by hand.
+
 ## What's still missing before this is a credible accuracy claim
-- **Scale beyond one example per pattern:** multiple independent phrasings/shapes per pattern —
-  different variable names, indirection through a helper function, multi-line construction — not
-  just the one canonical shape used here.
-- **Adversarial cases:** fixtures the pattern author didn't write with the regex already in mind —
-  obfuscated or paraphrased variants that a real vulnerable codebase would actually contain, where
-  a false negative is a real possibility rather than a near-impossibility.
-- **Independent construction or review:** a corpus authored and scored entirely by the person who
-  wrote the detector it's testing is exactly the kind of self-authored evidence that doesn't
-  establish external validity on its own — see the project's plan for an independent reviewer to
-  challenge this corpus (find a case the scanner misses, file it, fix it, add it as a regression).
+- **Scale further:** 14 adversarial + 4 benign_realistic fixtures is a real start, not yet enough
+  for a confidence interval, and still concentrated on the patterns easiest to paraphrase by hand.
+- **Independent construction or review:** all three corpora (regression, adversarial,
+  benign_realistic) are still authored and scored entirely by the person who wrote the detector -
+  exactly the kind of self-authored evidence that doesn't establish external validity on its own.
+  An independent reviewer finding a case these corpora miss, filing it, and it becoming a new
+  regression fixture is what would change that.
 
 ## Limitations
 - Covers only the LLM/MCP/agentic scanner — secrets, DevSecOps (Docker/K8s/Terraform/CI), and

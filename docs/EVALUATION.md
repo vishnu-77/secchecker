@@ -32,6 +32,17 @@ Raw output: [`bench/results/0.5.0.json`](../bench/results/0.5.0.json). Every imp
 LLM/MCP/agentic pattern in these six categories has at least one vulnerable/safe pair (not an
 arbitrary fixture count) — see `bench/methodology.md` for the exact rule.
 
+## Results — adversarial and benign_realistic corpora (v0.5.0, 2026-09-08)
+
+| Corpus | Fixtures | Result | What it measures |
+|---|---|---|---|
+| Adversarial (varied phrasing, recall-only) | 14 | **3 caught (21%)** | Same vulnerabilities as the regression corpus, deliberately paraphrased/reshaped — the honest recall number the 1.00 above can't show. |
+| benign_realistic (known plausible-FP shapes) | 4 | **3 still flagged** | Curated realistic-but-safe shapes chosen because they plausibly trip a specific pattern. |
+
+These are additive to the regression corpus above, not a replacement — see
+`bench/methodology.md` for exactly what each fixture tests and why the numbers are scored
+separately rather than blended into one precision/recall figure.
+
 ## Interpretation — read this before quoting the numbers above
 
 **This is a regression corpus, not yet an accuracy benchmark.** Every fixture is authored with the
@@ -45,13 +56,17 @@ all. (One concrete illustration: an earlier draft of this corpus had a false pos
 the scanner, not by reasoning about the regex by hand.)
 
 What would make this a real accuracy claim:
-1. **Scale beyond one example per pattern** — multiple independent phrasings/shapes per pattern,
-   not the single canonical shape used here.
-2. **Independent fixtures** — cases written or reviewed by someone other than the pattern author.
-3. **Adversarial cases** — where a false negative is a live possibility, not a near-impossibility.
+1. **Scale beyond one example per pattern** — the adversarial corpus above is a start (14 varied-
+   phrasing fixtures, 21% recall), not yet enough for a confidence interval.
+2. **Independent fixtures** — all three corpora (regression, adversarial, benign_realistic) are
+   still written and scored by the person who wrote the detector.
+3. **Adversarial cases** — done for a first, small set (above); a false negative is now a
+   demonstrated reality (79% of the adversarial corpus), not a near-impossibility — but 14 fixtures
+   covering hand-picked paraphrases isn't yet broad enough to generalize from.
 
 Until then, treat this page as: "the method is real and reproducible, the current numbers are a
-starting point, and the gap to a defensible accuracy claim is external validation, not more code."
+starting point, and the gap to a defensible accuracy claim is external validation and corpus
+scale, not more code."
 
 ## Which problems this approach can and can't answer
 See [`THREAT_MODEL.md`](../THREAT_MODEL.md) for the full boundary: what's statically detectable

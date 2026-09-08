@@ -14,6 +14,10 @@ from secchecker.core import should_skip_directory, should_skip_file
 
 _POISON_RE = re.compile(TOOL_POISONING_MARKERS)
 
+# Compiled once at import instead of re-passing raw strings to re.findall()
+# per file per pattern (flags, e.g. (?is), are already inline in each string).
+_COMPILED_LLM_PATTERNS = {name: re.compile(p) for name, p in LLM_PATTERNS.items()}
+
 # kwarg/dict-key names that hold an MCP/tool-schema description string
 _DESCRIPTION_KEYS = {'description', 'tool_description'}
 
@@ -42,7 +46,7 @@ def _scan_content(content):
     findings = {}
     for pattern_name, pattern_regex in LLM_PATTERNS.items():
         try:
-            matches = re.findall(pattern_regex, content)
+            matches = _COMPILED_LLM_PATTERNS[pattern_name].findall(content)
             if matches:
                 flat = []
                 for m in matches:
