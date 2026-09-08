@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secchecker"
-version = "0.4.2"
+version = "0.5.0"
 description = "Static checks for risky context-to-action flows in AI agents, MCP tools, and LLM applications. Detects patterns associated with prompt injection, tool poisoning, and unsafe agent memory/output handling. OWASP LLM Top 10 (2025) tagged."
 readme = "README.md"
 authors = [

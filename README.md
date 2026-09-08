@@ -144,7 +144,7 @@ Full flags and `.secchecker.yml` config: [docs/CONFIGURATION.md](docs/CONFIGURAT
 ## CI and pre-commit
 
 ```yaml
-- uses: vishnu-77/secchecker@v0.4.2
+- uses: vishnu-77/secchecker@v0.5.0
   with:
     type: all
     format: sarif

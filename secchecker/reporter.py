@@ -146,9 +146,10 @@ def get_severity(pattern_name: str) -> str:
 
 def get_scan_metadata() -> Dict[str, Any]:
     """Get metadata about the scan."""
+    from secchecker import __version__  # lazy: avoids a circular import at module load
     return {
         "timestamp": datetime.now().isoformat(),
-        "version": "0.4.2",
+        "version": __version__,
         "tool": "secchecker"
     }
 
