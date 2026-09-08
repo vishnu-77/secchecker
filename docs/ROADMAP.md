@@ -18,7 +18,7 @@
 | Phase | Version | Theme | Status |
 |---|---|---|---|
 | 0 | 0.4.2 | Credibility fixes + test foundation | **Delivered** |
-| 1 | 0.5.0 | AI security validation: reproducible benchmark + threat-model boundary | Planned |
+| 1 | 0.5.0 | AI security validation: reproducible benchmark + threat-model boundary | **Delivered** |
 | 2 | 0.6.0 | Agent-native: MCP server + `init` scaffolding | Planned |
 | 3 | 0.7.0 | Deepen the moat: agentic taint + framework packs + prompt linter | Planned |
 | 4 | 0.8.0+ | Discoverability & trust at scale | Planned |

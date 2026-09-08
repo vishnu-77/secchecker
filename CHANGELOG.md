@@ -4,6 +4,52 @@ All notable changes to secchecker are documented here.
 
 ---
 
+## [0.5.0] — 2026-09-08
+
+Dependency scanning, a real precision/recall benchmark (including the first honest
+adversarial number this project has published), and a README rebuilt around a
+20-second quickstart.
+
+### Added
+- **npm/pnpm/Yarn dependency scanning** (`dependency_scanner.py`, `dependency_patterns.py`,
+  `dependency_policy.py`) — static, offline pre-install checks: obfuscated code, shell
+  execution, undisclosed install hooks, suspicious binaries, lockfile integrity drift.
+  New CLI surface: `secchecker . --type dependency`, `secchecker package inspect`,
+  `secchecker scripts review`, `secchecker verify`. Never runs an install, never
+  executes a lifecycle script — see `THREAT_MODEL.md`.
+- **Adversarial benchmark corpus** (`bench/fixtures/adversarial/`, 14 fixtures) — the
+  same vulnerabilities as the existing regression corpus, deliberately paraphrased or
+  reshaped (different variable names, `%`-formatting instead of `.format()`,
+  `subprocess.call` instead of `.run`, a UK NI number instead of an SSN). **Result:
+  3/14 caught (21% recall)** — the honest number the regression corpus's 1.00 can't
+  show. See `bench/methodology.md`.
+- **benign_realistic corpus** (`bench/fixtures/benign_realistic/`, 4 fixtures) — curated
+  plausible-false-positive shapes. **Result: 3/4 still flagged**, documenting a known
+  static-analysis limitation rather than a bug.
+- **Scan-throughput benchmark** (`bench/perf.py`) — asserts scan time scales roughly
+  linearly with file count; wired into CI as an informational (non-blocking) step
+  alongside `bench/run.py`.
+- **SARIF output validated against the real SARIF 2.1.0 JSON Schema**
+  (`tests/test_sarif_schema.py`), not just bespoke structural assertions.
+
+### Fixed
+- **SARIF `region.startLine` was hardcoded to `1`** for every finding — now reports the
+  real match line (best-effort re-location; the scanner pipeline doesn't carry match
+  offsets end-to-end, so this isn't a full data-model change).
+- **Scanner regex patterns were recompiled per file, per pattern** instead of compiled
+  once at import — fragile (relied on the implicit interpreter-level regex cache) and
+  a real, now-benchmarked perf cost. Confirmed via `bench/perf.py`: ~121 files/s, flat
+  across 400→1600 files.
+- **CI never installed the `jsonschema` test dependency** — `tests/test_sarif_schema.py`
+  failed collection on every run until `ci.yml` switched to `pip install -e ".[test]"`.
+
+### Changed
+- **README rebuilt around a 20-second quickstart** — name, one-sentence positioning,
+  a real flagged-vs-clean example (verified live against `bench/fixtures/`), install,
+  architecture, then everything else moved below the fold. Softened absolute claims
+  ("detects patterns associated with," not "finds"/"prevents").
+- `pyproject.toml` description aligned to match.
+
 ## [0.4.2] — 2026-07-17
 
 An independent audit of 0.4.0 found the default scan crashing on current Python, a

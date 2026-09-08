@@ -280,10 +280,9 @@ KNOWN TECHNICAL DEBT
       Tracked as known gap, not a regression
 
 ================================================================================
-CURRENT VERSION:     0.4.2 (pyproject.toml) — last version-bumped release
-CURRENT BRANCH:      feat/v0.5.0-validation-release — dependency scanner +
-                     v0.5.0 benchmark work complete, unreleased, untagged
-NEXT ACTION:         version-bump + CHANGELOG entry + tag for v0.5.0, then
-                     start docs/ROADMAP.md Phase 2 (v0.6.0 MCP server)
+CURRENT VERSION:     0.5.0 (pyproject.toml)
+CURRENT BRANCH:      main — feat/v0.5.0-validation-release merged via PR #25
+NEXT ACTION:         tag v0.5.0 and let CI publish to PyPI, then start
+                     docs/ROADMAP.md Phase 2 (v0.6.0 MCP server)
 TEST STATUS:         213 passed, 0 failed (2026-09-08)
 ================================================================================
