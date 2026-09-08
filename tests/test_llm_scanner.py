@@ -35,6 +35,101 @@ def test_huggingface_token_detection(tmp_path):
     assert "LLM - HuggingFace Token" in findings
 
 
+def test_openai_legacy_key_still_detected(tmp_path):
+    # The original, still-valid 48-char legacy sk- shape.
+    f = tmp_path / "config.py"
+    f.write_text('OPENAI_API_KEY = "sk-' + 'a' * 48 + '"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - OpenAI API Key" in findings
+
+
+def test_openai_project_key_detected(tmp_path):
+    # Current default key shape since mid-2024 - the legacy-only pattern missed this.
+    f = tmp_path / "config.py"
+    f.write_text('OPENAI_API_KEY = "sk-proj-' + 'A1b2C3d4' * 20 + '"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - OpenAI API Key" in findings
+
+
+def test_openai_service_account_and_admin_keys_detected(tmp_path):
+    f = tmp_path / "config.py"
+    f.write_text(
+        'SVC_KEY = "sk-svcacct-' + 'A1b2C3d4' * 20 + '"\n'
+        'ADMIN_KEY = "sk-admin-' + 'A1b2C3d4' * 20 + '"\n'
+    )
+    findings = scan_file_llm(str(f))
+    assert len(findings["LLM - OpenAI API Key"]) >= 2
+
+
+def test_openai_short_placeholder_not_flagged(tmp_path):
+    f = tmp_path / "config.py"
+    f.write_text('OPENAI_API_KEY = "sk-proj-your-key-here"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - OpenAI API Key" not in findings
+
+
+def test_anthropic_key_still_detected_at_original_exact_length(tmp_path):
+    # Regression: the previous pattern pinned exactly 93 chars - confirm that
+    # exact case still matches now that it's a floor, not a pin.
+    f = tmp_path / "config.py"
+    f.write_text('api_key = "sk-ant-' + 'a' * 93 + '"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - Anthropic API Key" in findings
+
+
+def test_anthropic_current_api03_key_detected(tmp_path):
+    # Real current format: sk-ant-api03- + ~95 chars (~101 past "sk-ant-") -
+    # longer than the old exact-93 pin, which would have missed this.
+    f = tmp_path / "config.py"
+    f.write_text('api_key = "sk-ant-api03-' + 'A1b2C3d4' * 13 + '"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - Anthropic API Key" in findings
+
+
+def test_groq_key_detection(tmp_path):
+    f = tmp_path / "config.py"
+    f.write_text('GROQ_API_KEY = "gsk_' + 'a' * 40 + '"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - Groq API Key" in findings
+
+
+def test_openrouter_key_detection(tmp_path):
+    f = tmp_path / "config.py"
+    f.write_text('OPENROUTER_API_KEY = "sk-or-v1-' + 'a' * 40 + '"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - OpenRouter API Key" in findings
+
+
+def test_xai_key_detection(tmp_path):
+    f = tmp_path / "config.py"
+    f.write_text('XAI_API_KEY = "xai-' + 'a' * 40 + '"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - xAI API Key" in findings
+
+
+def test_langsmith_key_detection(tmp_path):
+    f = tmp_path / "config.py"
+    f.write_text('LANGSMITH_API_KEY = "lsv2_pt_' + 'a' * 40 + '"')
+    findings = scan_file_llm(str(f))
+    assert "LLM - LangSmith API Key" in findings
+
+
+def test_new_provider_placeholders_not_flagged(tmp_path):
+    # Short, doc-style placeholder values for each new provider must not fire.
+    f = tmp_path / "config.py"
+    f.write_text(
+        'GROQ_API_KEY = "gsk_xxx"\n'
+        'OPENROUTER_API_KEY = "sk-or-v1-xxx"\n'
+        'XAI_API_KEY = "xai-xxx"\n'
+        'LANGSMITH_API_KEY = "lsv2_pt_xxx"\n'
+    )
+    findings = scan_file_llm(str(f))
+    assert "LLM - Groq API Key" not in findings
+    assert "LLM - OpenRouter API Key" not in findings
+    assert "LLM - xAI API Key" not in findings
+    assert "LLM - LangSmith API Key" not in findings
+
+
 def test_eval_llm_output_detection(tmp_path):
     f = tmp_path / "agent.py"
     f.write_text('result = eval(llm_response)')

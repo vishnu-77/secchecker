@@ -49,11 +49,22 @@ LLM_PATTERNS: Dict[str, str] = {
     ),
 
     # Hardcoded AI Service Keys
-    "LLM - OpenAI API Key": r'sk-[a-zA-Z0-9]{48}',
-    "LLM - Anthropic API Key": r'sk-ant-[a-zA-Z0-9\-_]{93}',
+    # OpenAI: legacy `sk-` (48 alnum) plus the current project/service-account/admin
+    # key families (`sk-proj-`/`sk-svcacct-`/`sk-admin-`, ~150-char base64url body -
+    # {40,} is a floor well under that, chosen only to skip short doc placeholders).
+    "LLM - OpenAI API Key": r'sk-(proj|svcacct|admin)-[A-Za-z0-9_-]{40,}|sk-[a-zA-Z0-9]{48}',
+    # Anthropic: `sk-ant-` + a long base64url body. Not pinned to an exact length -
+    # the previous {93} was brittle (a real api03 key is ~101 chars past `sk-ant-`,
+    # already off) and would silently miss any future key generation (oat01, etc.)
+    # that changes length. {80,} is a floor comfortably under every real variant.
+    "LLM - Anthropic API Key": r'sk-ant-[a-zA-Z0-9\-_]{80,}',
     "LLM - HuggingFace Token": r'hf_[a-zA-Z0-9]{34,}',
     "LLM - Pinecone API Key": r'(?i)pinecone.*api[_\-]?key[\'"\s:=]+[a-zA-Z0-9\-]{32,}',
     "LLM - Weaviate API Key": r'(?i)weaviate.*api[_\-]?key[\'"\s:=]+[a-zA-Z0-9\-_]{32,}',
+    "LLM - Groq API Key": r'gsk_[A-Za-z0-9]{20,}',
+    "LLM - OpenRouter API Key": r'sk-or-v1-[A-Za-z0-9]{20,}',
+    "LLM - xAI API Key": r'xai-[A-Za-z0-9]{20,}',
+    "LLM - LangSmith API Key": r'lsv2_pt_[A-Za-z0-9_]{20,}',
     "LLM - System Prompt Hardcoded": r'(?i)system_prompt\s*=\s*[\'"](.{50,})[\'"]',
 
     # MCP (Model Context Protocol) Security
@@ -122,6 +133,10 @@ LLM_SEVERITY_MAP: Dict[str, str] = {
     "LLM - HuggingFace Token": "HIGH",
     "LLM - Pinecone API Key": "HIGH",
     "LLM - Weaviate API Key": "HIGH",
+    "LLM - Groq API Key": "HIGH",
+    "LLM - OpenRouter API Key": "HIGH",
+    "LLM - xAI API Key": "HIGH",
+    "LLM - LangSmith API Key": "HIGH",
     "LLM - LangChain Unsafe Input": "MEDIUM",
     "LLM - RAG Raw File in Prompt": "MEDIUM",
     "LLM - API Key in Log Statement": "MEDIUM",

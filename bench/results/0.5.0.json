@@ -1,5 +1,5 @@
 {
-  "secchecker_version": "0.4.2",
+  "secchecker_version": "0.5.0",
   "regression_corpus": {
     "total_fixtures": 46,
     "true_positives": 23,
@@ -454,5 +454,5 @@
       }
     ]
   },
-  "execution_time_seconds": 0.5281
+  "execution_time_seconds": 0.4529
 }
