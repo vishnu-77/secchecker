@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">SecChecker mark</title>
+  <desc id="desc">A monochrome scan window surrounding a focused dot-matrix trust boundary.</desc>
+  <rect width="256" height="256" rx="32" fill="#F4F4EF"/>
+  <g fill="none" stroke="#111111" stroke-width="10" stroke-linecap="round">
+    <path d="M48 94V62c0-8 6-14 14-14h32"/>
+    <path d="M162 48h32c8 0 14 6 14 14v32"/>
+    <path d="M208 162v32c0 8-6 14-14 14h-32"/>
+    <path d="M94 208H62c-8 0-14-6-14-14v-32"/>
+  </g>
+  <g fill="#111111">
+    <circle cx="128" cy="76" r="3" opacity=".34"/><circle cx="108" cy="82" r="3" opacity=".34"/><circle cx="148" cy="82" r="3" opacity=".34"/>
+    <circle cx="88" cy="96" r="3" opacity=".34"/><circle cx="108" cy="96" r="4" opacity=".55"/><circle cx="128" cy="96" r="5" opacity=".72"/><circle cx="148" cy="96" r="4" opacity=".55"/><circle cx="168" cy="96" r="3" opacity=".34"/>
+    <circle cx="80" cy="116" r="3" opacity=".34"/><circle cx="100" cy="116" r="4" opacity=".55"/><circle cx="120" cy="116" r="6" opacity=".8"/><circle cx="136" cy="116" r="6" opacity=".8"/><circle cx="156" cy="116" r="4" opacity=".55"/><circle cx="176" cy="116" r="3" opacity=".34"/>
+    <circle cx="76" cy="136" r="3" opacity=".34"/><circle cx="96" cy="136" r="4" opacity=".55"/><circle cx="116" cy="136" r="6" opacity=".8"/><rect x="123" y="131" width="10" height="10" rx="1"/><circle cx="140" cy="136" r="6" opacity=".8"/><circle cx="160" cy="136" r="4" opacity=".55"/><circle cx="180" cy="136" r="3" opacity=".34"/>
+    <circle cx="88" cy="156" r="3" opacity=".34"/><circle cx="108" cy="156" r="4" opacity=".55"/><circle cx="128" cy="156" r="5" opacity=".72"/><circle cx="148" cy="156" r="4" opacity=".55"/><circle cx="168" cy="156" r="3" opacity=".34"/>
+    <circle cx="108" cy="176" r="3" opacity=".34"/><circle cx="128" cy="180" r="3" opacity=".34"/><circle cx="148" cy="176" r="3" opacity=".34"/>
+  </g>
+</svg>
