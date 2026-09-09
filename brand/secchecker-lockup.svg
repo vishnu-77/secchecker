@@ -1,20 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 220" role="img" aria-labelledby="title desc">
   <title id="title">SecChecker</title>
-  <desc id="desc">SecChecker e-ink inspired horizontal logo and wordmark.</desc>
+  <desc id="desc">SecChecker e-ink inspired horizontal logo and wordmark with a geometrically symmetric scan mark.</desc>
   <rect width="980" height="220" fill="#F4F4EF"/>
-  <g transform="translate(28 18)">
-    <g fill="none" stroke="#111111" stroke-width="8" stroke-linecap="round">
-      <path d="M24 74V44c0-7 5-12 12-12h30"/><path d="M118 32h30c7 0 12 5 12 12v30"/>
-      <path d="M160 116v30c0 7-5 12-12 12h-30"/><path d="M66 158H36c-7 0-12-5-12-12v-30"/>
+
+  <!-- Mark occupies a true 184 × 184 square centred vertically in the banner. -->
+  <g transform="translate(28 18) scale(.71875)">
+    <g fill="none" stroke="#111111" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M48 92V62Q48 48 62 48H92"/>
+      <path d="M164 48H194Q208 48 208 62V92"/>
+      <path d="M208 164V194Q208 208 194 208H164"/>
+      <path d="M92 208H62Q48 208 48 194V164"/>
     </g>
     <g fill="#111111">
-      <circle cx="92" cy="62" r="2.7" opacity=".32"/><circle cx="76" cy="70" r="2.7" opacity=".32"/><circle cx="108" cy="70" r="2.7" opacity=".32"/>
-      <circle cx="60" cy="84" r="2.7" opacity=".32"/><circle cx="76" cy="84" r="3.8" opacity=".55"/><circle cx="92" cy="84" r="5" opacity=".76"/><circle cx="108" cy="84" r="3.8" opacity=".55"/><circle cx="124" cy="84" r="2.7" opacity=".32"/>
-      <circle cx="54" cy="102" r="2.7" opacity=".32"/><circle cx="70" cy="102" r="3.8" opacity=".55"/><circle cx="86" cy="102" r="5.5" opacity=".82"/><circle cx="98" cy="102" r="5.5" opacity=".82"/><circle cx="114" cy="102" r="3.8" opacity=".55"/><circle cx="130" cy="102" r="2.7" opacity=".32"/>
-      <circle cx="60" cy="120" r="2.7" opacity=".32"/><circle cx="76" cy="120" r="3.8" opacity=".55"/><rect x="87" y="115" width="10" height="10" rx="1"/><circle cx="108" cy="120" r="3.8" opacity=".55"/><circle cx="124" cy="120" r="2.7" opacity=".32"/>
-      <circle cx="76" cy="138" r="2.7" opacity=".32"/><circle cx="92" cy="144" r="2.7" opacity=".32"/><circle cx="108" cy="138" r="2.7" opacity=".32"/>
+      <circle cx="128" cy="64" r="2.5" opacity=".30"/><circle cx="128" cy="192" r="2.5" opacity=".30"/>
+      <circle cx="64" cy="128" r="2.5" opacity=".30"/><circle cx="192" cy="128" r="2.5" opacity=".30"/>
+      <circle cx="80" cy="80" r="2.5" opacity=".30"/><circle cx="176" cy="80" r="2.5" opacity=".30"/>
+      <circle cx="80" cy="176" r="2.5" opacity=".30"/><circle cx="176" cy="176" r="2.5" opacity=".30"/>
+
+      <circle cx="112" cy="80" r="3" opacity=".38"/><circle cx="144" cy="80" r="3" opacity=".38"/>
+      <circle cx="112" cy="176" r="3" opacity=".38"/><circle cx="144" cy="176" r="3" opacity=".38"/>
+      <circle cx="80" cy="112" r="3" opacity=".38"/><circle cx="80" cy="144" r="3" opacity=".38"/>
+      <circle cx="176" cy="112" r="3" opacity=".38"/><circle cx="176" cy="144" r="3" opacity=".38"/>
+
+      <circle cx="96" cy="96" r="4" opacity=".55"/><circle cx="128" cy="96" r="4.5" opacity=".62"/><circle cx="160" cy="96" r="4" opacity=".55"/>
+      <circle cx="96" cy="160" r="4" opacity=".55"/><circle cx="128" cy="160" r="4.5" opacity=".62"/><circle cx="160" cy="160" r="4" opacity=".55"/>
+      <circle cx="96" cy="128" r="4.5" opacity=".62"/><circle cx="160" cy="128" r="4.5" opacity=".62"/>
+
+      <circle cx="112" cy="112" r="5" opacity=".78"/><circle cx="128" cy="112" r="5" opacity=".78"/><circle cx="144" cy="112" r="5" opacity=".78"/>
+      <circle cx="112" cy="128" r="5" opacity=".78"/><circle cx="144" cy="128" r="5" opacity=".78"/>
+      <circle cx="112" cy="144" r="5" opacity=".78"/><circle cx="128" cy="144" r="5" opacity=".78"/><circle cx="144" cy="144" r="5" opacity=".78"/>
+      <rect x="122" y="122" width="12" height="12" rx="1"/>
     </g>
   </g>
-  <text x="230" y="112" fill="#111111" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="74" font-weight="400" letter-spacing="-2">secchecker</text>
-  <text x="235" y="154" fill="#5E5E5A" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" letter-spacing="8">TRUST BOUNDARIES FOR AI</text>
+
+  <!-- Wordmark group optically centred against the 184px mark. -->
+  <text x="240" y="109" fill="#111111" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="72" font-weight="400" letter-spacing="-2">secchecker</text>
+  <text x="244" y="151" fill="#5E5E5A" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" letter-spacing="8">TRUST BOUNDARIES FOR AI</text>
 </svg>
