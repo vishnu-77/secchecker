@@ -1,1 +1,0 @@
-GitHub repository rendering does not execute inline SVG animation. Keep secchecker-hero-animated.svg as the source animation for web/docs, and use a rendered GIF/WebP for README embedding when animation is required.
