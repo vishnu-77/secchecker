@@ -11,10 +11,6 @@ def _write(tmp_path, name, content):
     return str(f)
 
 
-# ---------------------------------------------------------------------------
-# Hardcoded secret assignments
-# ---------------------------------------------------------------------------
-
 def test_hardcoded_password_assignment(tmp_path):
     src = 'password = "supersecretpassword"\n'
     path = _write(tmp_path, "config.py", src)
@@ -30,7 +26,6 @@ def test_hardcoded_api_key_assignment(tmp_path):
 
 
 def test_short_value_not_reported(tmp_path):
-    # Values shorter than _MIN_SECRET_LEN (8) should not be reported
     src = 'password = "hi"\n'
     path = _write(tmp_path, "short.py", src)
     findings = scan_file_ast(path)
@@ -44,9 +39,48 @@ def test_non_sensitive_name_not_reported(tmp_path):
     assert "AST - Hardcoded Secret Assignment" not in findings
 
 
-# ---------------------------------------------------------------------------
-# eval / exec detection
-# ---------------------------------------------------------------------------
+def test_hardcoded_ai_credential_variable_used_in_openai_client(tmp_path):
+    src = (
+        'from openai import OpenAI\n'
+        'openai_api_key = "sk-proj-abcdefghijklmnopqrstuvwxyz1234567890"\n'
+        'client = OpenAI(api_key=openai_api_key)\n'
+    )
+    path = _write(tmp_path, "provider.py", src)
+    findings = scan_file_ast(path)
+    assert "AST - Hardcoded AI Credential Used in Provider Client" in findings
+
+
+def test_literal_ai_credential_used_in_anthropic_client(tmp_path):
+    src = (
+        'from anthropic import Anthropic\n'
+        'client = Anthropic(api_key="sk-ant-this-is-a-hardcoded-provider-secret")\n'
+    )
+    path = _write(tmp_path, "provider_literal.py", src)
+    findings = scan_file_ast(path)
+    assert "AST - Hardcoded AI Credential Used in Provider Client" in findings
+
+
+def test_environment_ai_credential_not_reported_as_hardcoded_provider_use(tmp_path):
+    src = (
+        'import os\n'
+        'from openai import OpenAI\n'
+        'openai_api_key = os.getenv("OPENAI_API_KEY")\n'
+        'client = OpenAI(api_key=openai_api_key)\n'
+    )
+    path = _write(tmp_path, "provider_env.py", src)
+    findings = scan_file_ast(path)
+    assert "AST - Hardcoded AI Credential Used in Provider Client" not in findings
+
+
+def test_unrelated_api_key_argument_not_treated_as_ai_provider(tmp_path):
+    src = (
+        'api_key = "this-is-hardcoded-but-not-an-ai-provider"\n'
+        'client = InternalService(api_key=api_key)\n'
+    )
+    path = _write(tmp_path, "internal.py", src)
+    findings = scan_file_ast(path)
+    assert "AST - Hardcoded AI Credential Used in Provider Client" not in findings
+
 
 def test_eval_call_detected(tmp_path):
     src = 'result = eval(user_code)\n'
@@ -69,10 +103,6 @@ def test_eval_with_string_literal(tmp_path):
     assert "AST - eval/exec Call" in findings
 
 
-# ---------------------------------------------------------------------------
-# Taint tracking
-# ---------------------------------------------------------------------------
-
 def test_taint_from_os_environ_to_eval(tmp_path):
     src = (
         "import os\n"
@@ -81,13 +111,8 @@ def test_taint_from_os_environ_to_eval(tmp_path):
     )
     path = _write(tmp_path, "taint.py", src)
     findings = scan_file_ast(path)
-    # eval itself is flagged
     assert "AST - eval/exec Call" in findings
 
-
-# ---------------------------------------------------------------------------
-# Non-.py files are skipped
-# ---------------------------------------------------------------------------
 
 def test_non_python_file_skipped(tmp_path):
     src = 'password = "supersecretpassword"\n'
@@ -96,20 +121,12 @@ def test_non_python_file_skipped(tmp_path):
     assert findings == {}
 
 
-# ---------------------------------------------------------------------------
-# Syntax error handled gracefully
-# ---------------------------------------------------------------------------
-
 def test_syntax_error_returns_empty(tmp_path):
     src = "def broken(\n"
     path = _write(tmp_path, "broken.py", src)
     findings = scan_file_ast(path)
     assert isinstance(findings, dict)
 
-
-# ---------------------------------------------------------------------------
-# Directory scan
-# ---------------------------------------------------------------------------
 
 def test_scan_directory_finds_secrets(tmp_path):
     _write(tmp_path, "a.py", 'secret_key = "MyS3cretK3y!"\n')
@@ -126,11 +143,6 @@ def test_scan_directory_skips_non_py(tmp_path):
     results = scan_directory_ast(str(tmp_path))
     assert results == {}
 
-
-# ---------------------------------------------------------------------------
-# Regression: G-1 — ast.Constant.s is removed in Python 3.14 and deprecated
-# on 3.12/3.13. _get_string_value must use node.value, never node.s.
-# ---------------------------------------------------------------------------
 
 def test_regression_g1_no_deprecated_constant_attrs(tmp_path):
     src = (
