@@ -56,6 +56,14 @@ before/after re-run on the identical corpus. Two structural coverage gaps (LangG
 idiom, non-Python MCP servers) are documented rather than hidden. Full numbers, root-cause
 analysis, and fix write-up: [`bench/agentsecbench/SUMMARY.md`](../bench/agentsecbench/SUMMARY.md).
 
+**How this improves from here:** the sink-presence guards already shipped resolved 6 of 8 cataloged
+false positives on this same corpus — the fix path is "add one more real condition to an existing
+rule," not "rewrite the taint engine." The two coverage gaps map directly onto
+[`docs/ROADMAP.md`](ROADMAP.md) Phase 3 (framework-specific sink packs for LangChain, LlamaIndex,
+CrewAI, AutoGen, OpenAI-Agents SDK, plus cross-function agentic taint) — this exercise gives that
+phase two concrete, reproducible repos to build against instead of a blind target. Growing the
+corpus past 6 repos is the next step before any number here is externally citable.
+
 ## Interpretation — read this before quoting the numbers above
 
 **This is a regression corpus, not yet an accuracy benchmark.** Every fixture is authored with the
