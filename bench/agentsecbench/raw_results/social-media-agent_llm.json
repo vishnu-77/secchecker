@@ -1,0 +1,29 @@
+{
+    "metadata": {
+        "timestamp": "2026-09-09T20:27:09.101603",
+        "version": "0.5.0",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 1,
+        "total_secrets": 1,
+        "total_matches": 1,
+        "severity_counts": {
+            "CRITICAL": 1,
+            "HIGH": 0,
+            "MEDIUM": 0,
+            "LOW": 0
+        }
+    },
+    "findings": {
+        "src\\clients\\twitter\\client.ts": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "Context token"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        }
+    }
+}

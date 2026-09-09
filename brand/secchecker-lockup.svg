@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 220" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 220" role="img" aria-labelledby="title desc">
   <title id="title">SecChecker</title>
   <desc id="desc">SecChecker e-ink inspired horizontal logo and wordmark with a geometrically symmetric scan mark.</desc>
-  <rect width="980" height="220" fill="#F4F4EF"/>
+  <rect width="700" height="220" fill="#F4F4EF"/>
 
   <!-- Mark occupies a true 184 × 184 square centred vertically in the banner. -->
   <g transform="translate(28 18) scale(.71875)">
@@ -34,6 +34,6 @@
   </g>
 
   <!-- Wordmark group optically centred against the 184px mark. -->
-  <text x="240" y="109" fill="#111111" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="72" font-weight="400" letter-spacing="-2">secchecker</text>
+  <text x="240" y="109" fill="#111111" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="80" font-weight="400" letter-spacing="-2">secchecker</text>
   <text x="244" y="151" fill="#5E5E5A" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" letter-spacing="8">TRUST BOUNDARIES FOR AI</text>
 </svg>

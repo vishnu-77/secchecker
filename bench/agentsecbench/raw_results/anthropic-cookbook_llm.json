@@ -1,0 +1,165 @@
+{
+    "metadata": {
+        "timestamp": "2026-09-09T20:28:48.275187",
+        "version": "0.5.0",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 12,
+        "total_secrets": 16,
+        "total_matches": 25,
+        "severity_counts": {
+            "CRITICAL": 10,
+            "HIGH": 8,
+            "MEDIUM": 5,
+            "LOW": 2
+        }
+    },
+    "findings": {
+        "capabilities\\contextual-embeddings\\contextual-rag-lambda-function\\lambda_function.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "capabilities\\retrieval_augmented_generation\\data\\anthropic_docs.json": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "message password",
+                    "message api_key",
+                    "message secret",
+                    "prompt api_key"
+                ],
+                "severity": "CRITICAL",
+                "count": 4
+            },
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print api_key",
+                    "log ANTHROPIC_API_KEY"
+                ],
+                "severity": "MEDIUM",
+                "count": 2
+            },
+            "Agentic - PII Passed to External Agent": {
+                "matches": [
+                    "DOB Anthropic"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        },
+        "capabilities\\retrieval_augmented_generation\\data\\anthropic_summary_indexed_docs.json": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "message password",
+                    "message api_key",
+                    "message secret",
+                    "prompt api_key"
+                ],
+                "severity": "CRITICAL",
+                "count": 4
+            },
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print api_key",
+                    "log ANTHROPIC_API_KEY"
+                ],
+                "severity": "MEDIUM",
+                "count": 2
+            },
+            "Agentic - PII Passed to External Agent": {
+                "matches": [
+                    "DOB Anthropic"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        },
+        "capabilities\\summarization\\guide.ipynb": {
+            "LLM - Prompt Injection via f-string": {
+                "matches": [
+                    "prompt query"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "claude_agent_sdk\\01_The_chief_of_staff_agent.ipynb": {
+            "LLM - System Prompt Hardcoded": {
+                "matches": [
+                    "Delegate financial questions to the financial-analyst subagent. Do not try to answer these questions yourself."
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "claude_agent_sdk\\04_migrating_from_openai_agents_sdk.ipynb": {
+            "LLM - System Prompt Hardcoded": {
+                "matches": [
+                    "Route each expense to the appropriate subagent. Delegate to approver if under limit, escalator if over."
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "claude_agent_sdk\\site_reliability_agent\\examples\\sre_bot_slack.py": {
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print ANTHROPIC_API_KEY"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            }
+        },
+        "evals\\agentic_search\\utils\\agentic_search.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "misc\\building_moderation_filter.ipynb": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "patterns\\agents\\evaluator_optimizer.ipynb": {
+            "LLM - Prompt Injection via f-string": {
+                "matches": [
+                    "prompt content"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "third_party\\Wikipedia\\wikipedia-search-cookbook.ipynb": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "tool_use\\memory_demo\\demo_helpers.py": {
+            "MCP - Poisoned Tool Docstring": {
+                "matches": [
+                    "run_conversation_turn: '\\n        system:'",
+                    "run_conversation_loop: '\\n        system:'"
+                ],
+                "severity": "HIGH",
+                "count": 2
+            }
+        }
+    }
+}
