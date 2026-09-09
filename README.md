@@ -22,7 +22,7 @@ secchecker . --type llm
 **Zero runtime dependencies · local analysis · no LLM judge**
 
 > Motion source: [`brand/secchecker-hero-animated.svg`](brand/secchecker-hero-animated.svg)  
-> GitHub does not execute inline SVG animation, so the repository keeps the animated SVG as the editable source and a GIF materialiser for README/web fallbacks.
+> GitHub does not execute inline SVG animation, so the README uses the static lockup while the animated source remains available for web/docs or conversion to GIF/WebP.
 
 ---
 
