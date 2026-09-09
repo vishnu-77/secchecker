@@ -1,0 +1,214 @@
+{
+    "metadata": {
+        "timestamp": "2026-09-09T20:29:12.517535",
+        "version": "0.5.0",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 13,
+        "total_secrets": 24,
+        "total_matches": 24,
+        "severity_counts": {
+            "CRITICAL": 7,
+            "HIGH": 12,
+            "MEDIUM": 5,
+            "LOW": 0
+        }
+    },
+    "findings": {
+        ".triage\\batch_1.json": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "prompt api_key"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print OPENAI_API_KEY"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            }
+        },
+        ".triage\\batch_2.json": {
+            "LLM - Env Var in LLM Context": {
+                "matches": [
+                    "context environ"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "context token"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print OPENAI_API_KEY"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            }
+        },
+        ".triage\\batch_3.json": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "context token"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        },
+        ".triage\\batch_4.json": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "prompt token"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print OPENAI_API_KEY"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            }
+        },
+        ".triage\\batch_5.json": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "prompt token"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        },
+        ".triage\\issues_raw.json": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "LLM - Env Var in LLM Context": {
+                "matches": [
+                    "context getenv"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "message api_key"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print OPENAI_API_KEY"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            }
+        },
+        ".triage\\sorted.json": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "LLM - Env Var in LLM Context": {
+                "matches": [
+                    "Context environ"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "prompt secret"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            },
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print api_key"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            }
+        },
+        "deep_agents\\agent.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "deep_agents\\recency_benchmark.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "deep_agents\\report_benchmark.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "evals\\simple_evals\\simpleqa_eval.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "gpt_researcher\\scraper\\firecrawl\\firecrawl.py": {
+            "MCP - Hardcoded MCP Server URL": {
+                "matches": [
+                    "server_url"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "gpt_researcher\\utils\\tools.py": {
+            "MCP - Unvalidated Tool Result in Prompt": {
+                "matches": [
+                    "message tool_result"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        }
+    }
+}

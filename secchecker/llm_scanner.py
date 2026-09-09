@@ -21,6 +21,38 @@ _COMPILED_LLM_PATTERNS = {name: re.compile(p) for name, p in LLM_PATTERNS.items(
 # kwarg/dict-key names that hold an MCP/tool-schema description string
 _DESCRIPTION_KEYS = {'description', 'tool_description'}
 
+# ---------------------------------------------------------------------------
+# Context guards for LLM_PATTERNS entries that match on keyword proximity
+# alone (e.g. "message" near "secret") rather than an actual value flowing
+# into an actual LLM/MCP call. That fires equally on documentation, log
+# statements that print a var *name* not its value, and code that redacts a
+# credential *from* the LLM sandbox as it does on a real secret-into-prompt
+# flow (see bench/agentsecbench/cases/FP-01, FP-02, FP-04, FP-05, FP-06).
+# Each guard below requires one extra piece of real evidence - not a new
+# taint engine, one more condition on the same text the regex already scans.
+# ---------------------------------------------------------------------------
+_LLM_CALL_SINK_RE = re.compile(
+    r'(?i)\.(?:create|complete|generate|invoke|stream)\s*\(|chat\.completions|'
+    r'ChatCompletion|messages\.append\s*\(|\bAnthropic\s*\(|\bOpenAI\s*\('
+)
+_MCP_MARKER_RE = re.compile(
+    r'(?i)\bmcp\b|modelcontextprotocol|ClientSession|FastMCP|@mcp\.tool|StdioServerParameters'
+)
+# A print/log call is only really exposing a secret's *value* if it reads one
+# (os.environ/getenv) or interpolates a variable - not if it just contains
+# the secret's *name* as plain string text (setup instructions, docs, etc).
+# `{` alone (not a matched pair) is enough evidence of interpolation: the
+# outer LLM_PATTERNS regex's trailing \b already truncates the match right
+# at the keyword, before any closing brace.
+_VALUE_REF_RE = re.compile(r'os\.(?:environ|getenv)\s*\(|\{')
+
+# rule name -> guard(full_match_text, whole_file_content) -> bool (True = keep)
+_CONTEXT_GUARDS = {
+    "LLM - Secret Passed to LLM": lambda m, content: bool(_LLM_CALL_SINK_RE.search(content)),
+    "LLM - API Key in Log Statement": lambda m, content: bool(_VALUE_REF_RE.search(m)),
+    "MCP - Hardcoded MCP Server URL": lambda m, content: bool(_MCP_MARKER_RE.search(content)),
+}
+
 CAT_UNBOUNDED_LOOP = "Agentic - Agent Loop Without Exit Condition"
 CAT_RECURSIVE_SUBAGENT = "Agentic - Recursive Self-Invocation Risk"
 
@@ -56,7 +88,19 @@ def _scan_content(content):
     findings = {}
     for pattern_name, pattern_regex in LLM_PATTERNS.items():
         try:
-            matches = _COMPILED_LLM_PATTERNS[pattern_name].findall(content)
+            guard = _CONTEXT_GUARDS.get(pattern_name)
+            if guard is not None:
+                # Need the full match text (group(0)) to evaluate the guard,
+                # not just the captured groups findall() would give us -
+                # still recorded in the same "group1 group2" shape as every
+                # other rule so report output/format is unchanged.
+                matches = [
+                    mo.groups()[0] if len(mo.groups()) == 1 else ' '.join(mo.groups())
+                    for mo in _COMPILED_LLM_PATTERNS[pattern_name].finditer(content)
+                    if guard(mo.group(0), content)
+                ]
+            else:
+                matches = _COMPILED_LLM_PATTERNS[pattern_name].findall(content)
             if matches:
                 flat = []
                 for m in matches:
@@ -82,6 +126,26 @@ def _get_str_const(node):
     return ""
 
 
+_SYSTEM_MARKER_RE = re.compile(r'(?i)^\s*system\s*:')
+
+
+def _system_marker_is_param_doc(match_text, func_node):
+    # type: (str, ast.AST) -> bool
+    """True if a 'system:' poisoning-marker match is just a Google-style
+    Args: line documenting a same-named function parameter (very common in
+    Claude/OpenAI-shaped code, where `system` is an ordinary prompt
+    argument), not an injected fake role header. See
+    bench/agentsecbench/cases/FP-03. Only narrows this one marker - every
+    other TOOL_POISONING_MARKERS alternative (<IMPORTANT>, "ignore previous
+    instructions", ...) is unambiguous and still matches as before."""
+    if not _SYSTEM_MARKER_RE.match(match_text):
+        return False
+    if not isinstance(func_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return False
+    names = {a.arg.lower() for a in list(func_node.args.args) + list(func_node.args.kwonlyargs)}
+    return 'system' in names
+
+
 def _scan_python_docstrings(tree):
     # type: (ast.AST) -> Dict[str, List[str]]
     """Detect MCP tool-poisoning: hidden instructions embedded in a tool
@@ -101,10 +165,11 @@ def _scan_python_docstrings(tree):
     for node in ast.walk(tree):
         if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
             doc = ast.get_docstring(node, clean=False)
-            if doc and _POISON_RE.search(doc):
-                name = getattr(node, 'name', '<module>')
-                snippet = _POISON_RE.search(doc).group(0)[:60]
-                _add(CAT_POISONED_DOCSTRING, "{}: {!r}".format(name, snippet))
+            if doc:
+                m = _POISON_RE.search(doc)
+                if m and not _system_marker_is_param_doc(m.group(0), node):
+                    name = getattr(node, 'name', '<module>')
+                    _add(CAT_POISONED_DOCSTRING, "{}: {!r}".format(name, m.group(0)[:60]))
 
         elif isinstance(node, ast.Call):
             for kw in node.keywords:
