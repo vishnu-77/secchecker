@@ -1,7 +1,8 @@
 """AST-based Python security scanner for secchecker.
 
-Complements the regex scanner with structural analysis:
+Complements pattern matching with structural analysis:
 - Hardcoded string literals in security-sensitive assignments
+- Context-aware AI credential usage in provider/client initialisation
 - eval() / exec() calls (with any argument)
 - Simplified taint tracking: user-controlled sources -> dangerous sinks
 
@@ -23,10 +24,6 @@ except ImportError:
         return False
 
 
-# ---------------------------------------------------------------------------
-# Patterns: assignment target names that indicate sensitive values
-# ---------------------------------------------------------------------------
-
 _SECRET_NAMES = {
     'password', 'passwd', 'pwd', 'secret', 'api_key', 'apikey',
     'token', 'auth_token', 'access_token', 'refresh_token',
@@ -34,67 +31,65 @@ _SECRET_NAMES = {
     'db_password', 'database_password', 'db_pass', 'db_pwd',
     'aws_secret', 'aws_access_key', 'aws_secret_key',
     'stripe_key', 'stripe_secret', 'openai_api_key', 'anthropic_api_key',
+    'groq_api_key', 'openrouter_api_key', 'xai_api_key', 'huggingface_token',
+    'pinecone_api_key', 'weaviate_api_key', 'langsmith_api_key',
     'encryption_key', 'signing_key', 'client_secret',
     'oauth_token', 'bearer_token', 'webhook_secret',
 }
 
-# Source variable names / attribute paths that carry user-controlled data
+_AI_PROVIDER_CALLS = {
+    'OpenAI', 'openai.OpenAI', 'AsyncOpenAI', 'openai.AsyncOpenAI',
+    'Anthropic', 'anthropic.Anthropic', 'AsyncAnthropic', 'anthropic.AsyncAnthropic',
+    'Groq', 'groq.Groq', 'AsyncGroq', 'groq.AsyncGroq',
+    'OpenAIClient', 'AzureOpenAI', 'openai.AzureOpenAI',
+    'Pinecone', 'pinecone.Pinecone',
+    'weaviate.connect_to_custom', 'weaviate.connect_to_weaviate_cloud',
+}
+
+_AI_CREDENTIAL_KWARGS = {
+    'api_key', 'apikey', 'token', 'access_token', 'auth_token',
+    'client_secret', 'credential', 'credentials',
+}
+
 _TAINT_SOURCES = {
-    # WSGI / ASGI request inputs
     'request.args', 'request.form', 'request.data', 'request.json',
     'request.get_json', 'request.body', 'request.POST', 'request.GET',
-    # stdlib
     'input', 'sys.stdin.read', 'sys.argv',
-    # os.environ
     'os.environ', 'os.getenv',
 }
 
-# Sink call names that are dangerous when fed tainted data
 _DANGEROUS_SINKS = {
     'eval', 'exec',
     'subprocess.run', 'subprocess.call', 'subprocess.Popen',
     'os.system', 'os.popen',
-    # SQL (common ORM / driver patterns)
     'cursor.execute', 'db.execute', 'conn.execute', 'session.execute',
     'engine.execute',
-    # LLM / completion calls
     'openai.ChatCompletion.create', 'openai.Completion.create',
     'client.chat.completions.create', 'client.completions.create',
     'llm.complete', 'llm.run', 'chain.run',
 }
 
-# Minimum length for a string literal to be reported as a hardcoded secret
 _MIN_SECRET_LEN = 8
 
-# ---------------------------------------------------------------------------
-# Finding categories + severities (consumed by secchecker.reporter.get_severity())
-# ---------------------------------------------------------------------------
-
 CAT_HARDCODED_SECRET = "AST - Hardcoded Secret Assignment"
+CAT_AI_CREDENTIAL_CONTEXT = "AST - Hardcoded AI Credential Used in Provider Client"
 CAT_EVAL_EXEC = "AST - eval/exec Call"
 CAT_TAINTED_SINK = "AST - Tainted Input to Dangerous Sink"
 
 AST_SEVERITY_MAP = {
     CAT_HARDCODED_SECRET: "HIGH",
+    CAT_AI_CREDENTIAL_CONTEXT: "CRITICAL",
     CAT_EVAL_EXEC: "HIGH",
     CAT_TAINTED_SINK: "CRITICAL",
 }
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _name_is_sensitive(name):
-    # type: (str) -> bool
-    """Return True if *name* looks like it should hold a secret."""
     lower = name.lower().replace('-', '_')
     return lower in _SECRET_NAMES or any(kw in lower for kw in _SECRET_NAMES)
 
 
 def _node_to_call_path(node):
-    # type: (ast.expr) -> str
-    """Flatten a Call's func node into a dotted string, best-effort."""
     if isinstance(node, ast.Name):
         return node.id
     if isinstance(node, ast.Attribute):
@@ -104,53 +99,51 @@ def _node_to_call_path(node):
 
 
 def _get_string_value(node):
-    # type: (ast.expr) -> str
-    """Return string value from a Constant node, or empty string."""
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         return node.value
     return ""
 
 
-# ---------------------------------------------------------------------------
-# Collector
-# ---------------------------------------------------------------------------
+def _display_secret(value):
+    if len(value) <= 8:
+        return "<redacted>"
+    return "{}...{}".format(value[:4], value[-4:])
+
 
 class _SecurityVisitor(ast.NodeVisitor):
-    """Walk the AST and collect security findings."""
+    """Walk the AST and collect security findings with limited context."""
 
     def __init__(self):
         self.findings = {}  # type: Dict[str, List[str]]
-        self._tainted_names = set()  # type: set
+        self._tainted_names = set()
+        self._hardcoded_secret_names = set()
 
     def _add(self, category, detail):
-        # type: (str, str) -> None
         if category not in self.findings:
             self.findings[category] = []
         if detail not in self.findings[category]:
             self.findings[category].append(detail)
 
-    # ------------------------------------------------------------------
-    # 1. Hardcoded secrets in assignments
-    # ------------------------------------------------------------------
+    def _record_secret_assignment(self, target_name, node):
+        val = _get_string_value(node)
+        if not val or len(val) < _MIN_SECRET_LEN or not _name_is_sensitive(target_name):
+            return
+        self._hardcoded_secret_names.add(target_name)
+        self._add(
+            CAT_HARDCODED_SECRET,
+            "{}=<redacted:{} chars>".format(target_name, len(val)),
+        )
 
     def visit_Assign(self, node):
-        # type: (ast.Assign) -> None
-        val = _get_string_value(node.value)
-        if val and len(val) >= _MIN_SECRET_LEN:
-            for target in node.targets:
-                target_name = ""
-                if isinstance(target, ast.Name):
-                    target_name = target.id
-                elif isinstance(target, ast.Attribute):
-                    target_name = target.attr
-                if target_name and _name_is_sensitive(target_name):
-                    # Truncate for display
-                    display = val[:60] + "..." if len(val) > 60 else val
-                    self._add(
-                        CAT_HARDCODED_SECRET,
-                        "{}={!r}".format(target_name, display),
-                    )
-        # Taint tracking: mark names that receive user-controlled values
+        for target in node.targets:
+            target_name = ""
+            if isinstance(target, ast.Name):
+                target_name = target.id
+            elif isinstance(target, ast.Attribute):
+                target_name = target.attr
+            if target_name:
+                self._record_secret_assignment(target_name, node.value)
+
         rhs = self._call_path_from_expr(node.value)
         if rhs and any(rhs.startswith(src) for src in _TAINT_SOURCES):
             for target in node.targets:
@@ -159,37 +152,48 @@ class _SecurityVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_AnnAssign(self, node):
-        # type: (ast.AnnAssign) -> None
         if node.value is None:
             return
-        val = _get_string_value(node.value)
-        if val and len(val) >= _MIN_SECRET_LEN:
-            target_name = ""
-            if isinstance(node.target, ast.Name):
-                target_name = node.target.id
-            elif isinstance(node.target, ast.Attribute):
-                target_name = node.target.attr
-            if target_name and _name_is_sensitive(target_name):
-                display = val[:60] + "..." if len(val) > 60 else val
-                self._add(
-                    "AST - Hardcoded Secret Assignment",
-                    "{}={!r}".format(target_name, display),
-                )
+        target_name = ""
+        if isinstance(node.target, ast.Name):
+            target_name = node.target.id
+        elif isinstance(node.target, ast.Attribute):
+            target_name = node.target.attr
+        if target_name:
+            self._record_secret_assignment(target_name, node.value)
         self.generic_visit(node)
 
-    # ------------------------------------------------------------------
-    # 2. eval() / exec() calls — always flag regardless of argument
-    # ------------------------------------------------------------------
+    def _credential_expr_is_hardcoded(self, expr):
+        """Explain hardcoded credential material without flagging env loading."""
+        literal = _get_string_value(expr)
+        if literal and len(literal) >= _MIN_SECRET_LEN:
+            return "literal credential ({})".format(_display_secret(literal))
+        if isinstance(expr, ast.Name) and expr.id in self._hardcoded_secret_names:
+            return "hardcoded variable '{}'".format(expr.id)
+        return ""
+
+    def _check_ai_provider_credentials(self, node, call_path):
+        if call_path not in _AI_PROVIDER_CALLS:
+            return
+        for kw in node.keywords:
+            if not kw.arg or kw.arg.lower() not in _AI_CREDENTIAL_KWARGS:
+                continue
+            reason = self._credential_expr_is_hardcoded(kw.value)
+            if reason:
+                self._add(
+                    CAT_AI_CREDENTIAL_CONTEXT,
+                    "{}({}=...) uses {}".format(call_path, kw.arg, reason),
+                )
 
     def visit_Call(self, node):
-        # type: (ast.Call) -> None
         call_path = _node_to_call_path(node.func)
+
+        self._check_ai_provider_credentials(node, call_path)
 
         if call_path in ('eval', 'exec'):
             arg_repr = self._arg_summary(node)
             self._add(CAT_EVAL_EXEC, "{}({})".format(call_path, arg_repr))
 
-        # Dangerous sink called with tainted argument
         if call_path in _DANGEROUS_SINKS or any(
             call_path.endswith(sink.split('.')[-1]) for sink in _DANGEROUS_SINKS
         ):
@@ -201,8 +205,8 @@ class _SecurityVisitor(ast.NodeVisitor):
                         "{}({}) [tainted: {}]".format(call_path, tainted_arg, tainted_arg),
                     )
             for kw in node.keywords:
-                if kw.value and self._tainted_arg_name(kw.value) in self._tainted_names:
-                    tainted = self._tainted_arg_name(kw.value)
+                tainted = self._tainted_arg_name(kw.value) if kw.value else ""
+                if tainted and tainted in self._tainted_names:
                     self._add(
                         CAT_TAINTED_SINK,
                         "{}({}={}) [tainted]".format(call_path, kw.arg or '**', tainted),
@@ -210,30 +214,19 @@ class _SecurityVisitor(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
-
     def _call_path_from_expr(self, node):
-        # type: (ast.expr) -> str
-        """Return dotted call path if *node* is a Call, else empty string."""
         if isinstance(node, ast.Call):
             return _node_to_call_path(node.func)
-        # Attribute access without call (e.g. request.args)
         if isinstance(node, ast.Attribute):
             return _node_to_call_path(node)
         return ""
 
     def _tainted_arg_name(self, node):
-        # type: (ast.expr) -> str
-        """Return the variable name if *node* is a simple Name, else ''."""
         if isinstance(node, ast.Name):
             return node.id
         return ""
 
     def _arg_summary(self, call_node):
-        # type: (ast.Call) -> str
-        """Return a short human-readable summary of the first argument."""
         if not call_node.args:
             return ""
         first = call_node.args[0]
@@ -245,13 +238,7 @@ class _SecurityVisitor(ast.NodeVisitor):
         return "..."
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
 def scan_file_ast(filepath):
-    # type: (str) -> Dict[str, List[str]]
-    """AST-scan a single Python file. Returns findings dict (may be empty)."""
     path_obj = Path(filepath)
     if path_obj.suffix.lower() != '.py':
         return {}
@@ -274,8 +261,6 @@ def scan_file_ast(filepath):
 
 
 def scan_directory_ast(directory):
-    # type: (str) -> Dict[str, Dict[str, List[str]]]
-    """AST-scan all .py files in *directory* recursively."""
     results = {}
     directory_path = Path(directory)
 
