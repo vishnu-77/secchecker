@@ -1,20 +1,28 @@
-[![PyPI version](https://img.shields.io/pypi/v/secchecker.svg)](https://pypi.org/project/secchecker/)
-[![Python versions](https://img.shields.io/pypi/pyversions/secchecker.svg)](https://pypi.org/project/secchecker/)
-[![Build Status](https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnu-77/secchecker/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
+<p align="center">
+  <img src="brand/secchecker-lockup.svg" width="760" alt="secchecker — trust boundaries for AI">
+</p>
 
-# secchecker
+<p align="center">
+  <strong>Static security analysis for AI trust boundaries.</strong><br>
+  Find risky transitions where prompts, RAG content, MCP tools, model output, agent memory, or AI credentials can influence consequential actions.
+</p>
 
-**Static security analysis for AI trust boundaries.**
-
-Find risky transitions where prompts, RAG content, MCP tools, model output, agent memory, or AI credentials can influence consequential actions.
+<p align="center">
+  <a href="https://pypi.org/project/secchecker/"><img src="https://img.shields.io/pypi/v/secchecker.svg" alt="PyPI"></a>
+  <a href="https://github.com/vishnu-77/secchecker/actions"><img src="https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://pypi.org/project/secchecker/"><img src="https://img.shields.io/pypi/pyversions/secchecker.svg" alt="Python"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-black" alt="MIT"></a>
+</p>
 
 ```bash
 pip install secchecker
 secchecker . --type llm
 ```
 
-Zero runtime dependencies. Local analysis. No LLM judge.
+**Zero runtime dependencies · local analysis · no LLM judge**
+
+> Motion source: [`brand/secchecker-hero-animated.svg`](brand/secchecker-hero-animated.svg)  
+> GitHub does not execute inline SVG animation, so the repository keeps the animated SVG as the editable source and a GIF materialiser for README/web fallbacks.
 
 ---
 
@@ -147,29 +155,29 @@ Model output is data, not authority. SecChecker looks for code paths that blur t
 
 Credential analysis is not limited to token-shaped regex matches.
 
-For Python, SecChecker also uses AST structure and usage context to recognise cases such as:
+For Python, SecChecker also uses AST structure and usage context to recognise selected relationships between credential material and AI-provider clients.
 
 ```python
 openai_api_key = "hardcoded-value"
 client = OpenAI(api_key=openai_api_key)
 ```
 
-and direct provider initialisation:
+Direct provider initialisation is also recognised for selected providers:
 
 ```python
 client = Anthropic(api_key="hardcoded-value")
 ```
 
-The scanner distinguishes those from an expected environment-loading shape:
+An expected environment-loading shape is treated differently:
 
 ```python
 openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 ```
 
-That means SecChecker can reason about **where credential material is declared and how it is used in an AI provider client**, rather than relying only on a credential prefix appearing somewhere in text.
+The analysis therefore considers **where credential material is declared and how it is used**, instead of relying only on a credential prefix appearing somewhere in text.
 
-This remains bounded static analysis, not full semantic program understanding.
+This is bounded structural static analysis, not full semantic program understanding.
 
 ---
 
@@ -177,7 +185,7 @@ This remains bounded static analysis, not full semantic program understanding.
 
 SecChecker does not claim that Semgrep, CodeQL, or other mature static-analysis platforms cannot analyse AI applications. They can.
 
-The distinction is **focus out of the box**.
+The distinction is **AI-specific focus out of the box**.
 
 | Capability | SecChecker |
 |---|---|
@@ -186,7 +194,7 @@ The distinction is **focus out of the box**.
 | MCP/tool trust checks | Built in |
 | Agent-memory checks | Built in |
 | Model-output execution checks | Built in |
-| Context-aware AI credential use | Built in for selected Python provider shapes |
+| Context-aware AI credential use | Selected Python provider shapes |
 | Python structural analysis | Supported |
 | Whole-program interprocedural analysis | No |
 | Runtime enforcement | No |
@@ -361,6 +369,7 @@ secchecker/
 ├── bench/               evaluation and performance harness
 ├── demo/                intentionally vulnerable examples
 ├── docs/                architecture, rules and configuration
+├── brand/               mark, lockup, motion source, design language
 ├── .github/             CI workflows
 │
 ├── action.yml           GitHub Action
@@ -380,6 +389,7 @@ Useful documentation:
 - [`docs/REPORTING.md`](docs/REPORTING.md)
 - [`docs/OWASP_MAPPING.md`](docs/OWASP_MAPPING.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
+- [`brand/README.md`](brand/README.md)
 
 ---
 
