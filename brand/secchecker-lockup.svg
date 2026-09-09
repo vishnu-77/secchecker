@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 220" role="img" aria-labelledby="title desc">
+  <title id="title">SecChecker</title>
+  <desc id="desc">SecChecker e-ink inspired horizontal logo and wordmark.</desc>
+  <rect width="980" height="220" fill="#F4F4EF"/>
+  <g transform="translate(28 18)">
+    <g fill="none" stroke="#111111" stroke-width="8" stroke-linecap="round">
+      <path d="M24 74V44c0-7 5-12 12-12h30"/><path d="M118 32h30c7 0 12 5 12 12v30"/>
+      <path d="M160 116v30c0 7-5 12-12 12h-30"/><path d="M66 158H36c-7 0-12-5-12-12v-30"/>
+    </g>
+    <g fill="#111111">
+      <circle cx="92" cy="62" r="2.7" opacity=".32"/><circle cx="76" cy="70" r="2.7" opacity=".32"/><circle cx="108" cy="70" r="2.7" opacity=".32"/>
+      <circle cx="60" cy="84" r="2.7" opacity=".32"/><circle cx="76" cy="84" r="3.8" opacity=".55"/><circle cx="92" cy="84" r="5" opacity=".76"/><circle cx="108" cy="84" r="3.8" opacity=".55"/><circle cx="124" cy="84" r="2.7" opacity=".32"/>
+      <circle cx="54" cy="102" r="2.7" opacity=".32"/><circle cx="70" cy="102" r="3.8" opacity=".55"/><circle cx="86" cy="102" r="5.5" opacity=".82"/><circle cx="98" cy="102" r="5.5" opacity=".82"/><circle cx="114" cy="102" r="3.8" opacity=".55"/><circle cx="130" cy="102" r="2.7" opacity=".32"/>
+      <circle cx="60" cy="120" r="2.7" opacity=".32"/><circle cx="76" cy="120" r="3.8" opacity=".55"/><rect x="87" y="115" width="10" height="10" rx="1"/><circle cx="108" cy="120" r="3.8" opacity=".55"/><circle cx="124" cy="120" r="2.7" opacity=".32"/>
+      <circle cx="76" cy="138" r="2.7" opacity=".32"/><circle cx="92" cy="144" r="2.7" opacity=".32"/><circle cx="108" cy="138" r="2.7" opacity=".32"/>
+    </g>
+  </g>
+  <text x="230" y="112" fill="#111111" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="74" font-weight="400" letter-spacing="-2">secchecker</text>
+  <text x="235" y="154" fill="#5E5E5A" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" letter-spacing="8">TRUST BOUNDARIES FOR AI</text>
+</svg>
