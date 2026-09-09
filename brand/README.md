@@ -6,8 +6,9 @@ SecChecker uses an e-ink-inspired diagnostic language: monochrome, low-noise, fu
 
 - `secchecker-mark.svg` — primary square mark
 - `secchecker-lockup.svg` — horizontal logo + wordmark
-- `secchecker-hero-animated.svg` — source animation for web/docs use
-- `secchecker-hero.gif` — rendered README animation fallback
+- `secchecker-hero-animated.svg` — editable motion source for web/docs use
+
+GitHub repository rendering does not execute inline SVG animation, so the README uses the static lockup. The motion source remains available for sites, docs systems, or conversion to GIF/WebP where animation is supported.
 
 ## Visual principles
 
