@@ -66,10 +66,10 @@ Checks are organised by **security surface**.
 
 <!-- brand:prompt-injection:start -->
 <p align="center">
-  <img src="brand/prompt-injection.gif" width="100%" alt="Prompt injection: risky code, HIGH finding, and a safer boundary.">
+  <img src="brand/prompt-injection-static.png" width="100%" alt="Prompt injection: risky code, HIGH finding, and a safer boundary.">
 </p>
 
-[View the still walkthrough](brand/prompt-injection-static.png)
+[View the animated walkthrough](brand/prompt-injection.gif)
 
 <details>
 <summary>Read the example and reproduce the scan</summary>
@@ -132,10 +132,10 @@ Adapted from the [vulnerable fixture](bench/fixtures/vulnerable/prompt_injection
 
 <!-- brand:mcp-tool-poisoning:start -->
 <p align="center">
-  <img src="brand/mcp-tool-poisoning.gif" width="100%" alt="MCP tool poisoning: risky code, HIGH finding, and a safer boundary.">
+  <img src="brand/mcp-tool-poisoning-static.png" width="100%" alt="MCP tool poisoning: risky code, HIGH finding, and a safer boundary.">
 </p>
 
-[View the still walkthrough](brand/mcp-tool-poisoning-static.png)
+[View the animated walkthrough](brand/mcp-tool-poisoning.gif)
 
 <details>
 <summary>Read the example and reproduce the scan</summary>
@@ -193,10 +193,10 @@ Model output is data, not authority. These checks identify code paths that blur 
 
 <!-- brand:tool-output-execution:start -->
 <p align="center">
-  <img src="brand/tool-output-execution.gif" width="100%" alt="Tool-output execution: risky code, CRITICAL finding, and a safer boundary.">
+  <img src="brand/tool-output-execution-static.png" width="100%" alt="Tool-output execution: risky code, CRITICAL finding, and a safer boundary.">
 </p>
 
-[View the still walkthrough](brand/tool-output-execution-static.png)
+[View the animated walkthrough](brand/tool-output-execution.gif)
 
 <details>
 <summary>Read the example and reproduce the scan</summary>
