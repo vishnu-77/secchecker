@@ -1,6 +1,6 @@
 # Visual system
 
-An e-ink-inspired diagnostic language: monochrome, functional geometry, sparse dot-matrix texture, and explicit trust-boundary diagrams. The logo appears once in the README banner. The animations focus on code and findings.
+An e-ink-inspired diagnostic language: monochrome, functional geometry, sparse dot-matrix texture, and explicit trust-boundary diagrams. The logo appears once in the README banner. The animations are catalogued here rather than embedded in the root README; they focus on code and findings.
 
 ## Message and motion
 
