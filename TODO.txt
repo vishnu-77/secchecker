@@ -167,10 +167,10 @@ below — those three items were dropped or reassigned, not done:
 [x] bench/ — 23 vulnerable / 23 safe paired fixtures, one pair per implemented
       LLM/MCP/agentic pattern across 6 risk categories (regression corpus)
 [x] bench/fixtures/adversarial/ — 14 varied-phrasing/shape fixtures per
-      pattern (recall-only). Result: 3/14 caught (21%) — the honest recall
+      pattern (recall-only). Result: 4/14 caught (28.6%) — the honest recall
       number the regression corpus's 1.00 can't show. See bench/methodology.md.
 [x] bench/fixtures/benign_realistic/ — 4 curated plausible-false-positive
-      shapes. Result: 3/4 still flagged — documented static-analysis
+      shapes. Result: 2/4 still flagged — documented static-analysis
       limitation, not a bug.
 [x] bench/run.py — scans all three corpora, reports regression precision/
       recall/F1 + adversarial recall + benign_realistic flag rate to
@@ -204,7 +204,7 @@ PHASE 5.5 — Maintainer audit + README redesign (2026-09-08)   STATUS: COMPLETE
 [x] bench/perf.py — scan-throughput benchmark, confirms the precompilation
       fix (~121 files/s, flat 400->1600 files)
 [x] bench/fixtures/adversarial/ (14) + bench/fixtures/benign_realistic/ (4)
-      — see PHASE 5 above for results (3/14 recall, 3/4 still-flagged)
+      — see PHASE 5 above for results (4/14 recall, 2/4 still-flagged)
 [x] README fully redesigned around a 20-second quickstart (name -> one-
       sentence what -> one-sentence problem -> diagram -> install -> real
       example -> real output, everything else pushed below the fold);
