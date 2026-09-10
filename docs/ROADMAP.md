@@ -1,6 +1,8 @@
 # Roadmap
 
-**Vision:** Be the #1 static security scanner for MCP servers and AI agents — the tool a coding agent reaches for, unprompted and trusted, when building AI systems.
+**Vision:** Be the static security scanner a coding agent reaches for, unprompted and trusted, when building AI systems.
+
+**Scope today: Python.** AST analysis and the MCP tool-poisoning check are Python-only, and every benchmark fixture is Python. The official MCP reference-servers repo is ~84% TypeScript and currently scans zero findings — so read every claim on this page as "for Python MCP servers and agents" until GAP-02 in [`bench/agentsecbench/`](../bench/agentsecbench/) closes. Broadening past Python is Phase 3, not a shipped capability.
 
 ## Guiding principles
 

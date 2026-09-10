@@ -387,7 +387,7 @@ This section intentionally avoids claiming blanket framework support.
 | Generic LLM applications | Supported security patterns |
 | MCP-style tools | Tool metadata, result, poisoning and execution-boundary checks |
 | Agent memory / vector stores | Selected unsafe-write patterns |
-| LangChain | Selected implemented code patterns |
+| LangChain | One pattern: `LLMChain`/`ConversationChain`/`AgentExecutor` `.run()` called on a request/user-input variable. Framework state idioms are not covered (see GAP-01) |
 | OpenAI | Generic AI patterns + contextual provider credential analysis |
 | Anthropic | Generic AI patterns + contextual provider credential analysis |
 | Groq | Selected contextual provider credential analysis |

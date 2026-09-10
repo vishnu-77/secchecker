@@ -36,8 +36,8 @@ arbitrary fixture count) — see `bench/methodology.md` for the exact rule.
 
 | Corpus | Fixtures | Result | What it measures |
 |---|---|---|---|
-| Adversarial (varied phrasing, recall-only) | 14 | **3 caught (21%)** | Same vulnerabilities as the regression corpus, deliberately paraphrased/reshaped — the honest recall number the 1.00 above can't show. |
-| benign_realistic (known plausible-FP shapes) | 4 | **3 still flagged** | Curated realistic-but-safe shapes chosen because they plausibly trip a specific pattern. |
+| Adversarial (varied phrasing, recall-only) | 14 | **4 caught (28.6%)** | Same vulnerabilities as the regression corpus, deliberately paraphrased/reshaped — the honest recall number the 1.00 above can't show. |
+| benign_realistic (known plausible-FP shapes) | 4 | **2 still flagged** | Curated realistic-but-safe shapes chosen because they plausibly trip a specific pattern. |
 
 These are additive to the regression corpus above, not a replacement — see
 `bench/methodology.md` for exactly what each fixture tests and why the numbers are scored
@@ -78,11 +78,11 @@ the scanner, not by reasoning about the regex by hand.)
 
 What would make this a real accuracy claim:
 1. **Scale beyond one example per pattern** — the adversarial corpus above is a start (14 varied-
-   phrasing fixtures, 21% recall), not yet enough for a confidence interval.
+   phrasing fixtures, 28.6% recall), not yet enough for a confidence interval.
 2. **Independent fixtures** — all three corpora (regression, adversarial, benign_realistic) are
    still written and scored by the person who wrote the detector.
 3. **Adversarial cases** — done for a first, small set (above); a false negative is now a
-   demonstrated reality (79% of the adversarial corpus), not a near-impossibility — but 14 fixtures
+   demonstrated reality (71% of the adversarial corpus), not a near-impossibility — but 14 fixtures
    covering hand-picked paraphrases isn't yet broad enough to generalize from.
 
 Until then, treat this page as: "the method is real and reproducible, the current numbers are a
