@@ -14,7 +14,7 @@ inputs:
   type:
     description: 'Scan type: secrets, llm, devsecops, all'
     required: false
-    default: 'secrets'
+    default: 'llm'
   format:
     description: 'Output format: json, md, xml, sarif, html'
     required: false
