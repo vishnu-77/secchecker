@@ -6,7 +6,7 @@ before deployment. Also covers secrets and infrastructure misconfigurations.
 Zero runtime dependencies. OWASP LLM Top 10 (2025) tagged output.
 """
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 __author__ = "Vishnu Prashanth"
 __email__ = "vishnu7stanite@gmail.com"
 

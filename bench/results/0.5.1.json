@@ -1,0 +1,458 @@
+{
+  "secchecker_version": "0.5.1",
+  "regression_corpus": {
+    "total_fixtures": 46,
+    "true_positives": 23,
+    "false_positives": 0,
+    "true_negatives": 23,
+    "false_negatives": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "files": [
+      {
+        "file": "fixtures\\vulnerable\\mcp_tool_poisoning\\description_dict_marker.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Hardcoded Jailbreak Instruction",
+          "MCP - Poisoned Tool Description",
+          "MCP - Poisoned Tool Docstring"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\mcp_tool_poisoning\\poisoned_description.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Hardcoded Jailbreak Instruction",
+          "MCP - Poisoned Tool Description"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\mcp_tool_poisoning\\poisoned_docstring.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Hardcoded Jailbreak Instruction",
+          "MCP - Poisoned Tool Docstring"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\mcp_tool_poisoning\\system_directive_marker.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "MCP - Poisoned Tool Docstring"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\memory_injection\\long_term_message_save.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "Agentic - Unsanitized Input to Agent Memory"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\memory_injection\\raw_query_to_vector_store.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "Agentic - Unsanitized Input to Agent Memory"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\memory_injection\\raw_user_input_to_memory.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "Agentic - Unsanitized Input to Agent Memory"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\prompt_injection\\delimiter_injection.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Prompt Delimiter Injection"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\prompt_injection\\format_injection.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Prompt Injection via format()"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\prompt_injection\\fstring_concat.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Prompt Injection via f-string"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\prompt_injection\\hardcoded_jailbreak.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Hardcoded Jailbreak Instruction"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\prompt_injection\\role_override.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Role Override Instruction"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\rag_leakage\\db_query_in_context.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - RAG DB Query in Context"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\rag_leakage\\env_var_in_context.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Env Var in LLM Context"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\rag_leakage\\raw_file_read.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - RAG Raw File in Prompt"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\tool_output_execution\\eval_llm_output.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "LLM - Eval of LLM Output"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\tool_output_execution\\mcp_result_os_system.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "MCP - Tool Call Output Executed Directly"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\tool_output_execution\\tool_result_shell.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "MCP - Tool Call Output Executed Directly"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\unsafe_function_calls\\agent_loop_no_exit.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "Agentic - Agent Loop Without Exit Condition"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\unsafe_function_calls\\json_loads_response.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "Agentic - Function Call Result Not Validated"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\unsafe_function_calls\\literal_eval_completion.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "Agentic - Function Call Result Not Validated",
+          "LLM - Eval of LLM Output"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\unsafe_function_calls\\pii_to_external_agent.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "Agentic - PII Passed to External Agent"
+        ]
+      },
+      {
+        "file": "fixtures\\vulnerable\\unsafe_function_calls\\recursive_self_invocation.py",
+        "expected": "vulnerable",
+        "flagged": true,
+        "categories": [
+          "Agentic - Recursive Self-Invocation Risk"
+        ]
+      },
+      {
+        "file": "fixtures\\safe\\mcp_tool_poisoning_description_dict_marker.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\mcp_tool_poisoning_poisoned_description.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\mcp_tool_poisoning_poisoned_docstring.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\mcp_tool_poisoning_system_directive_marker.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\memory_injection_long_term_message_save.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\memory_injection_raw_query_to_vector_store.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\memory_injection_raw_user_input_to_memory.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\prompt_injection_delimiter_injection.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\prompt_injection_format_injection.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\prompt_injection_fstring_concat.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\prompt_injection_hardcoded_jailbreak.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\prompt_injection_role_override.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\rag_leakage_db_query_in_context.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\rag_leakage_env_var_in_context.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\rag_leakage_raw_file_read.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\tool_output_execution_eval_llm_output.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\tool_output_execution_mcp_result_os_system.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\tool_output_execution_tool_result_shell.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\unsafe_function_calls_agent_loop_no_exit.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\unsafe_function_calls_json_loads_response.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\unsafe_function_calls_literal_eval_completion.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\unsafe_function_calls_pii_to_external_agent.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\safe\\unsafe_function_calls_recursive_self_invocation.py",
+        "expected": "safe",
+        "flagged": false,
+        "categories": []
+      }
+    ]
+  },
+  "adversarial_corpus": {
+    "total_fixtures": 14,
+    "caught": 4,
+    "recall": 0.2857,
+    "files": [
+      {
+        "file": "fixtures\\adversarial\\mcp_tool_poisoning\\lowercase_directive.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\mcp_tool_poisoning\\operator_not_user.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\memory_injection\\chat_history_append.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\memory_injection\\request_to_memory.py",
+        "flagged": true,
+        "categories": [
+          "Agentic - Unsanitized Input to Agent Memory"
+        ]
+      },
+      {
+        "file": "fixtures\\adversarial\\prompt_injection\\indirect_fstring.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\prompt_injection\\percent_format.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\prompt_injection\\synonym_jailbreak.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\prompt_injection\\uncommon_delimiter.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\rag_leakage\\env_var_bracket_access.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\rag_leakage\\path_read_text.py",
+        "flagged": true,
+        "categories": [
+          "LLM - RAG Raw File in Prompt"
+        ]
+      },
+      {
+        "file": "fixtures\\adversarial\\tool_output_execution\\os_popen_variant.py",
+        "flagged": true,
+        "categories": [
+          "MCP - Tool Call Output Executed Directly"
+        ]
+      },
+      {
+        "file": "fixtures\\adversarial\\tool_output_execution\\subprocess_call.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\adversarial\\unsafe_function_calls\\itertools_count_loop.py",
+        "flagged": true,
+        "categories": [
+          "Agentic - Agent Loop Without Exit Condition"
+        ]
+      },
+      {
+        "file": "fixtures\\adversarial\\unsafe_function_calls\\national_insurance_number.py",
+        "flagged": false,
+        "categories": []
+      }
+    ]
+  },
+  "benign_realistic_corpus": {
+    "total_fixtures": 4,
+    "still_flagged": 2,
+    "files": [
+      {
+        "file": "fixtures\\benign_realistic\\non_secret_env_in_context.py",
+        "flagged": true,
+        "categories": [
+          "LLM - Env Var in LLM Context"
+        ]
+      },
+      {
+        "file": "fixtures\\benign_realistic\\prompt_template_file.py",
+        "flagged": true,
+        "categories": [
+          "LLM - RAG Raw File in Prompt"
+        ]
+      },
+      {
+        "file": "fixtures\\benign_realistic\\support_ticket_routing.py",
+        "flagged": false,
+        "categories": []
+      },
+      {
+        "file": "fixtures\\benign_realistic\\validated_langchain_input.py",
+        "flagged": false,
+        "categories": []
+      }
+    ]
+  },
+  "execution_time_seconds": 0.1541
+}
