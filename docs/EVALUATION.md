@@ -43,6 +43,27 @@ These are additive to the regression corpus above, not a replacement — see
 `bench/methodology.md` for exactly what each fixture tests and why the numbers are scored
 separately rather than blended into one precision/recall figure.
 
+## Results — real-world corpus (AgentSecBench, v0.5.0, 2026-09-09)
+
+Everything above is self-authored: fixtures written by the same person who wrote the detector.
+[`bench/agentsecbench/`](../bench/agentsecbench/) runs the unmodified scanner against 6 real
+open-source AI-agent repos instead (LangGraph, MCP reference servers, OpenAI Agents SDK,
+gpt-researcher, and others) and hand-triages every finding. It's a small, first-pass sample —
+12 hand-triaged findings, not a statistically powered benchmark — but it's the sharpest gap on
+this page: precision on real code started far below the synthetic 1.00, traced to one dominant
+root cause (keyword co-occurrence instead of actual data flow), with a shipped fix and a
+before/after re-run on the identical corpus. Two structural coverage gaps (LangGraph's typed-state
+idiom, non-Python MCP servers) are documented rather than hidden. Full numbers, root-cause
+analysis, and fix write-up: [`bench/agentsecbench/SUMMARY.md`](../bench/agentsecbench/SUMMARY.md).
+
+**How this improves from here:** the sink-presence guards already shipped resolved 6 of 8 cataloged
+false positives on this same corpus — the fix path is "add one more real condition to an existing
+rule," not "rewrite the taint engine." The two coverage gaps map directly onto
+[`docs/ROADMAP.md`](ROADMAP.md) Phase 3 (framework-specific sink packs for LangChain, LlamaIndex,
+CrewAI, AutoGen, OpenAI-Agents SDK, plus cross-function agentic taint) — this exercise gives that
+phase two concrete, reproducible repos to build against instead of a blind target. Growing the
+corpus past 6 repos is the next step before any number here is externally citable.
+
 ## Interpretation — read this before quoting the numbers above
 
 **This is a regression corpus, not yet an accuracy benchmark.** Every fixture is authored with the

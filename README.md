@@ -26,6 +26,7 @@ The walkthroughs below show each finding and a safer code pattern.
   <a href="https://github.com/vishnu-77/secchecker/actions"><img src="https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://pypi.org/project/secchecker/"><img src="https://img.shields.io/pypi/pyversions/secchecker.svg" alt="Python"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-black" alt="MIT"></a>
+  <a href="docs/EVALUATION.md"><img src="https://img.shields.io/badge/benchmark-evaluated-blue" alt="Benchmark: evaluated"></a>
 </p>
 
 ```bash
