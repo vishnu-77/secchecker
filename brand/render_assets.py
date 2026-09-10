@@ -196,13 +196,7 @@ def render(stem, scenes, durations, height, title, is_overview=False):
 
 
 def walkthrough_markdown(scenario):
-    return f'''<p align="center">
-  <img src="brand/{scenario.slug}.gif" width="100%" alt="{scenario.title}: risky code, {scenario.severity} finding, and a safer boundary.">
-</p>
-
-[View the still walkthrough](brand/{scenario.slug}-static.png)
-
-<details>
+    return f'''<details>
 <summary>Read the example and reproduce the scan</summary>
 
 Selected finding: `{scenario.finding}` ({scenario.severity}).

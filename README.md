@@ -3,25 +3,6 @@
 </p>
 
 <p align="center">
-  <img src="brand/secchecker-hero.gif" width="100%" alt="Catch risky AI trust-boundary crossings before they ship. Source inspection highlights user content entering system instructions, tool descriptions influencing agent instructions, and tool results reaching shell commands. Local analysis, no LLM judge, zero runtime dependencies.">
-</p>
-
-[View the still overview](brand/secchecker-hero-static.png)
-
-<details>
-<summary>Read the overview</summary>
-
-Static analysis identifies risky transitions in source code before deployment:
-
-- **Prompt:** user content enters system instructions.
-- **MCP:** tool descriptions introduce instructions to an agent.
-- **Execution:** tool results reach shell commands.
-
-The walkthroughs below show each finding and a safer code pattern.
-
-</details>
-
-<p align="center">
   <a href="https://pypi.org/project/secchecker/"><img src="https://img.shields.io/pypi/v/secchecker.svg" alt="PyPI"></a>
   <a href="https://github.com/vishnu-77/secchecker/actions"><img src="https://github.com/vishnu-77/secchecker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://pypi.org/project/secchecker/"><img src="https://img.shields.io/pypi/pyversions/secchecker.svg" alt="Python"></a>
@@ -66,12 +47,6 @@ Checks are organised by **security surface**.
 - unsafe system-prompt handling
 
 <!-- brand:prompt-injection:start -->
-<p align="center">
-  <img src="brand/prompt-injection-static.png" width="100%" alt="Prompt injection: risky code, HIGH finding, and a safer boundary.">
-</p>
-
-[View the animated walkthrough](brand/prompt-injection.gif)
-
 <details>
 <summary>Read the example and reproduce the scan</summary>
 
@@ -132,12 +107,6 @@ Adapted from the [vulnerable fixture](bench/fixtures/vulnerable/prompt_injection
 - selected remote MCP configuration risks
 
 <!-- brand:mcp-tool-poisoning:start -->
-<p align="center">
-  <img src="brand/mcp-tool-poisoning-static.png" width="100%" alt="MCP tool poisoning: risky code, HIGH finding, and a safer boundary.">
-</p>
-
-[View the animated walkthrough](brand/mcp-tool-poisoning.gif)
-
 <details>
 <summary>Read the example and reproduce the scan</summary>
 
@@ -193,12 +162,6 @@ tool output  ──► consequential action
 Model output is data, not authority. These checks identify code paths that blur that distinction.
 
 <!-- brand:tool-output-execution:start -->
-<p align="center">
-  <img src="brand/tool-output-execution-static.png" width="100%" alt="Tool-output execution: risky code, CRITICAL finding, and a safer boundary.">
-</p>
-
-[View the animated walkthrough](brand/tool-output-execution.gif)
-
 <details>
 <summary>Read the example and reproduce the scan</summary>
 
