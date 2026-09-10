@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 import sys
+from . import __version__
 from .core import scan_directory, scan_file
 from .reporter import to_json, to_markdown, to_xml
 
@@ -527,6 +528,8 @@ Exit codes:
   2  Runtime error
         """,
     )
+    parser.add_argument('--version', action='version',
+                        version='secchecker {}'.format(__version__))
     subparsers = parser.add_subparsers(dest='command')
 
     scan_parser = subparsers.add_parser('scan', help='Scan a path for security findings (default command)')
@@ -557,7 +560,7 @@ Exit codes:
     # (e.g. a `scripts/` folder), so those common names still scan correctly.
     known_commands = {'scan', 'package', 'scripts', 'verify'}
     argv = sys.argv[1:]
-    if not argv or (argv[0] not in ('-h', '--help') and
+    if not argv or (argv[0] not in ('-h', '--help', '--version') and
                      (argv[0] not in known_commands or os.path.exists(argv[0]))):
         argv = ['scan'] + argv
 

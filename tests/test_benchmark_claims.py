@@ -55,6 +55,7 @@ def test_no_doc_quotes_a_stale_adversarial_figure():
     caught, total = adv["caught"], adv["total_fixtures"]
     for relpath in (
         "README.md", "docs/EVALUATION.md", "bench/methodology.md", "TODO.txt",
+        "CHANGELOG.md",
     ):
         text = _read(relpath)
         for found in re.findall(rf"(\d+)\s*/\s*{total}\b", text):

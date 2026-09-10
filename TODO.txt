@@ -183,9 +183,12 @@ below — those three items were dropped or reassigned, not done:
       dropped it as "superseded by precision/recall"; re-added because the
       regex-precompilation fix needed a benchmark to prove/guard the win —
       a different justification than the original plan, not a reversal of it)
-[!] Not yet tagged/released. Still needed before quoting the benchmark
-      externally: independent review (docs/ROADMAP.md Phase 1a) — multiple
-      phrasings and adversarial cases are now started, not yet done at scale.
+[x] Tagged and published to PyPI as v0.5.0 (2026-09-08).
+[!] Still needed before quoting the benchmark externally: independent review
+      (docs/ROADMAP.md Phase 1a) — multiple phrasings and adversarial cases are
+      started, not done at scale. This is the long pole for the whole project:
+      it needs two external reviewers, not more code, so it starts now rather
+      than after the analysis work.
 
 [x] Drop unsupported exclusivity language in README ("no mainstream PyPI
       scanner covers these" style claims) — docs/ROADMAP.md Phase 1c.
@@ -280,9 +283,12 @@ KNOWN TECHNICAL DEBT
       Tracked as known gap, not a regression
 
 ================================================================================
-CURRENT VERSION:     0.5.0 (pyproject.toml)
-CURRENT BRANCH:      main — feat/v0.5.0-validation-release merged via PR #25
-NEXT ACTION:         tag v0.5.0 and let CI publish to PyPI, then start
-                     docs/ROADMAP.md Phase 2 (v0.6.0 MCP server)
-TEST STATUS:         213 passed, 0 failed (2026-09-08)
+CURRENT VERSION:     0.5.1 (pyproject.toml, secchecker/__init__.py)
+CURRENT BRANCH:      main — v0.5.0 published to PyPI 2026-09-08; PRs #38/#39/#40
+                     merged since (benchmark badge, entry-point fixes + claim
+                     scoping, README imagery)
+NEXT ACTION:         tag v0.5.1 and let CI publish, then start the semantic IR
+                     (source -> propagation -> boundary -> sink). 0.6.0 is
+                     reserved for that, not for a metadata bump.
+TEST STATUS:         244 passed, 0 failed (2026-09-10)
 ================================================================================

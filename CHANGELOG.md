@@ -4,6 +4,68 @@ All notable changes to secchecker are documented here.
 
 ---
 
+## [0.5.1] — 2026-09-10
+
+A correctness release. Nothing here is new capability: it is what running the
+scanner against real open-source agent repositories, and auditing the two
+documented entry points, turned up. Both entry points were broken.
+
+### Fixed
+- **Pre-commit hooks never scanned anything.** All three hooks in
+  `.pre-commit-hooks.yaml` set `pass_filenames: false` and passed no path, but `path`
+  is a required positional on `scan` — so every invocation exited 2 with an argparse
+  usage error rather than scanning. Exit 2 also reads as a hard runtime error to the
+  GitHub Action wrapper, not as "findings present".
+- **The GitHub Action defaulted to the wrong scanner.** `action.yml` defaulted `type`
+  to `secrets`, the legacy scanner, while the README's documented usage and the
+  project's positioning both lead with `--type llm`. Anyone copying the Action snippet
+  without an explicit `type:` silently got the wrong analysis.
+- **False positives from lexical co-occurrence** (`llm_scanner.py`). Triaging six real
+  agent repositories (`bench/agentsecbench/`) showed 8 of 10 labelled HIGH/CRITICAL
+  findings were false, 7 of them from one root cause: rules keyed on keywords appearing
+  near each other rather than on a value reaching a sink. The sharpest case flagged the
+  code that *redacts* credentials from an LLM sandbox as the leak. Three narrow guards
+  — an LLM-call sink check, a value-vs-name check, and an MCP-marker check — remove 6
+  of the 8. Not a taint engine; one extra condition per rule, over text the rule already
+  scanned.
+- **`secchecker --version` did not work.** It hit the implicit-`scan` shim in
+  `cli.main()`, which only let `-h`/`--help` through, and died with "the following
+  arguments are required: path". There was no top-level `--version` flag at all.
+  Added, with `tests/test_cli_contract.py` covering it and the
+  `secchecker <path>` shorthand it must not break.
+- **Quadratic scan cost on large files** — two DOTALL regexes replaced with AST checks.
+  The 10 MB size guard was already present but insufficient at realistic file sizes.
+- **`Args:` docstrings misread as instruction overrides** — a `system:` marker on a
+  documented `system` parameter is no longer a poisoned-docstring finding (AST check).
+
+### Added
+- Provider key patterns for Groq, OpenRouter, xAI and LangSmith, with OWASP/CWE
+  mappings.
+- `tests/test_benchmark_claims.py` — asserts every precision/recall figure quoted in
+  the docs against `bench/results/<version>.json`, and fails on any `N/14` that
+  disagrees. Written because the adversarial score had drifted to four different values
+  across four files.
+- `bench/results/0.5.1.json` — the corpus re-measured on this release.
+
+### Changed
+- **`Development Status :: 5 - Production/Stable` → `4 - Beta`.** Measured precision on
+  real-world code is 20% and adversarial recall is 28.6%. Production/Stable overstated
+  that.
+- Claims scoped to what the code covers: AST analysis and the MCP tool-poisoning check
+  are Python-only, so the roadmap now says "for Python MCP servers". The
+  supported-ecosystems table no longer implies broad LangChain coverage from a single
+  pattern.
+- README imagery reduced to the banner; `brand/render_assets.py` synced so a render
+  reproduces it.
+
+### Unchanged, deliberately
+The synthetic regression corpus still scores 1.00/1.00 and the adversarial corpus still
+scores 4/14. The guards above were validated against real repositories, not against
+these fixtures — the synthetic scores staying flat is the no-regression signal, not
+evidence the guards worked.
+
+---
+
 ## [0.5.0] — 2026-09-08
 
 Dependency scanning, a real precision/recall benchmark (including the first honest
@@ -21,10 +83,10 @@ adversarial number this project has published), and a README rebuilt around a
   same vulnerabilities as the existing regression corpus, deliberately paraphrased or
   reshaped (different variable names, `%`-formatting instead of `.format()`,
   `subprocess.call` instead of `.run`, a UK NI number instead of an SSN). **Result:
-  3/14 caught (21% recall)** — the honest number the regression corpus's 1.00 can't
+  4/14 caught (28.6% recall)** — the honest number the regression corpus's 1.00 can't
   show. See `bench/methodology.md`.
 - **benign_realistic corpus** (`bench/fixtures/benign_realistic/`, 4 fixtures) — curated
-  plausible-false-positive shapes. **Result: 3/4 still flagged**, documenting a known
+  plausible-false-positive shapes. **Result: 2/4 still flagged**, documenting a known
   static-analysis limitation rather than a bug.
 - **Scan-throughput benchmark** (`bench/perf.py`) — asserts scan time scales roughly
   linearly with file count; wired into CI as an informational (non-blocking) step
