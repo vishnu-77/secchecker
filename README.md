@@ -420,28 +420,7 @@ See [`THREAT_MODEL.md`](THREAT_MODEL.md).
 
 ---
 
-## 10. Repository map
-
-```text
-secchecker/
-│
-├── secchecker/          scanner implementation
-├── tests/               correctness and regression tests
-├── bench/               evaluation and performance harness
-├── demo/                intentionally vulnerable examples
-├── docs/                architecture, rules and configuration
-├── brand/               mark, lockup, motion source, design language
-├── .github/             CI workflows
-│
-├── action.yml           GitHub Action
-├── THREAT_MODEL.md      security boundaries
-├── SECURITY.md          vulnerability disclosure
-├── CONTRIBUTING.md      contribution guide
-└── README.md
-```
-
-Useful documentation:
-
+## 10. Useful Documentation
 - [`docs/RULES.md`](docs/RULES.md)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/EVALUATION.md`](docs/EVALUATION.md)
