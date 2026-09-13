@@ -4,6 +4,18 @@ All notable changes to secchecker are documented here.
 
 ---
 
+## [Unreleased]
+
+### Changed
+- **Default scan type is now `llm`, not `secrets`.** A bare `secchecker <path>` used
+  to run the legacy secrets scanner, which has no lockfile exclusion and floods real
+  repos with false positives (`poetry.lock`/`package-lock.json` hashes matching
+  Twilio/Bitcoin-key patterns — see #43, found scanning `mem0ai/mem0`). `llm` also
+  matches the project's actual positioning. `--type secrets` and `--type all` are
+  unaffected and still run it explicitly.
+
+---
+
 ## [0.5.1] — 2026-09-10
 
 A correctness release. Nothing here is new capability: it is what running the

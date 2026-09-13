@@ -105,12 +105,21 @@ def _filter_by_severity(results, threshold):
 
 def _resolve_scan_types(cli_scan_type, config):
     """Resolve the effective scan type(s): CLI --type wins; else config
-    scan_types; else the default {'secrets'}."""
+    scan_types; else the default {'llm'}.
+
+    Was {'secrets'} through 0.5.x. Changed because the secrets scanner
+    matches on lexical patterns with no lockfile exclusion, so a bare
+    `secchecker <path>` against any real repo with a poetry.lock/
+    package-lock.json floods the first run with false positives
+    (see: github.com/vishnu-77/secchecker/issues/43). `llm` is also the
+    project's actual positioning (AI/MCP/LLM security), so it should be
+    what a first-time run leads with. `--type secrets`/`all` still work.
+    """
     if cli_scan_type:
         return {cli_scan_type}
     cfg_types = (config or {}).get('scan_types') or []
     valid = {t for t in cfg_types if t in ('secrets', 'llm', 'devsecops', 'dependency', 'all')}
-    return valid or {'secrets'}
+    return valid or {'llm'}
 
 
 def _run_scan(path, scan_type, no_entropy, config, extra_patterns=None):
@@ -222,7 +231,7 @@ def _add_scan_args(scan_parser):
         choices=['secrets', 'llm', 'devsecops', 'dependency', 'all'],
         default=None,
         dest='scan_type',
-        help='Scan type (default: secrets, or scan_types from .secchecker.yml)',
+        help='Scan type (default: llm, or scan_types from .secchecker.yml)',
     )
     scan_parser.add_argument(
         '--format',
