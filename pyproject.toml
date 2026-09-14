@@ -68,8 +68,8 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/vishnu-77/secchecker"
-Documentation = "https://github.com/vishnu-77/secchecker#readme"
+Homepage = "https://secchecker.cc"
+Documentation = "https://secchecker.cc"
 Repository = "https://github.com/vishnu-77/secchecker.git"
 "Bug Tracker" = "https://github.com/vishnu-77/secchecker/issues"
 Changelog = "https://github.com/vishnu-77/secchecker/blob/main/CHANGELOG.md"
