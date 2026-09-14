@@ -1,0 +1,25 @@
+name: Website
+
+on:
+  push:
+    branches: [website]
+  pull_request:
+    branches: [website]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build website
+        run: npm run build
