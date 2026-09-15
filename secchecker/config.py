@@ -10,6 +10,10 @@ VALID_SCAN_TYPES = {'secrets', 'llm', 'devsecops', 'dependency', 'all'}
 VALID_SEVERITIES = {'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'}
 
 
+class ConfigError(ValueError):
+    """Raised when strict configuration loading cannot safely continue."""
+
+
 def get_default_config():
     # type: () -> Dict[str, Any]
     """Return default configuration."""
@@ -26,8 +30,7 @@ def get_default_config():
             'min_length': 20,
         },
         'dependency_scan': {
-            # Static, offline pre-install scanning of node_modules/lockfiles.
-            'check_registry': False,   # opt-in network call for package age/provenance — see THREAT_MODEL.md
+            'check_registry': False,
             'block_at': 'CRITICAL',
             'review_at': 'HIGH',
             'warn_at': 'MEDIUM',
@@ -65,26 +68,26 @@ def _parse_scalar(value_str):
         return float(value_str)
     except ValueError:
         pass
-    # Quoted scalar: return the content up to the closing quote, ignoring any
-    # trailing inline comment (e.g. '"demo/"  # note' -> 'demo/').
     if value_str and value_str[0] in ('"', "'"):
         quote = value_str[0]
         end = value_str.find(quote, 1)
         if end != -1:
             return value_str[1:end]
-    # Unquoted scalar: strip a trailing inline comment introduced by ' #'.
     hash_idx = value_str.find(' #')
     if hash_idx != -1:
         value_str = value_str[:hash_idx].rstrip()
     return value_str
 
 
-def _parse_simple_yaml(text):
-    # type: (str) -> Dict[str, Any]
+def _parse_simple_yaml(text, strict=False):
+    # type: (str, bool) -> Dict[str, Any]
     """
     Parse a bounded YAML subset for .secchecker.yml.
-    Handles scalars, string lists, and one-level nested maps.
-    Returns empty dict on any parse error.
+
+    Handles scalars, string lists, and one-level nested maps. In permissive
+    mode unsupported syntax is ignored for backwards compatibility. In strict
+    mode malformed/unsupported syntax raises ConfigError so a security scan
+    cannot silently fall back to weaker defaults.
     """
     result = {}
     lines = text.splitlines()
@@ -113,8 +116,16 @@ def _parse_simple_yaml(text):
                     if not next_line or next_line.lstrip().startswith('#'):
                         j += 1
                         continue
+
+                    # A dedented line belongs to the next top-level key.
+                    if next_line == next_line.lstrip():
+                        break
+
                     list_m = re.match(r'^\s+-\s+(.+)', next_line)
-                    map_m = re.match(r'^\s+([a-zA-Z_][a-zA-Z0-9_]*|"[^"]*"|\'[^\']*\')\s*:\s*(.*)', next_line)
+                    map_m = re.match(
+                        r'^\s+([a-zA-Z_][a-zA-Z0-9_]*|"[^"]*"|\'[^\']*\')\s*:\s*(.*)',
+                        next_line,
+                    )
                     if list_m:
                         items.append(_parse_scalar(list_m.group(1).strip()))
                         j += 1
@@ -126,9 +137,21 @@ def _parse_simple_yaml(text):
                         nested[mk] = _parse_scalar(map_m.group(2).strip())
                         j += 1
                     else:
+                        if strict:
+                            raise ConfigError(
+                                "Unsupported configuration syntax at line {}: {}".format(
+                                    j + 1, next_line.strip()
+                                )
+                            )
                         break
 
-                if items:
+                if items and nested:
+                    if strict:
+                        raise ConfigError(
+                            "Configuration key '{}' mixes list and map values".format(key)
+                        )
+                    result[key] = items
+                elif items:
                     result[key] = items
                 elif nested:
                     result[key] = nested
@@ -136,55 +159,119 @@ def _parse_simple_yaml(text):
                     result[key] = None
                 i = j
         else:
+            if strict:
+                raise ConfigError(
+                    "Unsupported configuration syntax at line {}: {}".format(i + 1, line.strip())
+                )
             i += 1
 
     return result
 
 
-def _validate_and_normalize(raw):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
+def _require_type(raw, key, expected, strict):
+    if strict and key in raw and raw.get(key) is not None and not isinstance(raw.get(key), expected):
+        raise ConfigError("Invalid type for configuration key '{}'".format(key))
+
+
+def _validate_and_normalize(raw, strict=False):
+    # type: (Dict[str, Any], bool) -> Dict[str, Any]
     """Validate raw parsed config and merge with defaults."""
     config = get_default_config()
     if not isinstance(raw, dict):
+        if strict:
+            raise ConfigError('Configuration root must be a mapping')
         return config
 
+    _require_type(raw, 'exclude_paths', list, strict)
     if isinstance(raw.get('exclude_paths'), list):
         config['exclude_paths'] = [str(p) for p in raw['exclude_paths']]
 
+    _require_type(raw, 'exclude_patterns', list, strict)
     if isinstance(raw.get('exclude_patterns'), list):
         config['exclude_patterns'] = [str(p) for p in raw['exclude_patterns']]
 
     threshold = raw.get('severity_threshold')
-    if isinstance(threshold, str) and threshold.upper() in VALID_SEVERITIES:
-        config['severity_threshold'] = threshold.upper()
+    if threshold is not None:
+        if isinstance(threshold, str) and threshold.upper() in VALID_SEVERITIES:
+            config['severity_threshold'] = threshold.upper()
+        elif strict:
+            raise ConfigError("Invalid severity_threshold: {!r}".format(threshold))
 
     scan_types = raw.get('scan_types')
-    if isinstance(scan_types, list):
-        valid = [str(t) for t in scan_types if str(t) in VALID_SCAN_TYPES]
-        if valid:
-            config['scan_types'] = valid
+    if scan_types is not None:
+        if not isinstance(scan_types, list):
+            if strict:
+                raise ConfigError('scan_types must be a list')
+        else:
+            invalid = [str(t) for t in scan_types if str(t) not in VALID_SCAN_TYPES]
+            if invalid and strict:
+                raise ConfigError('Invalid scan_types: {}'.format(', '.join(invalid)))
+            valid = [str(t) for t in scan_types if str(t) in VALID_SCAN_TYPES]
+            if valid:
+                config['scan_types'] = valid
 
     custom = raw.get('custom_patterns')
-    if isinstance(custom, dict):
-        config['custom_patterns'] = {str(k): str(v) for k, v in custom.items()}
+    if custom is not None:
+        if not isinstance(custom, dict):
+            if strict:
+                raise ConfigError('custom_patterns must be a mapping')
+        else:
+            normalized = {str(k): str(v) for k, v in custom.items()}
+            if strict:
+                for name, pattern in normalized.items():
+                    try:
+                        re.compile(pattern)
+                    except re.error as exc:
+                        raise ConfigError(
+                            "Invalid custom pattern '{}': {}".format(name, exc)
+                        )
+            config['custom_patterns'] = normalized
 
     entropy = raw.get('entropy')
-    if isinstance(entropy, dict):
-        if isinstance(entropy.get('enabled'), bool):
-            config['entropy']['enabled'] = entropy['enabled']
-        if isinstance(entropy.get('threshold'), (int, float)):
-            config['entropy']['threshold'] = float(entropy['threshold'])
-        if isinstance(entropy.get('min_length'), int):
-            config['entropy']['min_length'] = entropy['min_length']
+    if entropy is not None:
+        if not isinstance(entropy, dict):
+            if strict:
+                raise ConfigError('entropy must be a mapping')
+        else:
+            if 'enabled' in entropy:
+                if isinstance(entropy.get('enabled'), bool):
+                    config['entropy']['enabled'] = entropy['enabled']
+                elif strict:
+                    raise ConfigError('entropy.enabled must be boolean')
+            if 'threshold' in entropy:
+                if isinstance(entropy.get('threshold'), (int, float)):
+                    config['entropy']['threshold'] = float(entropy['threshold'])
+                elif strict:
+                    raise ConfigError('entropy.threshold must be numeric')
+            if 'min_length' in entropy:
+                if isinstance(entropy.get('min_length'), int):
+                    config['entropy']['min_length'] = entropy['min_length']
+                elif strict:
+                    raise ConfigError('entropy.min_length must be an integer')
 
     dep_scan = raw.get('dependency_scan')
-    if isinstance(dep_scan, dict):
-        if isinstance(dep_scan.get('check_registry'), bool):
-            config['dependency_scan']['check_registry'] = dep_scan['check_registry']
-        for key in ('block_at', 'review_at', 'warn_at'):
-            val = dep_scan.get(key)
-            if isinstance(val, str) and val.upper() in VALID_SEVERITIES:
-                config['dependency_scan'][key] = val.upper()
+    if dep_scan is not None:
+        if not isinstance(dep_scan, dict):
+            if strict:
+                raise ConfigError('dependency_scan must be a mapping')
+        else:
+            if 'check_registry' in dep_scan:
+                if isinstance(dep_scan.get('check_registry'), bool):
+                    config['dependency_scan']['check_registry'] = dep_scan['check_registry']
+                elif strict:
+                    raise ConfigError('dependency_scan.check_registry must be boolean')
+            for key in ('block_at', 'review_at', 'warn_at'):
+                if key not in dep_scan:
+                    continue
+                val = dep_scan.get(key)
+                if isinstance(val, str) and val.upper() in VALID_SEVERITIES:
+                    config['dependency_scan'][key] = val.upper()
+                elif strict:
+                    raise ConfigError(
+                        "dependency_scan.{} must be one of {}".format(
+                            key, ', '.join(sorted(VALID_SEVERITIES))
+                        )
+                    )
 
     return config
 
@@ -196,14 +283,9 @@ def is_path_excluded(rel_path, exclude_paths):
 
     Matching rules (case-sensitive, separator-agnostic):
       * A glob entry (contains ``*``, ``?`` or ``[``) is matched with fnmatch
-        against both the full path and its basename — e.g. ``*.mock.*`` or
-        ``build/*``.
-      * A plain entry (``tests/``, ``node_modules``, ``sample-reports``) matches
-        when it appears as a full path component anywhere in the path, or when
-        the path equals it or is nested beneath it — e.g. ``tests/`` excludes
-        ``tests/test_x.py`` and ``a/tests/x.py``.
-      * A multi-segment literal (``secchecker/patterns.py``) matches that exact
-        file or anything nested beneath it.
+        against both the full path and its basename.
+      * A plain entry matches when it appears as a full path component.
+      * A multi-segment literal matches that exact file or a nested path.
     """
     if not exclude_paths:
         return False
@@ -226,11 +308,9 @@ def is_path_excluded(rel_path, exclude_paths):
             continue
 
         if '/' in pat:
-            # Multi-segment literal: exact file or a nested path.
             if norm == pat or norm.startswith(pat + '/'):
                 return True
         else:
-            # Single token: match as a full path component anywhere.
             if pat in segments:
                 return True
 
@@ -239,15 +319,7 @@ def is_path_excluded(rel_path, exclude_paths):
 
 def is_pattern_excluded(pattern_name, exclude_patterns):
     # type: (str, Optional[List[str]]) -> bool
-    """
-    Return True if finding category ``pattern_name`` (e.g. ``"Email"``,
-    ``"LLM - Hardcoded Jailbreak Instruction"``) matches any entry in
-    ``exclude_patterns``. Matching is case-insensitive and supports fnmatch
-    globs (``"LLM - *"``, ``"Docker*"``).
-
-    This excludes finding *categories* (rule names), not file paths — file
-    globs are already covered by ``exclude_paths``.
-    """
+    """Return True if finding category matches an excluded name/glob."""
     if not exclude_patterns:
         return False
     name = str(pattern_name).lower()
@@ -257,19 +329,39 @@ def is_pattern_excluded(pattern_name, exclude_patterns):
     return False
 
 
-def load_config(config_path=None, scan_root=None):
-    # type: (Optional[str], Optional[str]) -> Dict[str, Any]
-    """Load config from file or return defaults. Never raises."""
+def load_config(config_path=None, scan_root=None, strict=False):
+    # type: (Optional[str], Optional[str], bool) -> Dict[str, Any]
+    """Load configuration.
+
+    ``strict=False`` preserves the library's historical fail-soft behaviour.
+    ``strict=True`` is intended for CLI/CI use: missing explicit files,
+    malformed syntax, invalid security thresholds/types and invalid custom
+    regexes raise ConfigError instead of silently reverting to defaults.
+    """
+    explicit_path = config_path is not None
     if config_path is None:
         config_path = find_config_file(scan_root)
 
     if config_path is None:
         return get_default_config()
 
+    if not os.path.isfile(config_path):
+        if strict and explicit_path:
+            raise ConfigError('Configuration file not found: {}'.format(config_path))
+        return get_default_config()
+
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             text = f.read()
-        raw = _parse_simple_yaml(text)
-        return _validate_and_normalize(raw)
-    except Exception:
+        raw = _parse_simple_yaml(text, strict=strict)
+        return _validate_and_normalize(raw, strict=strict)
+    except ConfigError:
+        if strict:
+            raise
+        return get_default_config()
+    except Exception as exc:
+        if strict:
+            raise ConfigError(
+                'Could not load configuration {}: {}'.format(config_path, exc)
+            )
         return get_default_config()

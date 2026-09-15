@@ -2,7 +2,11 @@
 import warnings
 
 import pytest
-from secchecker.ast_scanner import scan_file_ast, scan_directory_ast
+from secchecker.ast_scanner import (
+    scan_file_ast,
+    scan_directory_ast,
+    CAT_TAINTED_SINK,
+)
 
 
 def _write(tmp_path, name, content):
@@ -112,6 +116,62 @@ def test_taint_from_os_environ_to_eval(tmp_path):
     path = _write(tmp_path, "taint.py", src)
     findings = scan_file_ast(path)
     assert "AST - eval/exec Call" in findings
+    assert CAT_TAINTED_SINK in findings
+
+
+def test_taint_propagates_through_direct_alias(tmp_path):
+    src = (
+        "import os\n"
+        "import subprocess\n"
+        "raw = os.getenv('CMD')\n"
+        "command = raw\n"
+        "subprocess.run(command)\n"
+    )
+    path = _write(tmp_path, "alias_taint.py", src)
+    findings = scan_file_ast(path)
+    assert CAT_TAINTED_SINK in findings
+
+
+def test_taint_is_lexically_scoped_between_functions(tmp_path):
+    src = (
+        "import os\n"
+        "import subprocess\n"
+        "def first():\n"
+        "    value = os.getenv('CMD')\n"
+        "    return value\n"
+        "\n"
+        "def second():\n"
+        "    value = 'known-safe'\n"
+        "    subprocess.run(value)\n"
+    )
+    path = _write(tmp_path, "scoped_taint.py", src)
+    findings = scan_file_ast(path)
+    assert CAT_TAINTED_SINK not in findings
+
+
+def test_safe_reassignment_kills_local_taint(tmp_path):
+    src = (
+        "import os\n"
+        "import subprocess\n"
+        "def run():\n"
+        "    value = os.getenv('CMD')\n"
+        "    value = 'echo safe'\n"
+        "    subprocess.run(value)\n"
+    )
+    path = _write(tmp_path, "taint_kill.py", src)
+    findings = scan_file_ast(path)
+    assert CAT_TAINTED_SINK not in findings
+
+
+def test_unrelated_run_method_is_not_treated_as_dangerous_sink(tmp_path):
+    src = (
+        "import os\n"
+        "payload = os.getenv('ANALYTICS_PAYLOAD')\n"
+        "analytics.run(payload)\n"
+    )
+    path = _write(tmp_path, "analytics.py", src)
+    findings = scan_file_ast(path)
+    assert CAT_TAINTED_SINK not in findings
 
 
 def test_non_python_file_skipped(tmp_path):
