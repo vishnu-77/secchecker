@@ -28,7 +28,7 @@ def test_scan_file_multiple_patterns(tmp_path):
 
 def test_scan_directory(tmp_path):
     """Test scanning a directory recursively."""
-    (tmp_path / "file1.py").write_text("password='test123'")
+    (tmp_path / "file1.py").write_text("password='correct-horse-battery-staple'")
     (tmp_path / "subdir").mkdir()
     (tmp_path / "subdir" / "file2.js").write_text("api_key: 'AIzaSyABC123'")
 
@@ -98,7 +98,8 @@ def test_capture_groups_return_complete_match_not_tuple(tmp_path):
     TypeError that the outer scanner silently swallowed.
     """
     f = tmp_path / "azure.py"
-    storage_key = "A" * 88
+    storage_key = ("AbCdEfGh01234567+/" * 4) + "QwErTyUi12345678"
+    assert len(storage_key) == 88
     f.write_text(
         'azure_storage_account_key = "{}"\n'.format(storage_key)
         + 'aws_key = "AKIAIOSFODNN7XYZQMNB"\n'
