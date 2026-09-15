@@ -182,8 +182,10 @@ def _run_scan(path, scan_type, no_entropy, config, extra_patterns=None):
             else:
                 results = _merge_results(results, scan_directory_dependency(path))
 
-    # AST scanner runs on Python files for secrets and all scan types
-    if (types & {'secrets', 'all'}) and scan_directory_ast is not None:
+    # Python AST analysis is part of both secrets and AI scanning. This keeps
+    # contextual provider-credential and limited source/sink analysis reachable
+    # from the recommended `--type llm` workflow instead of only `secrets`.
+    if (types & {'secrets', 'llm', 'all'}) and scan_directory_ast is not None:
         if is_file:
             r = scan_file_ast(path)
             if r:
@@ -269,12 +271,17 @@ def _cmd_scan(args):
     config = {}
     if load_config is not None:
         try:
+            # CLI/CI scans must fail closed on malformed security config.
+            # The library API retains load_config(strict=False) for callers
+            # that explicitly want the historical fail-soft behaviour.
             config = load_config(
                 config_path=args.config,
                 scan_root=args.path if not os.path.isfile(args.path) else None,
+                strict=True,
             )
-        except Exception:
-            config = {}
+        except Exception as e:
+            print('[!] Configuration error: {}'.format(e), file=sys.stderr)
+            sys.exit(2)
 
     threshold = args.severity_threshold
     if threshold is None and config:
@@ -389,9 +396,6 @@ def _cmd_package_inspect(args):
               '(nothing installed to inspect yet).'.format(args.name))
         sys.exit(0)
 
-    # Reuse the real dependency scanner (same content/hook/suspicious-binary
-    # checks as `--type dependency`) instead of re-walking by hand, so this
-    # command can't drift out of parity with it.
     findings = scan_directory_dependency(pkg_dir)
 
     if not findings:
@@ -434,7 +438,6 @@ def _cmd_scripts_review(args):
         print('{}:'.format(entry))
         for hook_name, cmd in hooks.items():
             print('  {}: {}'.format(hook_name, cmd))
-            # Static-scan the hook command text itself for obvious red flags.
             for pname, pregex in _DEP_PATTERNS.items():
                 if pname in _DEP_STRUCTURAL:
                     continue
@@ -482,9 +485,6 @@ def _cmd_verify(args):
             continue
 
         import tempfile
-        # parse_lockfile() dispatches on exact basename (e.g. 'package-lock.json'),
-        # so the temp copy must keep that name -- a random-prefixed filename would
-        # never match and silently parse as {} (no drift, always).
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = os.path.join(tmp_dir, fname)
             with open(tmp_path, 'w', encoding='utf-8') as tf:
@@ -552,12 +552,6 @@ Exit codes:
     verify_parser = subparsers.add_parser('verify', help='Check lockfile integrity drift vs git HEAD (offline)')
     verify_parser.add_argument('path', nargs='?', default='.', help='Project root (default: current directory)')
 
-    # Preserve `secchecker <path> --type ...` as shorthand for
-    # `secchecker scan <path> --type ...` - inject the implicit subcommand
-    # before parsing whenever the first token isn't a known subcommand name.
-    # A real file/directory takes priority over the subcommand names even
-    # when it happens to be spelled 'scan'/'package'/'scripts'/'verify'
-    # (e.g. a `scripts/` folder), so those common names still scan correctly.
     known_commands = {'scan', 'package', 'scripts', 'verify'}
     argv = sys.argv[1:]
     if not argv or (argv[0] not in ('-h', '--help', '--version') and
