@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">SecChecker origami lock mark</title>
+  <desc id="desc">A folded paper lock with a key-shaped shackle and a single red inspection dot.</desc>
+  <path d="M77 105V71L101 43H155L179 71V105H158V80L147 67H109L98 80V105Z" fill="#171717"/>
+  <path d="M113 43H143V65C143 74 138 80 132 84V105H124V84C118 80 113 74 113 65Z" fill="#F4F4EF"/>
+  <path d="M51 103H205V207L128 232L51 207Z" fill="#E8E7E1"/>
+  <path d="M51 103L128 161L51 207Z" fill="#D8D7D1"/>
+  <path d="M205 103L128 161L205 207Z" fill="#C9C8C2"/>
+  <path d="M51 103L128 161L205 103Z" fill="#F1F0EA"/>
+  <path d="M51 207L128 161L128 232Z" fill="#E1E0DA"/>
+  <path d="M205 207L128 161L128 232Z" fill="#BDBCB6"/>
+  <g fill="none" stroke="#AAA9A3" stroke-width="1.5" stroke-linejoin="round">
+    <path d="M51 103L128 161L205 103"/>
+    <path d="M51 207L128 161L205 207"/>
+    <path d="M128 161V232"/>
+    <path d="M51 103V207L128 232L205 207V103"/>
+  </g>
+  <circle cx="183" cy="128" r="8" fill="#B84A3A"/>
+</svg>
