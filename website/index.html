@@ -17,10 +17,9 @@
     </a>
     <nav aria-label="Primary navigation">
       <a href="#product">Product</a>
+      <a href="#coverage">Coverage</a>
       <a href="#evaluation">Evaluation</a>
-      <a href="#methodology">Method</a>
-      <a href="#scope">Scope</a>
-      <a href="https://github.com/vishnu-77/secchecker/tree/main/docs">Docs</a>
+      <a href="#fit">Where it fits</a>
       <a class="nav-cta" href="https://github.com/vishnu-77/secchecker">GitHub ↗</a>
     </nav>
   </header>
@@ -30,7 +29,7 @@
       <div class="hero-copy">
         <div class="eyebrow">STATIC SECURITY ANALYSIS FOR AI SOFTWARE</div>
         <h1>Catch risky AI trust-boundary crossings before they ship.</h1>
-        <p class="lede">SecChecker inspects AI applications, agents, MCP tools and LLM integrations for selected security-sensitive code paths. Local. Deterministic. No LLM judge.</p>
+        <p class="lede">SecChecker inspects AI applications, agents, MCP tools and LLM integrations for security-sensitive code paths. Local. Deterministic. No LLM judge.</p>
 
         <div class="start-block" aria-label="Quick start">
           <div class="start-row">
@@ -47,7 +46,7 @@
 
         <div class="hero-actions">
           <a class="button button-dark" href="#product">See it run ↓</a>
-          <a class="button" href="#evaluation">Evaluation methodology ↓</a>
+          <a class="button" href="#evaluation">How it is evaluated ↓</a>
         </div>
       </div>
 
@@ -60,16 +59,14 @@
     <section id="product" class="section-shell ruled-section product-section">
       <div class="section-index">01 / THE PRODUCT</div>
       <div class="product-heading">
-        <div>
-          <h2>One command. A security signal you can inspect.</h2>
-        </div>
-        <p>Run SecChecker locally during development or in CI. The console stays deliberately boring: what was scanned, which analysis mode ran, and where the report was written.</p>
+        <h2>One command. A security signal you can inspect.</h2>
+        <p>Run SecChecker while you build or in CI. Findings stay close to the code and can be exported into the workflows your team already uses.</p>
       </div>
 
       <div class="console" aria-label="Illustrated SecChecker console session">
         <div class="console-bar">
           <span>secchecker / local</span>
-          <span>illustrated CLI session</span>
+          <span>scan session</span>
         </div>
         <pre><span class="console-prompt">$</span> secchecker . --type llm --format sarif --verbose
 
@@ -82,30 +79,30 @@
           <div class="report-label">SELECTED FINDING / REPORT PREVIEW</div>
           <div class="report-line">
             <span class="severity-text">CRITICAL</span>
-            <strong>MCP - Tool Call Output Executed Directly</strong>
+            <strong>Tool output reaches command execution</strong>
           </div>
-          <div class="report-path">src/agent.py</div>
-          <code>mcp_result  ───────▶  os.system(mcp_result)</code>
-          <p>Model- or tool-controlled output reaches a command-execution sink.</p>
+          <div class="report-path">example/agent.py</div>
+          <code>tool_result  ───────▶  command execution</code>
+          <p>Review the path before the change ships.</p>
         </div>
       </div>
 
       <div class="product-facts">
-        <div><span>ANALYSIS</span><strong>Patterns + selected Python AST checks</strong></div>
-        <div><span>OUTPUT</span><strong>CLI · JSON · Markdown · XML · SARIF · HTML</strong></div>
-        <div><span>WORKFLOW</span><strong>Local development · pre-commit · GitHub Actions · CI</strong></div>
+        <div><span>LOCAL</span><strong>Run against the repository on your machine.</strong></div>
+        <div><span>CI READY</span><strong>Use reports and exit codes in automated checks.</strong></div>
+        <div><span>OUTPUTS</span><strong>CLI · JSON · Markdown · XML · SARIF · HTML</strong></div>
       </div>
     </section>
 
-    <section id="surfaces" class="section-shell ruled-section">
-      <div class="section-index">02 / WHAT IT INSPECTS</div>
+    <section id="coverage" class="section-shell ruled-section">
+      <div class="section-index">02 / WHAT IT CHECKS</div>
       <div class="surface-grid">
-        <article><span>01</span><h3>Prompt & context</h3><p>Selected user-controlled data entering privileged prompts, delimiter manipulation and sensitive-context flows.</p></article>
-        <article><span>02</span><h3>MCP & tool trust</h3><p>Poisoned tool descriptions, untrusted metadata, tool results re-entering privileged context and selected execution boundaries.</p></article>
-        <article><span>03</span><h3>Model output</h3><p>Selected model- or tool-controlled values reaching eval, exec, subprocess, shell and other dangerous sinks.</p></article>
-        <article><span>04</span><h3>Agent memory</h3><p>User-controlled or untrusted content written directly to selected persistent-memory and vector-store patterns.</p></article>
-        <article><span>05</span><h3>Agent control flow</h3><p>Selected unvalidated function-call results, recursive invocation patterns and autonomous loops without clear exit conditions.</p></article>
-        <article><span>06</span><h3>AI credentials</h3><p>Context-aware checks for selected provider credentials, including how material is declared and passed to clients.</p></article>
+        <article><span>01</span><h3>Prompt & context</h3><p>Flags risky transitions where untrusted content can influence privileged AI context.</p></article>
+        <article><span>02</span><h3>MCP & tools</h3><p>Checks tool descriptions, metadata and tool-result handling around sensitive actions.</p></article>
+        <article><span>03</span><h3>Model output</h3><p>Surfaces cases where AI-controlled output can flow into consequential execution paths.</p></article>
+        <article><span>04</span><h3>Agent memory</h3><p>Looks for unsafe persistence of user-controlled or otherwise untrusted content.</p></article>
+        <article><span>05</span><h3>Agent control flow</h3><p>Highlights selected patterns that can make autonomous behaviour harder to constrain or review.</p></article>
+        <article><span>06</span><h3>AI credentials</h3><p>Identifies selected credential-handling risks around AI provider integrations.</p></article>
       </div>
     </section>
 
@@ -113,129 +110,74 @@
       <div class="section-index">03 / EVALUATION</div>
       <div class="evaluation-intro">
         <div>
-          <h2>Show the misses, not only the wins.</h2>
-          <p class="lede-sm">SecChecker keeps regression, adversarial and real-code evaluation separate so a perfect fixture result is not presented as real-world accuracy.</p>
+          <h2>Evaluation should expose blind spots, not hide them.</h2>
+          <p class="lede-sm">SecChecker is tested against expected detections, safe counterparts, harder variations and real open-source code. These checks are kept distinct so one strong result cannot mask a weakness elsewhere.</p>
         </div>
-        <div class="evaluation-status">
-          <span>REPRODUCIBLE OFFLINE</span>
-          <code>$ python bench/run.py</code>
+        <div class="evaluation-badge">
+          <span>PUBLIC PRINCIPLE</span>
+          <strong>Repeatable · offline · deterministic</strong>
         </div>
       </div>
 
-      <div class="corpus-grid">
-        <article>
-          <span class="corpus-kicker">REGRESSION CORPUS</span>
-          <strong>23 / 23</strong>
-          <p>Known vulnerable fixtures detected.</p>
-          <small>Paired safe fixtures: 23 / 23 clean.</small>
-        </article>
-        <article>
-          <span class="corpus-kicker">ADVERSARIAL CORPUS</span>
-          <strong>4 / 14</strong>
-          <p>Reshaped or paraphrased variants detected.</p>
-          <small>28.6% recall — a demonstrated generalisation gap.</small>
-        </article>
-        <article>
-          <span class="corpus-kicker">BENIGN-REALISTIC</span>
-          <strong>2 / 4</strong>
-          <p>Curated realistic-but-safe shapes still flagged.</p>
-          <small>Kept separate rather than blended into one score.</small>
-        </article>
-        <article>
-          <span class="corpus-kicker">REAL OPEN-SOURCE CODE</span>
-          <strong>6 repos</strong>
-          <p>AgentSecBench first-pass corpus.</p>
-          <small>12 hand-triaged findings; structural gaps are documented.</small>
-        </article>
+      <div class="evaluation-grid">
+        <article><span>KNOWN CASES</span><h3>Does it keep catching what it already knows?</h3><p>Regression checks protect expected behaviour from silently breaking between releases.</p></article>
+        <article><span>SAFE COUNTERPARTS</span><h3>Does the safer form stay clean?</h3><p>Safe examples are used to catch obvious overreach and reduce noisy detections.</p></article>
+        <article><span>HARDER VARIANTS</span><h3>What happens when the code shape changes?</h3><p>Adversarial variations are used to expose where deterministic rules stop generalising.</p></article>
+        <article><span>REAL CODE</span><h3>Does it survive outside a synthetic example?</h3><p>Real open-source AI code is checked to reveal practical false positives and coverage gaps.</p></article>
       </div>
 
       <div class="evaluation-note">
         <strong>NO FINDINGS ≠ SECURE APPLICATION</strong>
-        <span>The regression suite is a correctness check for cases SecChecker was built to catch. It is not an independent accuracy benchmark.</span>
+        <span>A static scan is one source of evidence. Findings can be false positives or false negatives, and a clean result is not proof of security.</span>
       </div>
     </section>
 
-    <section id="methodology" class="section-shell ruled-section methodology-section">
-      <div class="section-index">04 / METHODOLOGY</div>
-      <div class="method-grid">
-        <div class="method-question">
-          <span>RESEARCH QUESTION</span>
-          <h2>How effectively can static analysis identify security conditions introduced by AI-native applications before deployment?</h2>
-        </div>
-        <div class="method-steps">
-          <div><b>01</b><strong>PAIR</strong><p>Each regression vulnerability has a safe twin with the vulnerable line replaced while the surrounding fixture stays comparable.</p></div>
-          <div><b>02</b><strong>SCAN</strong><p>Scoring is deterministic and offline. No LLM judge decides whether a finding counts.</p></div>
-          <div><b>03</b><strong>SEPARATE</strong><p>Regression, adversarial, benign-realistic and real-repository evidence are reported separately because they answer different questions.</p></div>
-          <div><b>04</b><strong>TRIAGE</strong><p>Real-repository findings are manually reviewed so false positives and structural coverage gaps are visible rather than hidden.</p></div>
-        </div>
+    <section id="fit" class="section-shell ruled-section fit-section">
+      <div class="section-index">04 / WHERE IT FITS</div>
+      <div class="fit-heading">
+        <h2>Put the check where developers already make decisions.</h2>
+        <p>SecChecker is designed for the pre-deployment path: fast enough to run while building, structured enough to use in review, and explicit about what still needs runtime controls.</p>
       </div>
 
-      <div class="method-links">
-        <a href="https://github.com/vishnu-77/secchecker/blob/main/docs/EVALUATION.md"><span>Evaluation</span><b>Read interpretation and current results ↗</b></a>
-        <a href="https://github.com/vishnu-77/secchecker/blob/main/bench/methodology.md"><span>Method</span><b>Read fixture and scoring methodology ↗</b></a>
-        <a href="https://github.com/vishnu-77/secchecker/tree/main/bench/agentsecbench"><span>AgentSecBench</span><b>Inspect the real-repository corpus ↗</b></a>
-      </div>
-    </section>
-
-    <section id="scope" class="section-shell ruled-section scope-section">
-      <div class="section-index">05 / WHERE IT FITS</div>
-      <div class="scope-heading">
-        <h2>A focused AI-security static analyser, not a claim to understand your entire system.</h2>
-        <p>SecChecker is most useful as one layer in an engineering security workflow: early, local and deterministic. Runtime authority, exploitability and whole-program behaviour need other controls.</p>
-      </div>
-
-      <div class="scope-columns">
-        <article class="scope-positive">
-          <span>SECHECKER DOES</span>
-          <ul>
-            <li>Inspect selected AI trust-boundary code shapes</li>
-            <li>Analyse prompt, MCP, tool, memory and output patterns</li>
-            <li>Use Python structure for selected contextual checks</li>
-            <li>Produce CI-friendly SARIF and machine-readable reports</li>
-            <li>Run without sending source to an LLM analysis service</li>
-          </ul>
+      <div class="fit-grid">
+        <article>
+          <span>BUILD</span>
+          <h3>Run locally</h3>
+          <p>Check the repository before opening a pull request.</p>
+          <code>$ secchecker . --type llm</code>
         </article>
         <article>
-          <span>SECHECKER COMPLEMENTS</span>
-          <ul>
-            <li>Code review and threat modelling</li>
-            <li>Semgrep, CodeQL and mature general-purpose SAST</li>
-            <li>Secret and dependency scanners</li>
-            <li>Red-team and adversarial testing</li>
-            <li>Runtime policy and agent governance</li>
-          </ul>
+          <span>REVIEW</span>
+          <h3>Gate in CI</h3>
+          <p>Emit machine-readable findings and keep the result next to the code change.</p>
+          <code>SARIF · JSON · exit codes</code>
         </article>
-        <article class="scope-boundary">
-          <span>NOT CLAIMED</span>
-          <ul>
-            <li>Whole-program interprocedural understanding</li>
-            <li>Runtime enforcement or live tool interception</li>
-            <li>Proof that a reported condition is exploitable</li>
-            <li>Proof that a clean repository is secure</li>
-            <li>Complete semantic coverage of every AI framework</li>
-          </ul>
+        <article class="fit-boundary">
+          <span>BOUNDARY</span>
+          <h3>Know what it is not</h3>
+          <p>SecChecker does not replace code review, threat modelling, red-team testing or runtime policy controls.</p>
+          <code>STATIC ANALYSIS ≠ RUNTIME ENFORCEMENT</code>
         </article>
       </div>
     </section>
 
     <section class="section-shell ruled-section closing-section">
       <div>
-        <div class="section-index">06 / USE IT</div>
-        <h2>Put the check next to the code.</h2>
-        <p class="lede-sm">Run locally while building. Emit SARIF in CI. Keep the evidence close to the change that introduced it.</p>
+        <div class="section-index">05 / USE IT</div>
+        <h2>Inspect the code before it becomes authority.</h2>
+        <p class="lede-sm">Start with one repository. Keep the signal close to the developer workflow.</p>
       </div>
       <div class="closing-actions">
         <a class="button button-dark" href="https://github.com/vishnu-77/secchecker">Open repository ↗</a>
         <a class="button" href="https://pypi.org/project/secchecker/">PyPI ↗</a>
-        <a class="text-link" href="https://github.com/vishnu-77/secchecker/tree/main/docs">Documentation ↗</a>
       </div>
     </section>
   </main>
 
   <footer class="site-footer section-shell">
     <div class="brand footer-brand"><img src="assets/secchecker-mark.svg" alt="" width="30" height="30"><span>secchecker</span></div>
-    <p>Static analysis for AI trust boundaries.</p>
-    <div class="footer-links"><a href="#methodology">Method</a><a href="https://github.com/vishnu-77/secchecker">GitHub ↗</a></div>
+    <p>Static security analysis for AI software.</p>
+    <div class="footer-links"><a href="#evaluation">Evaluation</a><a href="https://github.com/vishnu-77/secchecker">GitHub ↗</a></div>
   </footer>
 
   <script src="script.js"></script>
