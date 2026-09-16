@@ -93,10 +93,13 @@ jobs:
               raise SystemExit('internal detail exposed on public website: ' + ', '.join(sorted(set(exposed))))
 
           mark = (root / 'assets/secchecker-mark.svg').read_text(encoding='utf-8')
-          if '#B84A3A' not in mark or 'folded paper lock' not in mark:
-              raise SystemExit('website mark is not the approved origami identity')
+          if '#698960' not in mark or 'SecChecker origami lock' not in mark:
+              raise SystemExit('website mark is not the approved green origami lock identity')
+          if '#B84A3A' in mark:
+              raise SystemExit('legacy red status dot is still present in website mark')
 
           print('site check: OK')
           print('relative assets:', len(parser.refs))
           print('public-surface policy: OK')
+          print('logo identity: OK')
           PY
