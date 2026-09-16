@@ -4,19 +4,19 @@ SecChecker uses a paper-first diagnostic language shared with the wider product 
 
 The primary identity is the **origami paper lock**:
 
-- folded paper body = code and configuration under inspection
-- dark key-shaped shackle = controlled authority rather than generic “cyber” ornament
-- single muted red dot = the point currently being inspected
+- asymmetric folded paper body = code and configuration under inspection
+- dark keyhole shackle = controlled authority without generic cyber ornament
+- status dot = yellow while checking, green when settled/clear
 - lowercase `secchecker` wordmark = quiet, technical, developer-first
 
 The mark intentionally avoids glossy surfaces, gradients, shields, hacker imagery, neon, glassmorphism, 3D chrome, and decorative AI motifs.
 
 ## Core assets
 
-- `secchecker-mark.svg` — primary square mark and favicon source.
+- `secchecker-mark.svg` — primary mark and favicon source.
 - `secchecker-lockup.svg` — horizontal mark + lowercase wordmark + `TRUST BOUNDARIES FOR AI` descriptor.
-- `secchecker-banner.png` — legacy raster banner; the native SVG lockup is now the source of truth and should replace raster use when possible.
-- `secchecker-mark.gif`, `secchecker-mark-animated.svg`, `secchecker-mark-static.png` — generated motion/static derivatives. Regenerate after the origami motion pass is updated.
+- `secchecker-banner.png` — legacy raster banner; the native SVG lockup is the source of truth.
+- `secchecker-mark.gif`, `secchecker-mark-animated.svg`, `secchecker-mark-static.png` — generated motion/static derivatives; regenerate when the motion pass changes.
 
 ## Product walkthrough assets
 
@@ -36,16 +36,17 @@ These walkthroughs are illustrated source inspections, not runtime-interception 
 | Paper | `#F4F4EF` | canvas/background |
 | Ink | `#111111` | type, rules, primary geometry |
 | Secondary | `#62625E` | metadata and explanatory copy |
-| Fold light | `#F1F0EA` | paper face |
-| Fold mid | `#D8D7D1` | secondary fold |
-| Fold dark | `#BDBCB6` | depth through flat tonal contrast |
-| Inspection red | `#B84A3A` | current inspection / critical state only |
+| Fold light | `#F0EEE7` | paper face |
+| Fold mid | `#D4D2CB` | secondary fold |
+| Fold dark | `#BEBDB7` | depth through flat tonal contrast |
+| Status yellow | `#D8A624` | checking / in-progress state |
+| Status green | `#698960` | settled / clear state and static identity |
 
-Red is not a decorative brand wash. It is a state-bearing accent and should normally occupy less than ~3% of a composition.
+Yellow and green are state-bearing accents, not decorative washes. The static mark defaults to green. The hero may transition once from yellow to green to communicate a completed check.
 
 ## Geometry
 
-- square or near-square composition
+- asymmetric portrait lock composition based on the approved origami mark
 - thin 1px–1.5px rules for diagrams and layout
 - zero or very small border radius in UI surfaces
 - no drop shadows
@@ -57,32 +58,28 @@ Red is not a decorative brand wash. It is a state-bearing accent and should norm
 
 ## Motion principles
 
-Motion must explain inspection, not advertise “AI”.
+Motion must communicate product state rather than advertise “AI”.
 
 Preferred motion vocabulary:
 
-1. a paper fold opens or closes
-2. the red inspection dot moves to the active boundary
+1. the approved lock settles into place once on entry
+2. the status dot begins yellow and resolves to green
 3. a path stops at a boundary, is checked, then continues or terminates
 4. findings reveal through line/dot state changes
 
 Avoid floating cards, particles, pulsing halos, bouncing icons, continuous parallax, or ambient motion with no analytical meaning.
 
-For reduced-motion environments, every animation must degrade to a readable static state.
+For reduced-motion environments, every animation must degrade to the final static green state.
 
 ## Website language
 
-The landing page under `website/` is the reference implementation for the updated design language.
+The landing page under `website/` is the reference implementation for the current design language.
 
 Core message:
 
-**Inspect the trust boundary before AI becomes authority.**
+**Catch risky AI trust-boundary crossings before they ship.**
 
-Supporting line:
-
-`Local analysis · No LLM judge · Zero runtime dependencies`
-
-The website should remain accurate to shipped capability. Do not visually imply complete framework understanding, whole-program trust-flow reconstruction, or runtime enforcement until those features exist.
+The public website must remain accurate to shipped capability and must not expose implementation internals.
 
 ## Regenerate and verify
 
@@ -111,8 +108,8 @@ The animation generator should use `secchecker-mark.svg` as the source of truth.
 
 - Prefer SVG for README, web, docs and product surfaces.
 - Keep the mark on paper/neutral backgrounds where possible.
-- Do not recolour the whole lock red; only the inspection dot carries the red accent.
-- Do not add a shield, robot, brain, padlock keyhole overlay, or binary digits around the mark.
+- Do not recolour the whole lock; only the status dot carries yellow/green state.
+- Do not add a shield, robot, brain, binary digits, glow, or decorative security motifs around the mark.
 - Do not add texture that reduces favicon legibility.
-- At very small sizes, simplify fold lines before removing the inspection dot.
+- At very small sizes, simplify fold lines before removing the status dot.
 - Keep `secchecker` lowercase in the primary wordmark.
