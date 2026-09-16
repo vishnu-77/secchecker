@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SecChecker is local, deterministic static security analysis for AI applications, agents, MCP tools and LLM integrations.">
+  <meta name="theme-color" content="#F4F4EF">
+  <title>secchecker — trust boundaries for AI</title>
+  <link rel="icon" href="assets/secchecker-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="SecChecker home">
+      <img src="assets/secchecker-mark.svg" alt="" width="38" height="38">
+      <span>secchecker</span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#why">Why</a>
+      <a href="#surfaces">Surfaces</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="https://github.com/vishnu-77/secchecker/tree/main/docs">Docs</a>
+      <a class="nav-cta" href="https://github.com/vishnu-77/secchecker">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero section-shell">
+      <div class="hero-copy">
+        <div class="eyebrow">AI SECURITY / STATIC ANALYSIS</div>
+        <h1>Inspect the trust boundary before AI becomes authority.</h1>
+        <p class="lede">Static security analysis for AI applications, agents, MCP tools and LLM integrations. Local. Deterministic. No LLM judge.</p>
+        <div class="install-row" role="group" aria-label="Install command">
+          <code>$ uvx secchecker . --type llm</code>
+          <button class="copy-button" data-copy="uvx secchecker . --type llm" type="button">COPY</button>
+        </div>
+        <div class="hero-actions">
+          <a class="button button-dark" href="https://github.com/vishnu-77/secchecker">View on GitHub ↗</a>
+          <a class="button" href="#evaluation">See the evaluation ↓</a>
+        </div>
+        <div class="quiet-meta">OPEN SOURCE · MIT · PYTHON-FIRST · ZERO RUNTIME DEPENDENCIES</div>
+      </div>
+
+      <div class="hero-instrument" aria-label="Illustrated trust-boundary finding">
+        <div class="instrument-label">SC / INSPECTION 001</div>
+        <div class="crossing">
+          <div class="zone zone-untrusted">
+            <span class="zone-label">UNTRUSTED</span>
+            <span class="node">user_input</span>
+          </div>
+          <div class="boundary" aria-hidden="true">
+            <span>TRUST<br>BOUNDARY</span>
+          </div>
+          <div class="zone zone-authority">
+            <span class="zone-label">AUTHORITY</span>
+            <span class="node node-sink">shell.exec</span>
+          </div>
+          <span class="signal-dot" aria-hidden="true"></span>
+        </div>
+        <div class="trace">
+          <span>user_input</span><b>→</b><span>tool argument</span><b>→</b><span>subprocess.run()</span>
+        </div>
+        <div class="finding-row">
+          <span class="severity">CRITICAL</span>
+          <div>
+            <strong>AI-controlled data reaches executable authority.</strong>
+            <small>Static indicator · validation not observed</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="why" class="section-shell ruled-section">
+      <div class="section-index">01 / THE PROBLEM</div>
+      <div class="editorial-grid">
+        <div>
+          <h2>AI code crosses boundaries ordinary request-response software often does not.</h2>
+        </div>
+        <div class="prose">
+          <p>A prompt can become a tool call. Retrieved content can enter privileged context. Tool metadata can carry instructions. Model output can reach a shell, API or another consequential sink.</p>
+          <p>SecChecker statically inspects selected code shapes around those transitions before deployment.</p>
+        </div>
+      </div>
+      <div class="boundary-examples">
+        <div><span>PROMPT</span><code>user input ─────────▶ privileged context</code></div>
+        <div><span>MCP</span><code>tool metadata ───────▶ agent instruction</code></div>
+        <div><span>AGENT</span><code>model output ────────▶ consequential action</code></div>
+      </div>
+    </section>
+
+    <section id="surfaces" class="section-shell ruled-section">
+      <div class="section-index">02 / SECURITY SURFACES</div>
+      <div class="surface-grid">
+        <article>
+          <span>01</span>
+          <h3>Prompt & context</h3>
+          <p>Unsafe user-controlled data entering privileged prompts, delimiter manipulation and selected sensitive-context flows.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>MCP & tool trust</h3>
+          <p>Poisoned tool descriptions, untrusted metadata, tool results re-entering privileged context and selected execution boundaries.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Model output</h3>
+          <p>Selected model- or tool-controlled values reaching eval, exec, subprocess, shell and other dangerous sinks.</p>
+        </article>
+        <article>
+          <span>04</span>
+          <h3>Agent memory</h3>
+          <p>User-controlled or untrusted content written directly to selected persistent-memory and vector-store patterns.</p>
+        </article>
+        <article>
+          <span>05</span>
+          <h3>Agent control flow</h3>
+          <p>Selected unvalidated function-call results, recursive invocation patterns and autonomous loops without clear exit conditions.</p>
+        </article>
+        <article>
+          <span>06</span>
+          <h3>AI credentials</h3>
+          <p>Python AST context for selected provider credentials, including how credential material is declared and passed to clients.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-shell ruled-section">
+      <div class="section-index">03 / HOW IT WORKS</div>
+      <div class="pipeline" aria-label="SecChecker analysis pipeline">
+        <div><small>01</small><strong>SOURCE TREE</strong><span>discover files</span></div>
+        <i>→</i>
+        <div><small>02</small><strong>ANALYSE</strong><span>patterns + Python AST</span></div>
+        <i>→</i>
+        <div><small>03</small><strong>NORMALISE</strong><span>finding + severity</span></div>
+        <i>→</i>
+        <div><small>04</small><strong>REPORT</strong><span>CLI · JSON · SARIF · HTML</span></div>
+      </div>
+      <div class="principles">
+        <div><span>LOCAL</span><strong>Source stays on your machine.</strong></div>
+        <div><span>DETERMINISTIC</span><strong>No LLM judge in the analysis loop.</strong></div>
+        <div><span>BOUNDED</span><strong>Static indicators, not proof of exploitability.</strong></div>
+      </div>
+    </section>
+
+    <section id="evaluation" class="section-shell ruled-section evaluation">
+      <div class="section-index">04 / EVALUATION</div>
+      <div class="editorial-grid">
+        <div>
+          <h2>Evaluated, not hand-waved.</h2>
+          <p class="lede-sm">The benchmark includes regression fixtures, adversarial variants and benign-realistic shapes. The regression result is not presented as real-world accuracy.</p>
+        </div>
+        <div class="score-grid">
+          <div><strong>23 / 23</strong><span>known vulnerable regression fixtures detected</span></div>
+          <div><strong>23 / 23</strong><span>paired safe regression fixtures clean</span></div>
+          <div><strong>4 / 14</strong><span>adversarial variants detected</span></div>
+          <div><strong>2 / 4</strong><span>benign-realistic examples still flagged</span></div>
+        </div>
+      </div>
+      <div class="evaluation-note">
+        <strong>NO FINDINGS ≠ SECURE APPLICATION</strong>
+        <span>Static analysis has false positives and false negatives. Use SecChecker alongside threat modelling, review, testing and runtime controls.</span>
+      </div>
+      <a class="text-link" href="https://github.com/vishnu-77/secchecker/blob/main/docs/EVALUATION.md">Read the evaluation methodology ↗</a>
+    </section>
+
+    <section class="section-shell ruled-section compare-section">
+      <div class="section-index">05 / SCOPE</div>
+      <h2>Focused rather than universal.</h2>
+      <div class="scope-table" role="table" aria-label="Current SecChecker scope">
+        <div class="scope-row" role="row"><span>AI trust-boundary checks</span><b>PRIMARY FOCUS</b></div>
+        <div class="scope-row" role="row"><span>Python structural analysis</span><b>SUPPORTED</b></div>
+        <div class="scope-row" role="row"><span>Whole-program interprocedural analysis</span><b>NO</b></div>
+        <div class="scope-row" role="row"><span>Runtime enforcement</span><b>NO</b></div>
+        <div class="scope-row" role="row"><span>LLM judge required</span><b>NO</b></div>
+        <div class="scope-row" role="row"><span>External runtime dependencies</span><b>NONE</b></div>
+      </div>
+    </section>
+
+    <section class="section-shell final-cta">
+      <img src="assets/secchecker-mark.svg" alt="" width="96" height="96">
+      <div>
+        <div class="section-index">RUN LOCALLY / GATE IN CI</div>
+        <h2>Inspect what crosses the boundary.</h2>
+        <div class="install-row final-install">
+          <code>$ pip install secchecker</code>
+          <button class="copy-button" data-copy="pip install secchecker" type="button">COPY</button>
+        </div>
+      </div>
+      <a class="button button-dark" href="https://github.com/vishnu-77/secchecker">Open repository ↗</a>
+    </section>
+  </main>
+
+  <footer class="site-footer section-shell">
+    <div class="brand footer-brand">
+      <img src="assets/secchecker-mark.svg" alt="" width="30" height="30">
+      <span>secchecker</span>
+    </div>
+    <p>Static analysis for AI trust boundaries.</p>
+    <div class="footer-links">
+      <a href="https://pypi.org/project/secchecker/">PyPI ↗</a>
+      <a href="https://github.com/vishnu-77/secchecker/tree/main/docs">Docs ↗</a>
+      <a href="https://github.com/vishnu-77/secchecker">GitHub ↗</a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
