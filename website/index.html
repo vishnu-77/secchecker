@@ -97,8 +97,30 @@
       </div>
     </section>
 
+    <section class="section-shell ruled-section signal-section">
+      <div class="section-index">02 / SIGNAL, NOT SCROLL</div>
+      <div class="signal-heading">
+        <h2>Make findings show their work without burying what matters in endless output.</h2>
+        <p>See the decision-relevant part first: <strong>what was detected</strong>, <strong>why it matters</strong>, and <strong>where it appears</strong>.</p>
+      </div>
+      <div class="signal-grid" aria-label="Finding summary example">
+        <article>
+          <span>WHAT</span>
+          <strong>Tool output reaches command execution.</strong>
+        </article>
+        <article>
+          <span>WHY</span>
+          <strong>Untrusted output crosses into a consequential action.</strong>
+        </article>
+        <article>
+          <span>WHERE</span>
+          <strong><code>example/agent.py</code></strong>
+        </article>
+      </div>
+    </section>
+
     <section id="coverage" class="section-shell ruled-section">
-      <div class="section-index">02 / WHAT IT CHECKS</div>
+      <div class="section-index">03 / WHAT IT CHECKS</div>
       <div class="surface-grid">
         <article><span>01</span><h3>Prompt & context</h3><p>Flags risky transitions where untrusted content can influence privileged AI context.</p></article>
         <article><span>02</span><h3>MCP & tools</h3><p>Checks tool descriptions, metadata and tool-result handling around sensitive actions.</p></article>
@@ -110,7 +132,7 @@
     </section>
 
     <section id="evaluation" class="section-shell ruled-section evaluation">
-      <div class="section-index">03 / EVALUATION</div>
+      <div class="section-index">04 / EVALUATION</div>
       <div class="evaluation-intro">
         <div>
           <h2>Evaluation should expose blind spots, not hide them.</h2>
@@ -136,7 +158,7 @@
     </section>
 
     <section id="fit" class="section-shell ruled-section fit-section">
-      <div class="section-index">04 / WHERE IT FITS</div>
+      <div class="section-index">05 / WHERE IT FITS</div>
       <div class="fit-heading">
         <h2>Put the check where developers already make decisions.</h2>
         <p>SecChecker is designed for the pre-deployment path: fast enough to run while building, structured enough to use in review, and explicit about what still needs runtime controls.</p>
@@ -166,7 +188,7 @@
 
     <section class="section-shell ruled-section closing-section">
       <div>
-        <div class="section-index">05 / USE IT</div>
+        <div class="section-index">06 / USE IT</div>
         <h2>Inspect the code before it becomes authority.</h2>
         <p class="lede-sm">Start with one repository. Keep the signal close to the developer workflow.</p>
       </div>
