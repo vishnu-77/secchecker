@@ -1,18 +1,24 @@
 # Visual system
 
-An e-ink-inspired diagnostic language: monochrome, functional geometry, sparse dot-matrix texture, and explicit trust-boundary diagrams. The logo appears once in the README banner. The animations are catalogued here rather than embedded in the root README; they focus on code and findings.
+SecChecker uses a paper-first diagnostic language shared with the wider product family: warm e-ink paper, matte geometry, restrained motion, thin rules, and explicit trust-boundary diagrams.
 
-## Message and motion
+The primary identity is the **origami paper lock**:
 
-**Catch risky AI trust-boundary crossings before they ship.**
+- folded paper body = code and configuration under inspection
+- dark key-shaped shackle = controlled authority rather than generic “cyber” ornament
+- single muted red dot = the point currently being inspected
+- lowercase `secchecker` wordmark = quiet, technical, developer-first
 
-The 1200 × 520 opening GIF shows three transitions from the first frame: user content into system instructions, tool metadata into agent instructions, and tool results into shell commands. An inspection bracket moves over each row for three seconds; all three findings remain visible for the final three seconds. This depicts source inspection, not runtime interception or blocking.
+The mark intentionally avoids glossy surfaces, gradients, shields, hacker imagery, neon, glassmorphism, 3D chrome, and decorative AI motifs.
 
-Three 1200 × 720 walkthroughs follow **risky code → finding → safer boundary**, held for four, five, and six seconds. They omit logos, terminal scenes, and version banners. The execution example deliberately removes shell execution; logging the result is a different behavior. A clean scan is not proof of security.
+## Core assets
 
-These are illustrated walkthroughs, not screen recordings. The renderer verifies the actual finding names and severities against the local CLI. Displayed line references annotate the illustrated source. A selected finding is not necessarily the only finding in the report.
+- `secchecker-mark.svg` — primary square mark and favicon source.
+- `secchecker-lockup.svg` — horizontal mark + lowercase wordmark + `TRUST BOUNDARIES FOR AI` descriptor.
+- `secchecker-banner.png` — legacy raster banner; the native SVG lockup is now the source of truth and should replace raster use when possible.
+- `secchecker-mark.gif`, `secchecker-mark-animated.svg`, `secchecker-mark-static.png` — generated motion/static derivatives. Regenerate after the origami motion pass is updated.
 
-## Assets
+## Product walkthrough assets
 
 | Visual | GIF | Static alternative | Editable motion SVG |
 |---|---|---|---|
@@ -21,11 +27,62 @@ These are illustrated walkthroughs, not screen recordings. The renderer verifies
 | MCP tool poisoning | [GIF](mcp-tool-poisoning.gif) | [PNG](mcp-tool-poisoning-static.png) | [SVG](mcp-tool-poisoning-animated.svg) |
 | Tool-output execution | [GIF](tool-output-execution.gif) | [PNG](tool-output-execution-static.png) | [SVG](tool-output-execution-animated.svg) |
 
-- `secchecker-mark.svg` — primary square mark.
-- [Animated mark](secchecker-mark.gif) — a four-second loop with fixed brackets, gently converging dots, a faint scan line, and transparent corners. [Motion SVG](secchecker-mark-animated.svg) · [Static PNG](secchecker-mark-static.png).
-- `secchecker-lockup.svg` — native logo and wordmark source.
-- `secchecker-banner.png` — logo banner rendered at twice the SVG dimensions.
-- Each walkthrough PNG stacks all three scenes at full reading resolution.
+These walkthroughs are illustrated source inspections, not runtime-interception claims.
+
+## Palette
+
+| Token | Value | Use |
+|---|---|---|
+| Paper | `#F4F4EF` | canvas/background |
+| Ink | `#111111` | type, rules, primary geometry |
+| Secondary | `#62625E` | metadata and explanatory copy |
+| Fold light | `#F1F0EA` | paper face |
+| Fold mid | `#D8D7D1` | secondary fold |
+| Fold dark | `#BDBCB6` | depth through flat tonal contrast |
+| Inspection red | `#B84A3A` | current inspection / critical state only |
+
+Red is not a decorative brand wash. It is a state-bearing accent and should normally occupy less than ~3% of a composition.
+
+## Geometry
+
+- square or near-square composition
+- thin 1px–1.5px rules for diagrams and layout
+- zero or very small border radius in UI surfaces
+- no drop shadows
+- no simulated glass
+- no gradients
+- no glow
+- no decorative blur
+- fold depth is communicated by flat tonal changes, not lighting effects
+
+## Motion principles
+
+Motion must explain inspection, not advertise “AI”.
+
+Preferred motion vocabulary:
+
+1. a paper fold opens or closes
+2. the red inspection dot moves to the active boundary
+3. a path stops at a boundary, is checked, then continues or terminates
+4. findings reveal through line/dot state changes
+
+Avoid floating cards, particles, pulsing halos, bouncing icons, continuous parallax, or ambient motion with no analytical meaning.
+
+For reduced-motion environments, every animation must degrade to a readable static state.
+
+## Website language
+
+The landing page under `website/` is the reference implementation for the updated design language.
+
+Core message:
+
+**Inspect the trust boundary before AI becomes authority.**
+
+Supporting line:
+
+`Local analysis · No LLM judge · Zero runtime dependencies`
+
+The website should remain accurate to shipped capability. Do not visually imply complete framework understanding, whole-program trust-flow reconstruction, or runtime enforcement until those features exist.
 
 ## Regenerate and verify
 
@@ -42,30 +99,20 @@ Check existing assets without rewriting them:
 python brand/render_assets.py --check
 ```
 
-Regenerate the standalone animated mark from the original `secchecker-mark.svg`:
+Regenerate the standalone animated mark:
 
 ```bash
 python brand/animate_mark.py
 ```
 
-This preserves the original SVG and creates a 256 × 256 GIF, an animated SVG, and a static PNG. The animation uses 50 frames at 80 ms per frame. Its renderer verifies the loop duration, transparency, motion, and stationary brackets. The standalone mark is available separately; the README keeps its single logo banner.
+The animation generator should use `secchecker-mark.svg` as the source of truth. When changing the identity, update the SVG first and regenerate derivatives rather than manually editing generated files.
 
-The default command verifies all six illustrated source snippets with the local scanner CLI in isolated temporary folders, renders the assets, refreshes the three marked walkthrough blocks in the README, and checks the outputs. The examples are scanned as text, never executed. No scanner code, runtime dependencies, or self-scan configuration is changed.
+## Usage rules
 
-Edit `scenarios.py` for source snippets, selected findings, fixture provenance, and captions. Edit `render_assets.py` for the shared layout, overview, or timing. Regenerate after editing: each animation SVG is editable on its own, but manual SVG edits are overwritten by regeneration. Change the logo in its native lockup SVG.
-
-`verify_assets.py` checks CLI exit codes, finding names and severity, clean paired examples, GIF dimensions, stage durations, motion, infinite looping, static-image dimensions, XML validity, README links, and a combined GIF budget below 1.5 MiB. All GIFs use 10 frames per second and one palette per animation to avoid flicker. Identical held frames may be combined by the encoder without changing timing.
-
-The renderer preserves code indentation. SVG font stacks use Arial/Helvetica for prose and Consolas/Liberation Mono for code. System fonts resolve the stacks; use the same fonts when exact cross-machine typography is required. Review the overview and every walkthrough scene at approximately 800 pixels wide after changing layout or copy.
-
-## Visual principles
-
-- Paper: `#F4F4EF`; ink: `#111111`; secondary text: `#62625E`.
-- No gradients, neon glow, shields, padlocks, brains, robots, or hacker imagery.
-- Motion communicates inspection and progression, with no flashing or decorative particles.
-- All overview rows remain visible throughout the loop; only inspection and findings change.
-- Runtime-only protection and universal detection are not implied.
-
-The four corner brackets form a scan window. The dot field represents noisy or untrusted AI context; the dense central pixel represents the inspected trust boundary.
-
-Use lowercase `secchecker` in the wordmark, with `TRUST BOUNDARIES FOR AI` beneath it. The supporting line in the overview appears once: `Local analysis · No LLM judge · Zero runtime dependencies`.
+- Prefer SVG for README, web, docs and product surfaces.
+- Keep the mark on paper/neutral backgrounds where possible.
+- Do not recolour the whole lock red; only the inspection dot carries the red accent.
+- Do not add a shield, robot, brain, padlock keyhole overlay, or binary digits around the mark.
+- Do not add texture that reduces favicon legibility.
+- At very small sizes, simplify fold lines before removing the inspection dot.
+- Keep `secchecker` lowercase in the primary wordmark.
