@@ -13,10 +13,12 @@ Do not publish implementation internals here. Keep scanner architecture, rule me
 - paper background: `#F4F4EF`
 - near-black ink: `#111111`
 - secondary text: `#62625E`
-- muted inspection red: `#B84A3A`
-- approved origami lock mark
+- settled status green: `#698960`
+- checking status yellow: `#D8A624`
+- approved asymmetric origami lock mark
 - no gradients, glow, glass, shadows, or decorative AI imagery
 - square geometry, thin rules, monospace metadata
+- hero motion is semantic only: yellow checking state resolves once to green clear state
 
 ## Run locally
 
