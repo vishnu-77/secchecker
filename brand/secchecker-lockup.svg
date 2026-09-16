@@ -1,24 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 240" role="img" aria-labelledby="title desc">
   <title id="title">SecChecker</title>
-  <desc id="desc">SecChecker origami paper lock mark with lowercase wordmark.</desc>
+  <desc id="desc">SecChecker approved origami lock mark with lowercase wordmark.</desc>
   <rect width="760" height="240" fill="#F4F4EF"/>
-  <g transform="translate(28 8) scale(.84)">
-    <path d="M77 105V71L101 43H155L179 71V105H158V80L147 67H109L98 80V105Z" fill="#171717"/>
-    <path d="M113 43H143V65C143 74 138 80 132 84V105H124V84C118 80 113 74 113 65Z" fill="#F4F4EF"/>
-    <path d="M51 103H205V207L128 232L51 207Z" fill="#E8E7E1"/>
-    <path d="M51 103L128 161L51 207Z" fill="#D8D7D1"/>
-    <path d="M205 103L128 161L205 207Z" fill="#C9C8C2"/>
-    <path d="M51 103L128 161L205 103Z" fill="#F1F0EA"/>
-    <path d="M51 207L128 161L128 232Z" fill="#E1E0DA"/>
-    <path d="M205 207L128 161L128 232Z" fill="#BDBCB6"/>
-    <g fill="none" stroke="#AAA9A3" stroke-width="1.5" stroke-linejoin="round">
-      <path d="M51 103L128 161L205 103"/>
-      <path d="M51 207L128 161L205 207"/>
-      <path d="M128 161V232"/>
-      <path d="M51 103V207L128 232L205 207V103"/>
+  <g transform="translate(8 18) scale(.32)">
+    <path d="M93 257V136L183 48H286L379 136V257Z" fill="#2A2A29"/>
+    <path d="M93 136L183 48V257H93Z" fill="#343432"/>
+    <path d="M286 48L379 136V257H286Z" fill="#3A3A38"/>
+    <path d="M183 48H286V257H183Z" fill="#242423"/>
+    <circle cx="234.5" cy="145" r="50" fill="#F4F4EF"/>
+    <path d="M218 180H251L264 257H205Z" fill="#F4F4EF"/>
+    <path d="M93 257L430 230V506L286 620L43 520V308Z" fill="#DEDCD5"/>
+    <path d="M43 308L93 257L241 374L43 520Z" fill="#D4D2CB"/>
+    <path d="M430 230L241 374L430 506Z" fill="#CBC9C2"/>
+    <path d="M93 257L241 374L430 230Z" fill="#F0EEE7"/>
+    <path d="M43 520L241 374L286 620Z" fill="#E4E2DB"/>
+    <path d="M241 374L430 506L286 620Z" fill="#BEBDB7"/>
+    <g fill="none" stroke="#9F9D97" stroke-width="1.4" stroke-linejoin="round">
+      <path d="M43 308L93 257L241 374L430 230"/>
+      <path d="M43 520L241 374L430 506"/>
+      <path d="M241 374L286 620"/>
+      <path d="M43 308V520L286 620L430 506V230"/>
     </g>
-    <circle cx="183" cy="128" r="8" fill="#B84A3A"/>
+    <circle cx="366" cy="336" r="15" fill="#698960"/>
   </g>
-  <text x="250" y="112" fill="#111111" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="80" font-weight="400" letter-spacing="-2">secchecker</text>
-  <text x="254" y="156" fill="#62625E" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" letter-spacing="6">TRUST BOUNDARIES FOR AI</text>
+  <text x="170" y="113" fill="#111111" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="80" font-weight="400" letter-spacing="-2">secchecker</text>
+  <text x="174" y="156" fill="#62625E" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" letter-spacing="6">TRUST BOUNDARIES FOR AI</text>
 </svg>
