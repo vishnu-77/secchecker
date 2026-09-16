@@ -46,7 +46,7 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .zone-authority{text-align:right}
 .node{font-family:var(--mono);font-size:14px;border-top:1px solid var(--ink);padding-top:12px;display:inline-block}
 .node-sink{border-top-color:var(--red)}
-.boundary{border-left:1px solid var(--ink);border-right:1px solid var(--ink);display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted);position:relative;background:repeating-linear-gradient(0deg,transparent,transparent 11px,rgba(17,17,17,.04) 11px,rgba(17,17,17,.04) 12px)}
+.boundary{border-left:1px solid var(--ink);border-right:1px solid var(--ink);display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted);position:relative;background:transparent}
 .boundary:before,.boundary:after{content:"";position:absolute;left:50%;width:10px;height:10px;border:1px solid var(--ink);background:var(--paper-2);transform:translateX(-50%) rotate(45deg)}
 .boundary:before{top:26px}.boundary:after{bottom:26px}
 .signal-dot{position:absolute;left:12%;top:52%;width:10px;height:10px;background:var(--red);border-radius:50%;animation:crossBoundary 5.5s steps(1,end) infinite}
