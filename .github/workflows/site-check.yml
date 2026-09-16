@@ -1,0 +1,83 @@
+name: Site Check
+
+on:
+  pull_request:
+    paths:
+      - 'website/**'
+      - 'brand/**'
+      - 'README.md'
+      - '.github/workflows/site-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - 'brand/**'
+      - 'README.md'
+      - '.github/workflows/site-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate HTML, assets and design constraints
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re
+
+          root = Path('website')
+          html_path = root / 'index.html'
+          css_path = root / 'styles.css'
+
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.refs = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag in {'img', 'script'} and attrs.get('src'):
+                      self.refs.append(attrs['src'])
+                  if tag == 'link' and attrs.get('href') and attrs.get('rel') in {'stylesheet', 'icon'}:
+                      self.refs.append(attrs['href'])
+
+          parser = Parser()
+          parser.feed(html_path.read_text(encoding='utf-8'))
+
+          missing = []
+          for ref in parser.refs:
+              if re.match(r'^(https?:|#|data:)', ref):
+                  continue
+              path = root / ref.split('?', 1)[0]
+              if not path.exists():
+                  missing.append(ref)
+          if missing:
+              raise SystemExit(f'missing website assets: {missing}')
+
+          css = css_path.read_text(encoding='utf-8').lower()
+          forbidden = {
+              'linear-gradient': 'gradients',
+              'radial-gradient': 'gradients',
+              'box-shadow': 'gloss/shadows',
+              'text-shadow': 'glow/shadows',
+              'backdrop-filter': 'glass effects',
+              'filter: blur': 'decorative blur',
+          }
+          violations = [label for token, label in forbidden.items() if token in css]
+          if violations:
+              raise SystemExit('forbidden design effects present: ' + ', '.join(sorted(set(violations))))
+
+          mark = (root / 'assets/secchecker-mark.svg').read_text(encoding='utf-8')
+          if '#B84A3A' not in mark or 'folded paper lock' not in mark:
+              raise SystemExit('website mark is not the approved origami identity')
+
+          print('site check: OK')
+          print('relative assets:', len(parser.refs))
+          PY
