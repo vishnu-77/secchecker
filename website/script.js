@@ -27,6 +27,10 @@ if (demoConsole && !prefersReducedMotion) {
   const consoleBar = demoConsole.querySelector('.console-bar');
   const terminal = demoConsole.querySelector('pre');
   const report = demoConsole.querySelector('.console-report');
+  // Replay the visible captured transcript, so the animation cannot drift
+  // from the accessible, reduced-motion and no-JavaScript version.
+  const command = terminal.querySelector('.demo-command-source').textContent.replace(/^\$ /, '');
+  const capturedLines = [...terminal.querySelectorAll('[data-scan-line]')].map((line) => line.cloneNode(true));
   let runToken = 0;
   let hasAutoRun = false;
 
@@ -35,12 +39,12 @@ if (demoConsole && !prefersReducedMotion) {
   });
 
   consoleBar.innerHTML = `
-    <span>secchecker / local</span>
+    <span>secchecker / recorded scan</span>
     <div class="console-controls">
       <span class="demo-state" aria-live="polite">
-        <i class="demo-dot"></i><b>READY</b>
+        <i class="demo-dot"></i><b>RECORDED</b>
       </span>
-      <button class="demo-replay" type="button">RUN DEMO</button>
+      <button class="demo-replay" type="button">REPLAY SCAN</button>
     </div>`;
 
   const replayButton = consoleBar.querySelector('.demo-replay');
@@ -52,21 +56,20 @@ if (demoConsole && !prefersReducedMotion) {
   const setState = (name) => {
     state.classList.remove('is-ready', 'is-running', 'is-complete');
     state.classList.add(`is-${name}`);
-    stateText.textContent = name === 'running' ? 'SCANNING' : name === 'complete' ? 'COMPLETE' : 'READY';
+    stateText.textContent = name === 'running' ? 'REPLAYING' : name === 'complete' ? 'COMPLETE' : 'RECORDED';
   };
 
   const resetDemo = () => {
     terminal.innerHTML = '<span class="demo-command-line"><span class="console-prompt">$</span> <span class="demo-command"></span><span class="console-caret">▌</span></span><span class="demo-output"></span>';
     report.classList.remove('is-visible');
-    replayButton.textContent = 'RUNNING…';
+    replayButton.textContent = 'REPLAYING…';
     replayButton.disabled = true;
     setState('running');
   };
 
-  const appendLine = (output, html) => {
-    const line = document.createElement('span');
+  const appendLine = (output, capturedLine) => {
+    const line = capturedLine.cloneNode(true);
     line.className = 'demo-line';
-    line.innerHTML = html;
     output.appendChild(line);
     window.requestAnimationFrame(() => line.classList.add('is-visible'));
   };
@@ -76,7 +79,6 @@ if (demoConsole && !prefersReducedMotion) {
     const token = runToken;
     resetDemo();
 
-    const command = 'secchecker . --type llm --format sarif --verbose';
     const commandNode = terminal.querySelector('.demo-command');
     const caret = terminal.querySelector('.console-caret');
     const output = terminal.querySelector('.demo-output');
@@ -91,17 +93,9 @@ if (demoConsole && !prefersReducedMotion) {
     caret.remove();
     if (!(await sleep(320, token))) return;
 
-    const lines = [
-      ['<span class="console-info">[*]</span> Scanning: .', 420],
-      ['<span class="console-info">[*]</span> Scan type: llm', 360],
-      ['<span class="console-info">[*]</span> Format: sarif', 390],
-      ['<span class="console-info">[*]</span> 3 finding(s) across 2 file(s)', 520],
-      ['<span class="console-ok">[+]</span> Report: secchecker_report.sarif', 460],
-    ];
-
-    for (const [html, delay] of lines) {
-      appendLine(output, html);
-      if (!(await sleep(delay, token))) return;
+    for (const line of capturedLines) {
+      appendLine(output, line);
+      if (!(await sleep(420, token))) return;
     }
 
     report.classList.add('is-visible');

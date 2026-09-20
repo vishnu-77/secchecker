@@ -66,29 +66,30 @@
         <p>Run SecChecker while you build or in CI. Findings stay close to the code and can be exported into the workflows your team already uses.</p>
       </div>
 
-      <div class="console" aria-label="Illustrated SecChecker console session">
+      <div class="console" aria-label="Recorded SecChecker scan with anonymized file paths">
         <div class="console-bar">
-          <span>secchecker / local</span>
-          <span>scan session</span>
+          <span>secchecker / recorded scan</span>
+          <span>v0.5.1</span>
         </div>
-        <pre><span class="console-prompt">$</span> secchecker . --type llm --format sarif --verbose
+        <pre><span class="demo-command-source"><span class="console-prompt">$</span> secchecker . --type llm --format sarif --verbose --output secchecker_report.sarif</span>
 
-<span class="console-info">[*]</span> Scanning: .
-<span class="console-info">[*]</span> Scan type: llm
-<span class="console-info">[*]</span> Format: sarif
-<span class="console-info">[*]</span> 3 finding(s) across 2 file(s)
-<span class="console-ok">[+]</span> Report: secchecker_report.sarif</pre>
+<span data-scan-line><span class="console-info">[*]</span> Scanning: .</span>
+<span data-scan-line><span class="console-info">[*]</span> Scan type: llm</span>
+<span data-scan-line><span class="console-info">[*]</span> Format: sarif</span>
+<span data-scan-line><span class="console-info">[*]</span> 4 finding(s) across 4 file(s)</span>
+<span data-scan-line><span class="console-ok">[+]</span> Report: secchecker_report.sarif</span></pre>
         <div class="console-report">
-          <div class="report-label">SELECTED FINDING / REPORT PREVIEW</div>
+          <div class="report-label">SELECTED FINDING / ACTUAL SARIF OUTPUT</div>
           <div class="report-line">
-            <span class="severity-text">CRITICAL</span>
-            <strong>Tool output reaches command execution</strong>
+            <span class="severity-text">HIGH</span>
+            <strong>LLM - Groq API Key</strong>
           </div>
-          <div class="report-path">example/agent.py</div>
-          <code>tool_result  ───────▶  command execution</code>
-          <p>Review the path before the change ships.</p>
+          <div class="report-path">config/service.env · line 19 · path anonymized</div>
+          <code>LLM - Groq API Key (1 occurrence)</code>
+          <p>A credential pattern was detected. Review the value and how it is stored.</p>
         </div>
       </div>
+      <p class="scan-caption">Recorded from a real repository with SecChecker 0.5.1 on 20 September 2026. File paths are anonymized; credential values are not included. Playback does not run a scan in your browser. <a href="assets/example-scan.sarif" download="secchecker_report.sarif">Download the anonymized SARIF report ↗</a></p>
 
       <div class="product-facts">
         <div><span>LOCAL</span><strong>Run against the repository on your machine.</strong></div>
@@ -106,15 +107,15 @@
       <div class="signal-grid" aria-label="Finding summary example">
         <article>
           <span>WHAT</span>
-          <strong>Tool output reaches command execution.</strong>
+          <strong>LLM - Groq API Key</strong>
         </article>
         <article>
           <span>WHY</span>
-          <strong>Untrusted output crosses into a consequential action.</strong>
+          <strong>A credential pattern needs review before sharing or shipping.</strong>
         </article>
         <article>
           <span>WHERE</span>
-          <strong><code>example/agent.py</code></strong>
+          <strong><code>config/service.env:19</code><small>Path anonymized</small></strong>
         </article>
       </div>
     </section>
