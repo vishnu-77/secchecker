@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "secchecker",
+          "version": "0.5.1",
+          "informationUri": "https://github.com/vishnu-77/secchecker",
+          "rules": [
+            {
+              "id": "LLM - Groq API Key",
+              "name": "LLMGroqAPIKey",
+              "shortDescription": {
+                "text": "LLM - Groq API Key"
+              },
+              "fullDescription": {
+                "text": "Detected: LLM - Groq API Key"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "high",
+                  "A02:2021",
+                  "LLM02:2025"
+                ],
+                "security-severity": "7.5",
+                "cwe": [
+                  "CWE-798"
+                ],
+                "owasp": [
+                  "A02:2021"
+                ],
+                "owasp-llm": [
+                  "LLM02:2025"
+                ]
+              }
+            },
+            {
+              "id": "LLM - API Key in Log Statement",
+              "name": "LLMAPIKeyinLogStatement",
+              "shortDescription": {
+                "text": "LLM - API Key in Log Statement"
+              },
+              "fullDescription": {
+                "text": "Detected: LLM - API Key in Log Statement"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "medium",
+                  "A09:2021",
+                  "LLM02:2025"
+                ],
+                "security-severity": "5.0",
+                "cwe": [
+                  "CWE-532"
+                ],
+                "owasp": [
+                  "A09:2021"
+                ],
+                "owasp-llm": [
+                  "LLM02:2025"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "LLM - Groq API Key",
+          "level": "error",
+          "message": {
+            "text": "LLM - Groq API Key (1 occurrence)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/service.env",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 19
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "HIGH",
+            "matchCount": 1
+          }
+        },
+        {
+          "ruleId": "LLM - Groq API Key",
+          "level": "error",
+          "message": {
+            "text": "LLM - Groq API Key (1 occurrence)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "examples/provider_check.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "HIGH",
+            "matchCount": 1
+          }
+        },
+        {
+          "ruleId": "LLM - Groq API Key",
+          "level": "error",
+          "message": {
+            "text": "LLM - Groq API Key (1 occurrence)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/worker.env",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 24
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "HIGH",
+            "matchCount": 1
+          }
+        },
+        {
+          "ruleId": "LLM - API Key in Log Statement",
+          "level": "warning",
+          "message": {
+            "text": "LLM - API Key in Log Statement (1 occurrence)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/provider_logging.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "MEDIUM",
+            "matchCount": 1
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "startTimeUtc": "2026-09-20T00:11:52Z"
+        }
+      ]
+    }
+  ]
+}

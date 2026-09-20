@@ -4,13 +4,15 @@ on:
   pull_request:
     paths:
       - 'website/**'
+      - 'scripts/verify_website_demo.py'
       - 'brand/**'
       - 'README.md'
       - '.github/workflows/site-check.yml'
   push:
-    branches: [main]
+    branches: [main, web-develop, main-website]
     paths:
       - 'website/**'
+      - 'scripts/verify_website_demo.py'
       - 'brand/**'
       - 'README.md'
       - '.github/workflows/site-check.yml'
@@ -26,6 +28,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Verify recorded scan illustration
+        run: python scripts/verify_website_demo.py
       - name: Validate HTML, assets and public-surface constraints
         run: |
           python - <<'PY'
