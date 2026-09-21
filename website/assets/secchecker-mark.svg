@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 630" role="img" aria-labelledby="title desc">
   <title id="title">SecChecker origami lock</title>
-  <desc id="desc">An asymmetric folded-paper padlock with a keyhole and a green status dot.</desc>
+  <desc id="desc">An asymmetric folded-paper padlock with a keyhole and a status dot that resolves from red through amber to green.</desc>
 
   <!-- dark folded lock / keyhole shackle -->
   <path d="M93 257V136L183 48H286L379 136V257Z" fill="#2A2A29"/>
@@ -26,6 +26,20 @@
     <path d="M43 308V520L286 620L430 506V230"/>
   </g>
 
-  <!-- settled status -->
-  <circle cx="366" cy="336" r="15" fill="#698960"/>
+  <!-- status resolves once: red → amber → green -->
+  <style>
+    .status-dot {
+      fill: #B84A3A;
+      animation: status-cycle 3.2s steps(1, end) 1 forwards;
+    }
+    @keyframes status-cycle {
+      0%, 32% { fill: #B84A3A; }
+      33%, 65% { fill: #D8A624; }
+      66%, 100% { fill: #698960; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .status-dot { animation: none; fill: #698960; }
+    }
+  </style>
+  <circle class="status-dot" cx="366" cy="336" r="15"/>
 </svg>
