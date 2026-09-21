@@ -134,3 +134,43 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .start-here-grid .button{margin-top:auto}
 @media (max-width:980px){.compact-setup,.judge-grid{grid-template-columns:1fr;gap:28px}.compact-setup-actions{padding-top:0}.finding-heading{grid-template-columns:1fr;gap:18px}.finding-tabs{justify-self:start}.finding-summary-grid,.evidence-grid{grid-template-columns:1fr 1fr}.start-here-grid{grid-template-columns:1fr}.workflow-strip{grid-template-columns:1fr 1fr}.workflow-strip>b{display:none}.workflow-strip>div{border-bottom:1px solid var(--rule)}}
 @media (max-width:640px){.finding-summary-grid,.evidence-grid{grid-template-columns:1fr}.finding-pane{padding:18px}.finding-pane h3{font-size:25px}.judge-flow{grid-template-columns:1fr;gap:12px;text-align:left}.judge-flow>b{transform:rotate(90deg);justify-self:start}.workflow-strip{grid-template-columns:1fr}.prompt-details pre{font-size:11px}.start-here-grid article{min-height:250px}}
+
+
+/* Demo: stateful SecChecker lock lifecycle */
+.hero-lock{aspect-ratio:450/690;display:flex;flex-direction:column;align-items:stretch}
+.hero-lock-svg{display:block;width:100%;height:auto;overflow:visible}
+.hero-lock-shackle{transform-box:fill-box;transform-origin:18% 92%;transition:transform .42s cubic-bezier(.2,.75,.25,1)}
+.hero-lock-body{transition:transform .32s ease}
+.hero-lock-dot{fill:#8C8B85;transition:fill .2s linear}
+.hero-lock-fault{opacity:0;transition:opacity .16s linear}
+.hero-lock-scan{opacity:0;transition:opacity .18s linear}
+.hero-lock-scan-pass{transform:translateY(-120px)}
+.hero-status-panel{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-top:12px;border-top:1px solid var(--rule);padding-top:12px;font:11px/1 var(--mono);letter-spacing:.12em}
+.hero-status-label{color:var(--muted)}
+.hero-status-timer{min-width:42px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.hero-status-track{height:2px;background:var(--rule);margin-top:9px;overflow:hidden;transform-origin:left}
+.hero-status-track>span{display:block;width:100%;height:100%;background:var(--ink);transform:scaleX(0);transform-origin:left center;will-change:transform}
+.hero-lock[data-state="red"] .hero-lock-shackle{transform:translate(8px,-9px) rotate(8deg)}
+.hero-lock[data-state="red"] .hero-lock-body{transform:translateY(2px)}
+.hero-lock[data-state="red"] .hero-lock-dot{fill:var(--red)}
+.hero-lock[data-state="red"] .hero-lock-fault{opacity:1}
+.hero-lock[data-state="red"] .hero-status-label,.hero-lock[data-state="red"] .hero-status-timer{color:var(--red)}
+.hero-lock[data-state="red"] .hero-status-track>span{background:var(--red)}
+.hero-lock[data-state="amber"] .hero-lock-shackle{transform:translate(8px,-9px) rotate(8deg)}
+.hero-lock[data-state="amber"] .hero-lock-dot{fill:var(--yellow)}
+.hero-lock[data-state="amber"] .hero-lock-fault{opacity:.35}
+.hero-lock[data-state="amber"] .hero-lock-scan{opacity:1}
+.hero-lock[data-state="amber"] .hero-lock-scan-pass{animation:heroScanPass 1.15s linear infinite}
+.hero-lock[data-state="amber"] .hero-status-label,.hero-lock[data-state="amber"] .hero-status-timer{color:#9A7410}
+.hero-lock[data-state="amber"] .hero-status-track>span{background:var(--yellow)}
+.hero-lock[data-state="green"] .hero-lock-shackle{transform:translate(0,0) rotate(0)}
+.hero-lock[data-state="green"] .hero-lock-dot{fill:var(--green)}
+.hero-lock[data-state="green"] .hero-status-label,.hero-lock[data-state="green"] .hero-status-timer{color:var(--green)}
+.hero-lock[data-state="green"] .hero-status-track>span{background:var(--green)}
+@keyframes heroScanPass{0%{transform:translateY(-120px)}100%{transform:translateY(240px)}}
+@media (prefers-reduced-motion:reduce){
+  .hero-lock-shackle,.hero-lock-body,.hero-lock-dot,.hero-lock-fault,.hero-lock-scan{transition:none}
+  .hero-lock[data-state] .hero-lock-scan-pass{animation:none}
+  .hero-status-track{display:none}
+}
+@media (max-width:980px){.hero-lock{aspect-ratio:450/690}}
