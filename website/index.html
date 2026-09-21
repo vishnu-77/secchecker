@@ -20,7 +20,6 @@
       <a href="#product">Product</a>
       <a href="#coverage">Coverage</a>
       <a href="#evaluation">Evaluation</a>
-      <a href="#fit">Where it fits</a>
       <a class="nav-cta" href="https://github.com/vishnu-77/secchecker">GitHub ↗</a>
     </nav>
   </header>
@@ -61,16 +60,22 @@
 
 
     <section id="quickstart" class="section-shell ruled-section quickstart-section">
-      <div class="quickstart-heading">
-        <div>
-          <div class="section-index">QUICKSTART</div>
-          <h2>Give your coding agent a deterministic security check.</h2>
+      <div class="compact-setup">
+        <div class="compact-setup-copy">
+          <div class="section-index">AGENT SETUP</div>
+          <h2>Use SecChecker with your coding agent.</h2>
+          <p>Give Claude Code, Codex, Cursor or another coding agent a repeatable security check it can run after making changes.</p>
+          <div class="agent-platforms" aria-label="Supported agent workflow examples">
+            <span>CLAUDE CODE</span><span>CODEX</span><span>CURSOR</span><span>OTHER</span>
+          </div>
         </div>
-        <a class="agent-setup-link" href="#agent-prompt">Agent setup ↗</a>
-      </div>
 
-      <div id="agent-prompt" class="agent-prompt-card">
-        <pre id="agent-setup-prompt">Use SecChecker as the deterministic security check for this repository.
+        <div class="compact-setup-actions">
+          <button class="button button-dark agent-copy-compact" data-copy-target="#agent-setup-prompt" type="button">COPY AGENT PROMPT</button>
+          <a class="button" href="SKILL.md" target="_blank" rel="noreferrer">VIEW SKILL ↗</a>
+          <details class="prompt-details">
+            <summary>View full prompt</summary>
+            <pre id="agent-setup-prompt">Use SecChecker as the deterministic security check for this repository.
 
 1. If SecChecker is not available, install it with:
    pip install secchecker
@@ -81,30 +86,30 @@
 3. When a machine-readable report is useful, run:
    secchecker . --type llm --format sarif --output secchecker_report.sarif
 
-4. Treat SecChecker findings as deterministic evidence to inspect. Do not invent, silently suppress, downgrade, or dismiss a finding without code evidence.
+4. Treat SecChecker findings as deterministic evidence to inspect. Do not silently suppress, downgrade, or dismiss a finding without code evidence.
 
 5. For each finding, explain:
    WHAT — what SecChecker detected
-   WHY — why the path matters
-   WHERE — the exact file/location reported
+   WHY — why it matters
+   WHERE — the file/location reported
    REVIEW — the smallest code area a developer should inspect
 
 6. If you propose a fix, prefer the smallest safe change. Then rerun SecChecker and state whether the finding remains.
 
-7. Do not publish packages, modify release branches, or alter release configuration unless explicitly requested.
-
-SecChecker owns the scan result. Your explanation and remediation suggestions are advisory.</pre>
-        <button class="agent-copy-button" data-copy-target="#agent-setup-prompt" type="button" aria-label="Copy SecChecker agent prompt">
-          <span class="copy-glyph" aria-hidden="true">▣</span>
-          <span>COPY AGENT PROMPT</span>
-        </button>
+SecChecker owns the scan result. Explanations and remediation suggestions are advisory.</pre>
+          </details>
+        </div>
       </div>
+    </section>
 
-      <div class="agent-prompt-footer">
-        <a class="skill-file-link" href="SKILL.md" target="_blank" rel="noreferrer"><span aria-hidden="true">▤</span> SKILL.md</a>
-        <a href="SKILL.md" target="_blank" rel="noreferrer">View ↗</a>
-      </div>
-      <p class="quickstart-note">Paste the prompt into Claude Code, Codex, Cursor, or another coding agent. The agent may explain or propose a fix; SecChecker remains the deterministic scanner.</p>
+    <section class="section-shell workflow-strip" aria-label="SecChecker development workflow">
+      <div><span>01</span><strong>WRITE</strong><small>Build or generate code</small></div>
+      <b>→</b>
+      <div><span>02</span><strong>CHECK</strong><small>Run SecChecker</small></div>
+      <b>→</b>
+      <div><span>03</span><strong>REVIEW</strong><small>Inspect the finding</small></div>
+      <b>→</b>
+      <div><span>04</span><strong>VERIFY</strong><small>Rerun after the fix</small></div>
     </section>
 
     <section id="product" class="section-shell ruled-section product-section">
@@ -146,30 +151,63 @@ SecChecker owns the scan result. Your explanation and remediation suggestions ar
       </div>
     </section>
 
-    <section class="section-shell ruled-section signal-section">
-      <div class="section-index">02 / SIGNAL, NOT SCROLL</div>
-      <div class="signal-heading">
-        <h2>Make findings show their work without burying what matters in endless output.</h2>
-        <p>See the decision-relevant part first: <strong>what was detected</strong>, <strong>why it matters</strong>, and <strong>where it appears</strong>.</p>
+    <section class="section-shell ruled-section finding-section">
+      <div class="section-index">02 / THE FINDING</div>
+      <div class="finding-heading">
+        <div>
+          <h2>Start with the finding. Open the evidence when you need it.</h2>
+          <p class="lede-sm">The default view stays concise. Experienced developers can inspect the exact evidence without changing tools.</p>
+        </div>
+        <div class="finding-tabs" role="tablist" aria-label="Finding detail level">
+          <button class="finding-tab is-active" type="button" role="tab" aria-selected="true" data-finding-tab="summary">SUMMARY</button>
+          <button class="finding-tab" type="button" role="tab" aria-selected="false" data-finding-tab="evidence">EVIDENCE</button>
+        </div>
       </div>
-      <div class="signal-grid" aria-label="Finding summary example">
-        <article>
-          <span>WHAT</span>
-          <strong>LLM - Groq API Key</strong>
-        </article>
-        <article>
-          <span>WHY</span>
-          <strong>A credential pattern needs review before sharing or shipping.</strong>
-        </article>
-        <article>
-          <span>WHERE</span>
-          <strong><code>config/service.env:19</code><small>Path anonymized</small></strong>
-        </article>
+
+      <article class="finding-card">
+        <header class="finding-card-head">
+          <div><span class="finding-state">HIGH</span><span class="finding-new">REVIEW</span></div>
+          <span class="finding-id">LLM · CREDENTIAL</span>
+        </header>
+
+        <div class="finding-pane is-active" data-finding-pane="summary">
+          <h3>AI provider credential detected in configuration.</h3>
+          <div class="finding-summary-grid">
+            <div><span>WHAT</span><strong>LLM - Groq API Key</strong></div>
+            <div><span>WHY</span><strong>A credential value needs review before sharing or shipping.</strong></div>
+            <div><span>WHERE</span><strong><code>config/service.env:19</code></strong></div>
+            <div><span>REVIEW</span><strong>Inspect the reported value and how it is stored.</strong></div>
+          </div>
+        </div>
+
+        <div class="finding-pane" data-finding-pane="evidence" hidden>
+          <div class="evidence-grid">
+            <div><span>DETECTION</span><code>LLM - Groq API Key</code></div>
+            <div><span>LOCATION</span><code>config/service.env:19</code></div>
+            <div><span>OCCURRENCES</span><code>1</code></div>
+            <div><span>EXPORT</span><code>SARIF</code></div>
+          </div>
+          <p class="evidence-note">The scanner reports the evidence; the developer decides whether the finding is valid in application context.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="section-shell ruled-section judge-section">
+      <div class="section-index">03 / NO LLM JUDGE</div>
+      <div class="judge-grid">
+        <div>
+          <h2>Security findings should not depend on another model's opinion.</h2>
+          <p class="lede-sm">SecChecker produces repeatable static findings. An AI coding agent can explain a result or suggest a change, but it does not own the scan verdict.</p>
+        </div>
+        <div class="judge-flow" aria-label="SecChecker decision flow">
+          <span>CODE</span><b>→</b><span>SECCHECKER</span><b>→</b><span>EVIDENCE</span><b>→</b><span>DEVELOPER</span>
+          <small>Optional afterwards: AI explanation or remediation suggestion.</small>
+        </div>
       </div>
     </section>
 
     <section id="coverage" class="section-shell ruled-section">
-      <div class="section-index">03 / WHAT IT CHECKS</div>
+      <div class="section-index">04 / WHAT IT CHECKS</div>
       <div class="surface-grid">
         <article><span>01</span><h3>Prompt & context</h3><p>Flags risky transitions where untrusted content can influence privileged AI context.</p></article>
         <article><span>02</span><h3>MCP & tools</h3><p>Checks tool descriptions, metadata and tool-result handling around sensitive actions.</p></article>
@@ -181,7 +219,7 @@ SecChecker owns the scan result. Your explanation and remediation suggestions ar
     </section>
 
     <section id="evaluation" class="section-shell ruled-section evaluation">
-      <div class="section-index">04 / EVALUATION</div>
+      <div class="section-index">05 / EVALUATION</div>
       <div class="evaluation-intro">
         <div>
           <h2>Evaluation should expose blind spots, not hide them.</h2>
@@ -207,7 +245,7 @@ SecChecker owns the scan result. Your explanation and remediation suggestions ar
     </section>
 
     <section id="fit" class="section-shell ruled-section fit-section">
-      <div class="section-index">05 / WHERE IT FITS</div>
+      <div class="section-index">06 / WHERE IT FITS</div>
       <div class="fit-heading">
         <h2>Put the check where developers already make decisions.</h2>
         <p>SecChecker is designed for the pre-deployment path: fast enough to run while building, structured enough to use in review, and explicit about what still needs runtime controls.</p>
@@ -235,15 +273,28 @@ SecChecker owns the scan result. Your explanation and remediation suggestions ar
       </div>
     </section>
 
-    <section class="section-shell ruled-section closing-section">
-      <div>
-        <div class="section-index">06 / USE IT</div>
-        <h2>Inspect the code before it becomes authority.</h2>
-        <p class="lede-sm">Start with one repository. Keep the signal close to the developer workflow.</p>
-      </div>
-      <div class="closing-actions">
-        <a class="button button-dark" href="https://github.com/vishnu-77/secchecker">Open repository ↗</a>
-        <a class="button" href="https://pypi.org/project/secchecker/">PyPI ↗</a>
+    <section class="section-shell ruled-section start-here-section">
+      <div class="section-index">07 / START HERE</div>
+      <h2>Choose the shortest path into SecChecker.</h2>
+      <div class="start-here-grid">
+        <article>
+          <span>LOCAL SCAN</span>
+          <h3>One command.</h3>
+          <code>pip install secchecker</code>
+          <button class="button" data-copy="pip install secchecker" type="button">COPY</button>
+        </article>
+        <article>
+          <span>CODING AGENT</span>
+          <h3>Give the agent the check.</h3>
+          <p>Use the compact agent setup without changing who owns the security result.</p>
+          <button class="button button-dark" data-copy-target="#agent-setup-prompt" type="button">COPY AGENT PROMPT</button>
+        </article>
+        <article>
+          <span>CI / REVIEW</span>
+          <h3>Export the result.</h3>
+          <code>SARIF · JSON · Markdown · XML · HTML</code>
+          <a class="button" href="https://github.com/vishnu-77/secchecker">GITHUB ↗</a>
+        </article>
       </div>
     </section>
   </main>
