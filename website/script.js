@@ -144,11 +144,17 @@ const lockLifecycle = document.querySelector('[data-lock-lifecycle]');
 if (lockLifecycle) {
   const statusLabel = lockLifecycle.querySelector('[data-lock-status]');
   const timerLabel = lockLifecycle.querySelector('[data-lock-timer]');
-  const progressDots = [...lockLifecycle.querySelectorAll('[data-lock-progress-dots] i')];
+  const inspectionCursor = lockLifecycle.querySelector('[data-inspection-cursor]');
   const cliState = lockLifecycle.querySelector('[data-cli-state]');
   const cliResult = lockLifecycle.querySelector('[data-cli-result]');
   const cliSteps = [...lockLifecycle.querySelectorAll('[data-cli-step]')];
-  const foldSteps = [...lockLifecycle.querySelectorAll('[data-lock-fold]')];
+  const cursorPositions = [
+    [150, 315],
+    [242, 333],
+    [330, 315],
+    [174, 438],
+    [302, 438],
+  ];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const phases = [
@@ -165,9 +171,10 @@ if (lockLifecycle) {
   const resetInspection = () => {
     cliSteps.forEach((row) => {
       row.classList.remove('is-active', 'is-done');
-
+      const mark = row.querySelector('[data-cli-mark]');
+      if (mark) mark.textContent = 'WAIT';
     });
-    foldSteps.forEach((fold) => fold.classList.remove('is-active', 'is-done'));
+    if (inspectionCursor) inspectionCursor.style.opacity = '';
   };
 
   const updateInspection = (progress) => {
@@ -178,24 +185,23 @@ if (lockLifecycle) {
     cliSteps.forEach((row, index) => {
       row.classList.toggle('is-done', index < activeIndex);
       row.classList.toggle('is-active', index === activeIndex);
-
+      const mark = row.querySelector('[data-cli-mark]');
+      if (mark) mark.textContent = index < activeIndex ? 'OK' : index === activeIndex ? 'SCAN' : 'WAIT';
     });
 
-    foldSteps.forEach((fold, index) => {
-      fold.classList.toggle('is-done', index < activeIndex);
-      fold.classList.toggle('is-active', index === activeIndex);
-    });
+    if (inspectionCursor) {
+      const [x, y] = cursorPositions[activeIndex];
+      inspectionCursor.setAttribute('transform', `translate(${x} ${y})`);
+    }
+    statusLabel.textContent = `SCANNING ${activeIndex + 1}/${count}`;
   };
 
   const completeInspection = () => {
     cliSteps.forEach((row) => {
       row.classList.remove('is-active');
       row.classList.add('is-done');
-
-    });
-    foldSteps.forEach((fold) => {
-      fold.classList.remove('is-active');
-      fold.classList.add('is-done');
+      const mark = row.querySelector('[data-cli-mark]');
+      if (mark) mark.textContent = 'OK';
     });
   };
 
@@ -216,7 +222,7 @@ if (lockLifecycle) {
       lockLifecycle.dataset.state = phase.state;
       statusLabel.textContent = phase.label;
       phaseStartedAt = now;
-      progressDots.forEach((dot) => dot.classList.remove('is-filled'));
+
 
       if (phase.state === 'idle' || phase.state === 'red' || phase.state === 'rest') {
         resetInspection();
@@ -258,8 +264,6 @@ if (lockLifecycle) {
       const remaining = Math.max(0, activePhase.duration - activeElapsed);
       timerLabel.textContent = `${(remaining / 1000).toFixed(1)}s`;
 
-      const filled = Math.round(progress * progressDots.length);
-      progressDots.forEach((dot, index) => dot.classList.toggle('is-filled', index < filled));
       if (activePhase.state === 'amber') updateInspection(progress);
 
       animationFrame = window.requestAnimationFrame(tickLifecycle);
