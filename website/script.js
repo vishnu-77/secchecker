@@ -137,3 +137,73 @@ document.querySelectorAll('[data-finding-tab]').forEach((tab) => {
     });
   });
 });
+
+
+const lockLifecycle = document.querySelector('[data-lock-lifecycle]');
+
+if (lockLifecycle) {
+  const statusLabel = lockLifecycle.querySelector('[data-lock-status]');
+  const timerLabel = lockLifecycle.querySelector('[data-lock-timer]');
+  const progressBar = lockLifecycle.querySelector('[data-lock-progress]');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const phases = [
+    { state: 'idle', label: 'READY', duration: 1800 },
+    { state: 'red', label: 'RISK', duration: 1400 },
+    { state: 'amber', label: 'SCANNING', duration: 2800 },
+    { state: 'green', label: 'CLEAR', duration: 2200 },
+  ];
+
+  if (reducedMotion) {
+    lockLifecycle.dataset.state = 'green';
+    statusLabel.textContent = 'CLEAR';
+    timerLabel.textContent = 'READY';
+  } else {
+    let phaseIndex = 0;
+    let phaseStartedAt = performance.now();
+    let animationFrame = 0;
+
+    const setPhase = (index, now) => {
+      const phase = phases[index];
+      lockLifecycle.dataset.state = phase.state;
+      statusLabel.textContent = phase.label;
+      phaseStartedAt = now;
+      if (progressBar) progressBar.style.transform = 'scaleX(0)';
+    };
+
+    const tickLifecycle = (now) => {
+      const phase = phases[phaseIndex];
+      const elapsed = now - phaseStartedAt;
+
+      if (elapsed >= phase.duration) {
+        phaseIndex = (phaseIndex + 1) % phases.length;
+        setPhase(phaseIndex, now);
+      }
+
+      const activePhase = phases[phaseIndex];
+      const activeElapsed = Math.max(0, now - phaseStartedAt);
+      const remaining = Math.max(0, activePhase.duration - activeElapsed);
+      timerLabel.textContent = `${(remaining / 1000).toFixed(1)}s`;
+
+      if (progressBar) {
+        const progress = Math.min(1, activeElapsed / activePhase.duration);
+        progressBar.style.transform = `scaleX(${progress})`;
+      }
+
+      animationFrame = window.requestAnimationFrame(tickLifecycle);
+    };
+
+    setPhase(0, phaseStartedAt);
+    animationFrame = window.requestAnimationFrame(tickLifecycle);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        phaseStartedAt = performance.now();
+      }
+    }, { passive: true });
+
+    window.addEventListener('pagehide', () => {
+      window.cancelAnimationFrame(animationFrame);
+    }, { once: true });
+  }
+}
