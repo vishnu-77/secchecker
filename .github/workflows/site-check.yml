@@ -98,19 +98,31 @@ jobs:
 
           mark = (root / 'assets/secchecker-mark.svg').read_text(encoding='utf-8')
           required_mark_tokens = {
-              '#B84A3A': 'red status state',
-              '#D8A624': 'amber status state',
-              '#698960': 'green status state',
-              '<animate': 'native SVG status animation',
-              'attributeName="fill"': 'animated fill state',
               'SecChecker origami lock': 'approved mark identity',
+              'folded-paper padlock': 'approved mark description',
           }
           missing_mark = [label for token, label in required_mark_tokens.items() if token not in mark]
           if missing_mark:
               raise SystemExit('website mark is missing: ' + ', '.join(missing_mark))
 
+          js = (root / 'script.js').read_text(encoding='utf-8')
+          interaction_contract = {
+              'hero-lock-state-dot': (html, 'single semantic hero status light'),
+              'data-workflow-trigger="0"': (html, 'workflow scroll checkpoints'),
+              '.workflow-sticky{position:sticky': (css, 'sticky workflow rail'),
+              '.workflow-scroll-trigger{height:56vh': (css, 'scroll trigger height'),
+              "querySelectorAll('[data-workflow-trigger]')": (js, 'scroll checkpoint controller'),
+          }
+          missing_interactions = [
+              label for token, (source, label) in interaction_contract.items()
+              if token not in source
+          ]
+          if missing_interactions:
+              raise SystemExit('website interaction contract missing: ' + ', '.join(missing_interactions))
+
           print('site check: OK')
           print('relative assets:', len(parser.refs))
           print('public-surface policy: OK')
-          print('logo identity + status animation: OK')
+          print('logo identity: OK')
+          print('interaction contract: OK')
           PY
