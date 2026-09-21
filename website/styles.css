@@ -112,11 +112,41 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .hero-lock-svg{display:block;width:100%;height:auto;overflow:visible}
 .hero-lock-shackle{transform-box:fill-box;transform-origin:16% 92%;transition:transform .48s cubic-bezier(.18,.8,.22,1)}
 .hero-lock-body{transition:transform .3s ease}
-.hero-lock-dot{fill:#8C8B85;transition:fill .18s linear,opacity .18s linear}
+
+/* Five inspection nodes correspond to the five CLI trust-surface checks. */
 .hero-lock-checkpoints{opacity:0;transition:opacity .18s linear}
-.hero-fold-marker{fill:var(--paper);stroke:#8C8B85;stroke-width:2;transition:fill .16s linear,stroke .16s linear,transform .16s linear;transform-box:fill-box;transform-origin:center}
-.hero-lock-checkpoints .is-active .hero-fold-marker{fill:var(--yellow);stroke:var(--ink);transform:scale(1.25)}
-.hero-lock-checkpoints .is-done .hero-fold-marker{fill:var(--ink);stroke:var(--ink)}
+.hero-fold-ring{fill:var(--paper);stroke:#8C8B85;stroke-width:1.5;transition:fill .16s linear,stroke .16s linear,transform .16s linear;transform-box:fill-box;transform-origin:center}
+.hero-fold-core{fill:#8C8B85;transition:fill .16s linear,transform .16s linear;transform-box:fill-box;transform-origin:center}
+.hero-lock-checkpoints .is-active .hero-fold-ring{stroke:var(--yellow);transform:scale(1.34)}
+.hero-lock-checkpoints .is-active .hero-fold-core{fill:var(--yellow);transform:scale(1.45)}
+.hero-lock-checkpoints .is-done .hero-fold-ring{stroke:var(--ink)}
+.hero-lock-checkpoints .is-done .hero-fold-core{fill:var(--ink)}
+
+/* Dot-matrix status glyph: point → X → moving scan column → check. */
+.hero-status-matrix{pointer-events:none}
+.hero-matrix-frame{fill:var(--paper);stroke:#9F9D97;stroke-width:1}
+.hero-matrix-pattern{opacity:0;transition:opacity .12s linear}
+.hero-matrix-pattern circle{fill:#8C8B85}
+.hero-matrix-idle{opacity:1}
+.hero-lock[data-state="red"] .hero-matrix-idle,
+.hero-lock[data-state="dock"] .hero-matrix-idle,
+.hero-lock[data-state="amber"] .hero-matrix-idle,
+.hero-lock[data-state="resolve"] .hero-matrix-idle,
+.hero-lock[data-state="green"] .hero-matrix-idle,
+.hero-lock[data-state="exit"] .hero-matrix-idle{opacity:0}
+.hero-lock[data-state="red"] .hero-matrix-risk{opacity:1}
+.hero-lock[data-state="red"] .hero-matrix-risk circle{fill:var(--red)}
+.hero-lock[data-state="dock"] .hero-matrix-scan,
+.hero-lock[data-state="amber"] .hero-matrix-scan,
+.hero-lock[data-state="resolve"] .hero-matrix-scan{opacity:1}
+.hero-lock[data-state="dock"] .hero-matrix-scan circle,
+.hero-lock[data-state="amber"] .hero-matrix-scan circle,
+.hero-lock[data-state="resolve"] .hero-matrix-scan circle{fill:var(--yellow)}
+.hero-lock[data-state="amber"] .hero-matrix-scan{animation:heroMatrixSweep 1.05s steps(4,end) infinite}
+.hero-lock[data-state="green"] .hero-matrix-clear{opacity:1}
+.hero-lock[data-state="green"] .hero-matrix-clear circle{fill:var(--green)}
+.hero-lock[data-state="exit"] .hero-matrix-clear{opacity:.45}
+.hero-lock[data-state="exit"] .hero-matrix-clear circle{fill:var(--green)}
 
 .hero-cli-scanner{position:absolute;z-index:3;left:-148px;top:246px;width:214px;border:1px solid var(--ink);background:#111;color:#EDECE6;font-family:var(--mono);opacity:0;transform:translateX(-130px);transition:transform .55s cubic-bezier(.2,.8,.2,1),opacity .22s linear;pointer-events:none}
 .hero-cli-scanner::after{content:"";position:absolute;right:-38px;top:76px;width:38px;border-top:1px solid var(--ink)}
@@ -126,27 +156,35 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .hero-cli-command{padding:10px 9px 8px;font-size:9px;white-space:nowrap;border-bottom:1px solid #30302E}
 .hero-cli-command span{color:#AAA79F}
 .hero-cli-steps{padding:7px 9px}
-.hero-cli-steps>div{display:grid;grid-template-columns:1fr 14px;gap:8px;align-items:center;min-height:19px;font-size:8px;letter-spacing:.06em;color:#9D9A92}
-.hero-cli-steps b{text-align:right;font-weight:500;color:#77736B}
+.hero-cli-steps>div{display:grid;grid-template-columns:1fr 28px;gap:8px;align-items:center;min-height:19px;font-size:8px;letter-spacing:.06em;color:#9D9A92}
+.hero-cli-dots{display:grid;grid-template-columns:repeat(3,5px);justify-content:end;gap:3px}
+.hero-cli-dots i{display:block;width:5px;height:5px;border:1px solid #5B5953;background:transparent}
 .hero-cli-steps .is-active{color:#EDECE6}
-.hero-cli-steps .is-active b{color:var(--yellow)}
+.hero-cli-steps .is-active .hero-cli-dots i:first-child{background:var(--yellow);border-color:var(--yellow)}
+.hero-cli-steps .is-active .hero-cli-dots i:nth-child(2){background:var(--yellow);border-color:var(--yellow);animation:heroCliBlink .5s steps(1,end) infinite}
 .hero-cli-steps .is-done{color:#C7C3BA}
-.hero-cli-steps .is-done b{color:#A9C4AF}
+.hero-cli-steps .is-done .hero-cli-dots i{background:#A9C4AF;border-color:#A9C4AF}
 .hero-cli-result{border-top:1px solid #30302E;padding:8px 9px;font-size:8px;letter-spacing:.09em;color:#77736B}
 
 .hero-status-panel{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-top:12px;border-top:1px solid var(--rule);padding-top:12px;font:11px/1 var(--mono);letter-spacing:.12em}
 .hero-status-label{color:var(--muted)}
 .hero-status-timer{min-width:52px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
-.hero-status-track{height:2px;background:var(--rule);margin-top:9px;overflow:hidden;transform-origin:left}
-.hero-status-track>span{display:block;width:100%;height:100%;background:var(--ink);transform:scaleX(0);transform-origin:left center;will-change:transform}
 
-/* Risk is intentionally obvious: the entire shackle visibly leaves its socket. */
+/* Progress is a 16-cell inspection register rather than a generic progress line. */
+.hero-progress-register{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;margin-top:10px}
+.hero-progress-register i{display:block;height:4px;border:1px solid #B7B5AE;background:transparent}
+.hero-progress-register i.is-filled{background:var(--ink);border-color:var(--ink)}
+.hero-lock[data-state="red"] .hero-progress-register i.is-filled{background:var(--red);border-color:var(--red)}
+.hero-lock[data-state="dock"] .hero-progress-register i.is-filled,
+.hero-lock[data-state="amber"] .hero-progress-register i.is-filled,
+.hero-lock[data-state="resolve"] .hero-progress-register i.is-filled{background:var(--yellow);border-color:var(--yellow)}
+.hero-lock[data-state="green"] .hero-progress-register i.is-filled{background:var(--green);border-color:var(--green)}
+
+/* Risk is deliberately obvious: the shackle leaves its socket. */
 .hero-lock[data-state="red"] .hero-lock-shackle{transform:translate(44px,-42px) rotate(24deg)}
-.hero-lock[data-state="red"] .hero-lock-dot{fill:var(--red)}
 .hero-lock[data-state="red"] .hero-status-label,.hero-lock[data-state="red"] .hero-status-timer{color:var(--red)}
-.hero-lock[data-state="red"] .hero-status-track>span{background:var(--red)}
 
-/* The inspector physically docks before analysis begins. */
+/* The CLI inspector docks before analysis. */
 .hero-lock[data-state="dock"] .hero-lock-shackle,
 .hero-lock[data-state="amber"] .hero-lock-shackle,
 .hero-lock[data-state="resolve"] .hero-lock-shackle{transform:translate(36px,-33px) rotate(18deg)}
@@ -154,41 +192,37 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .hero-lock[data-state="amber"] .hero-cli-scanner,
 .hero-lock[data-state="resolve"] .hero-cli-scanner,
 .hero-lock[data-state="green"] .hero-cli-scanner{opacity:1;transform:translateX(0)}
-.hero-lock[data-state="dock"] .hero-lock-dot,
-.hero-lock[data-state="amber"] .hero-lock-dot,
-.hero-lock[data-state="resolve"] .hero-lock-dot{fill:var(--yellow)}
-.hero-lock[data-state="amber"] .hero-lock-dot{animation:heroStatusPulse .7s steps(1,end) infinite}
 .hero-lock[data-state="amber"] .hero-lock-checkpoints,
 .hero-lock[data-state="resolve"] .hero-lock-checkpoints,
 .hero-lock[data-state="green"] .hero-lock-checkpoints{opacity:1}
 .hero-lock[data-state="dock"] .hero-status-label,.hero-lock[data-state="dock"] .hero-status-timer,
 .hero-lock[data-state="amber"] .hero-status-label,.hero-lock[data-state="amber"] .hero-status-timer,
 .hero-lock[data-state="resolve"] .hero-status-label,.hero-lock[data-state="resolve"] .hero-status-timer{color:#9A7410}
-.hero-lock[data-state="dock"] .hero-status-track>span,
-.hero-lock[data-state="amber"] .hero-status-track>span,
-.hero-lock[data-state="resolve"] .hero-status-track>span{background:var(--yellow)}
 
-/* A finished check re-seats the shackle with a visible mechanical snap. */
+/* Completion is a mechanical relock plus the green dot-matrix check. */
 .hero-lock[data-state="green"] .hero-lock-shackle{animation:heroRelock .72s cubic-bezier(.15,.8,.2,1) both}
-.hero-lock[data-state="green"] .hero-lock-dot{fill:var(--green)}
 .hero-lock[data-state="green"] .hero-status-label,.hero-lock[data-state="green"] .hero-status-timer{color:var(--green)}
-.hero-lock[data-state="green"] .hero-status-track>span{background:var(--green)}
 .hero-lock[data-state="green"] .hero-cli-bar b,.hero-lock[data-state="green"] .hero-cli-result{color:#A9C4AF}
-
 .hero-lock[data-state="exit"] .hero-cli-scanner{opacity:0;transform:translateX(-130px)}
-.hero-lock[data-state="rest"] .hero-lock-dot,.hero-lock[data-state="idle"] .hero-lock-dot{fill:#8C8B85}
 
 @keyframes heroRelock{
   0%{transform:translate(36px,-33px) rotate(18deg)}
   72%{transform:translate(-3px,3px) rotate(-1.5deg)}
   100%{transform:translate(0,0) rotate(0)}
 }
-@keyframes heroStatusPulse{0%,49%{opacity:1}50%,100%{opacity:.38}}
+@keyframes heroMatrixSweep{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(8px)}
+  50%{transform:translateX(16px)}
+  75%{transform:translateX(24px)}
+  100%{transform:translateX(32px)}
+}
+@keyframes heroCliBlink{0%,49%{opacity:1}50%,100%{opacity:.25}}
 
 @media (prefers-reduced-motion:reduce){
-  .hero-lock-shackle,.hero-lock-body,.hero-lock-dot,.hero-lock-checkpoints,.hero-cli-scanner{transition:none;animation:none!important}
+  .hero-lock-shackle,.hero-lock-body,.hero-lock-checkpoints,.hero-cli-scanner,.hero-matrix-pattern{transition:none;animation:none!important}
   .hero-cli-scanner{display:none}
-  .hero-status-track{display:none}
+  .hero-progress-register{display:none}
 }
 @media (max-width:980px){.hero-lock{aspect-ratio:450/710}.hero-cli-scanner{left:-118px;transform:translateX(-100px);width:190px}}
 @media (max-width:640px){.hero-cli-scanner{left:-92px;top:184px;width:170px}.hero-cli-command{font-size:8px}.hero-cli-steps>div{font-size:7px}}
