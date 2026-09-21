@@ -84,30 +84,9 @@
                 <path d="M43 308V520L286 620L430 506V230"/>
               </g>
             </g>
-            <g class="hero-lock-checkpoints" aria-hidden="true">
-              <g data-lock-fold="0" transform="translate(150 315)"><circle class="hero-fold-ring" r="8"/><circle class="hero-fold-core" r="2.5"/></g>
-              <g data-lock-fold="1" transform="translate(242 333)"><circle class="hero-fold-ring" r="8"/><circle class="hero-fold-core" r="2.5"/></g>
-              <g data-lock-fold="2" transform="translate(330 315)"><circle class="hero-fold-ring" r="8"/><circle class="hero-fold-core" r="2.5"/></g>
-              <g data-lock-fold="3" transform="translate(174 438)"><circle class="hero-fold-ring" r="8"/><circle class="hero-fold-core" r="2.5"/></g>
-              <g data-lock-fold="4" transform="translate(302 438)"><circle class="hero-fold-ring" r="8"/><circle class="hero-fold-core" r="2.5"/></g>
-            </g>
-
-            <g class="hero-status-matrix" aria-hidden="true" transform="translate(344 314)">
-              <rect class="hero-matrix-frame" x="-9" y="-9" width="50" height="50"/>
-              <g class="hero-matrix-pattern hero-matrix-idle">
-                <circle cx="16" cy="16" r="3"/>
-              </g>
-              <g class="hero-matrix-pattern hero-matrix-risk">
-                <circle cx="0" cy="0" r="2.5"/><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="16" r="2.5"/><circle cx="24" cy="24" r="2.5"/><circle cx="32" cy="32" r="2.5"/>
-                <circle cx="32" cy="0" r="2.5"/><circle cx="24" cy="8" r="2.5"/><circle cx="8" cy="24" r="2.5"/><circle cx="0" cy="32" r="2.5"/>
-              </g>
-              <g class="hero-matrix-pattern hero-matrix-scan">
-                <circle cx="0" cy="0" r="2.5"/><circle cx="0" cy="8" r="2.5"/><circle cx="0" cy="16" r="2.5"/><circle cx="0" cy="24" r="2.5"/><circle cx="0" cy="32" r="2.5"/>
-              </g>
-              <g class="hero-matrix-pattern hero-matrix-clear">
-                <circle cx="4" cy="18" r="2.5"/><circle cx="10" cy="24" r="2.5"/><circle cx="16" cy="30" r="2.5"/>
-                <circle cx="22" cy="22" r="2.5"/><circle cx="28" cy="14" r="2.5"/><circle cx="34" cy="6" r="2.5"/>
-              </g>
+            <g class="hero-inspection-cursor" data-inspection-cursor aria-hidden="true">
+              <path d="M-18 -18H-5M-18 -18V-5M18 -18H5M18 -18V-5M-18 18H-5M-18 18V5M18 18H5M18 18V5" fill="none" stroke="#D8A624" stroke-width="2"/>
+              <rect x="-11" y="-11" width="22" height="22" fill="none" stroke="#111111" stroke-width="1" stroke-dasharray="3 3"/>
             </g>
           </svg>
 
@@ -118,11 +97,11 @@
             </div>
             <div class="hero-cli-command"><span>$</span> secchecker . --type llm</div>
             <div class="hero-cli-steps">
-              <div data-cli-step="0"><span>PROMPT</span><b class="hero-cli-dots" aria-hidden="true"><i></i><i></i><i></i></b></div>
-              <div data-cli-step="1"><span>TOOLS</span><b class="hero-cli-dots" aria-hidden="true"><i></i><i></i><i></i></b></div>
-              <div data-cli-step="2"><span>MODEL OUT</span><b class="hero-cli-dots" aria-hidden="true"><i></i><i></i><i></i></b></div>
-              <div data-cli-step="3"><span>MEMORY</span><b class="hero-cli-dots" aria-hidden="true"><i></i><i></i><i></i></b></div>
-              <div data-cli-step="4"><span>CREDENTIAL</span><b class="hero-cli-dots" aria-hidden="true"><i></i><i></i><i></i></b></div>
+              <div data-cli-step="0"><span>PROMPT</span><b data-cli-mark>WAIT</b></div>
+              <div data-cli-step="1"><span>TOOLS</span><b data-cli-mark>WAIT</b></div>
+              <div data-cli-step="2"><span>MODEL OUT</span><b data-cli-mark>WAIT</b></div>
+              <div data-cli-step="3"><span>MEMORY</span><b data-cli-mark>WAIT</b></div>
+              <div data-cli-step="4"><span>CREDENTIAL</span><b data-cli-mark>WAIT</b></div>
             </div>
             <div class="hero-cli-result" data-cli-result>WAITING</div>
           </div>
@@ -130,10 +109,6 @@
           <div class="hero-status-panel" aria-live="polite">
             <span class="hero-status-label" data-lock-status>READY</span>
             <span class="hero-status-timer" data-lock-timer>1.8s</span>
-          </div>
-          <div class="hero-progress-register" data-lock-progress-dots aria-hidden="true">
-            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
           </div>
         </div>
         <div class="mark-caption">DETECT <span>→</span> INSPECT <span>→</span> VERIFY</div>
