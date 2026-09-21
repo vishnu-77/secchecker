@@ -28,18 +28,19 @@
 
   <!-- status resolves once: red → amber → green -->
   <style>
-    .status-dot {
-      fill: #B84A3A;
-      animation: status-cycle 3.2s steps(1, end) 1 forwards;
-    }
-    @keyframes status-cycle {
-      0%, 32% { fill: #B84A3A; }
-      33%, 65% { fill: #D8A624; }
-      66%, 100% { fill: #698960; }
-    }
     @media (prefers-reduced-motion: reduce) {
-      .status-dot { animation: none; fill: #698960; }
+      .status-dot-animated { display: none; }
     }
   </style>
-  <circle class="status-dot" cx="366" cy="336" r="15"/>
+  <circle cx="366" cy="336" r="15" fill="#698960"/>
+  <circle class="status-dot-animated" cx="366" cy="336" r="15" fill="#B84A3A">
+    <animate
+      attributeName="fill"
+      values="#B84A3A;#B84A3A;#D8A624;#D8A624;#698960"
+      keyTimes="0;0.32;0.33;0.65;1"
+      dur="3.2s"
+      calcMode="discrete"
+      repeatCount="1"
+      fill="freeze"/>
+  </circle>
 </svg>
