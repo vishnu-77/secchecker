@@ -97,13 +97,19 @@ jobs:
               raise SystemExit('internal detail exposed on public website: ' + ', '.join(sorted(set(exposed))))
 
           mark = (root / 'assets/secchecker-mark.svg').read_text(encoding='utf-8')
-          if '#698960' not in mark or 'SecChecker origami lock' not in mark:
-              raise SystemExit('website mark is not the approved green origami lock identity')
-          if '#B84A3A' in mark:
-              raise SystemExit('legacy red status dot is still present in website mark')
+          required_mark_tokens = {
+              '#B84A3A': 'red status state',
+              '#D8A624': 'amber status state',
+              '#698960': 'green status state',
+              'status-cycle': 'status animation',
+              'SecChecker origami lock': 'approved mark identity',
+          }
+          missing_mark = [label for token, label in required_mark_tokens.items() if token not in mark]
+          if missing_mark:
+              raise SystemExit('website mark is missing: ' + ', '.join(missing_mark))
 
           print('site check: OK')
           print('relative assets:', len(parser.refs))
           print('public-surface policy: OK')
-          print('logo identity: OK')
+          print('logo identity + status animation: OK')
           PY
