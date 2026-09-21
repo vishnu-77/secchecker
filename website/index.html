@@ -159,11 +159,28 @@ SecChecker owns the scan result. Explanations and remediation suggestions are ad
       </div>
     </section>
 
-    <section class="section-shell workflow-strip" aria-label="SecChecker development workflow">
-      <div><span>01</span><strong>WRITE</strong><small>Build or generate code</small></div>
-      <div><span>02</span><strong>CHECK</strong><small>Run SecChecker</small></div>
-      <div><span>03</span><strong>REVIEW</strong><small>Inspect the finding</small></div>
-      <div><span>04</span><strong>VERIFY</strong><small>Rerun after the fix</small></div>
+    <section class="workflow-scroll-shell" data-workflow-scroll aria-label="SecChecker development workflow">
+      <div class="workflow-sticky">
+        <div class="section-shell workflow-strip" data-workflow-strip style="--workflow-step:0">
+          <div class="workflow-stage is-active" data-workflow-stage="0">
+            <span>01</span><strong>WRITE</strong><small>Build or generate code</small>
+          </div>
+          <div class="workflow-stage" data-workflow-stage="1">
+            <span>02</span><strong>CHECK</strong><small>Run SecChecker</small>
+          </div>
+          <div class="workflow-stage" data-workflow-stage="2">
+            <span>03</span><strong>REVIEW</strong><small>Inspect the finding</small>
+          </div>
+          <div class="workflow-stage" data-workflow-stage="3">
+            <span>04</span><strong>VERIFY</strong><small>Rerun after the fix</small>
+          </div>
+          <span class="workflow-inspection-window" aria-hidden="true"></span>
+        </div>
+        <div class="section-shell workflow-readout" aria-live="polite">
+          <code data-workflow-readout>EDIT / GENERATE</code>
+          <span data-workflow-note>Build the change. SecChecker stays out of the way until you ask it to check.</span>
+        </div>
+      </div>
     </section>
 
     <section id="product" class="section-shell ruled-section product-section">
