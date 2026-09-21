@@ -145,19 +145,70 @@ if (lockLifecycle) {
   const statusLabel = lockLifecycle.querySelector('[data-lock-status]');
   const timerLabel = lockLifecycle.querySelector('[data-lock-timer]');
   const progressBar = lockLifecycle.querySelector('[data-lock-progress]');
+  const cliState = lockLifecycle.querySelector('[data-cli-state]');
+  const cliResult = lockLifecycle.querySelector('[data-cli-result]');
+  const cliSteps = [...lockLifecycle.querySelectorAll('[data-cli-step]')];
+  const foldSteps = [...lockLifecycle.querySelectorAll('[data-lock-fold]')];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const phases = [
     { state: 'idle', label: 'READY', duration: 1800 },
-    { state: 'red', label: 'RISK', duration: 1400 },
-    { state: 'amber', label: 'SCANNING', duration: 2800 },
-    { state: 'green', label: 'CLEAR', duration: 2200 },
+    { state: 'red', label: 'RISK', duration: 1800 },
+    { state: 'dock', label: 'CONNECT', duration: 900 },
+    { state: 'amber', label: 'SCANNING', duration: 5200 },
+    { state: 'resolve', label: 'VERIFY', duration: 1200 },
+    { state: 'green', label: 'DONE', duration: 2300 },
+    { state: 'exit', label: 'RESET', duration: 900 },
+    { state: 'rest', label: 'READY', duration: 1500 },
   ];
+
+  const resetInspection = () => {
+    cliSteps.forEach((row) => {
+      row.classList.remove('is-active', 'is-done');
+      const mark = row.querySelector('b');
+      if (mark) mark.textContent = '·';
+    });
+    foldSteps.forEach((fold) => fold.classList.remove('is-active', 'is-done'));
+  };
+
+  const updateInspection = (progress) => {
+    const count = cliSteps.length;
+    const exact = Math.min(count - 0.001, Math.max(0, progress) * count);
+    const activeIndex = Math.floor(exact);
+
+    cliSteps.forEach((row, index) => {
+      row.classList.toggle('is-done', index < activeIndex);
+      row.classList.toggle('is-active', index === activeIndex);
+      const mark = row.querySelector('b');
+      if (mark) mark.textContent = index < activeIndex ? '✓' : index === activeIndex ? '■' : '·';
+    });
+
+    foldSteps.forEach((fold, index) => {
+      fold.classList.toggle('is-done', index < activeIndex);
+      fold.classList.toggle('is-active', index === activeIndex);
+    });
+  };
+
+  const completeInspection = () => {
+    cliSteps.forEach((row) => {
+      row.classList.remove('is-active');
+      row.classList.add('is-done');
+      const mark = row.querySelector('b');
+      if (mark) mark.textContent = '✓';
+    });
+    foldSteps.forEach((fold) => {
+      fold.classList.remove('is-active');
+      fold.classList.add('is-done');
+    });
+  };
 
   if (reducedMotion) {
     lockLifecycle.dataset.state = 'green';
-    statusLabel.textContent = 'CLEAR';
+    statusLabel.textContent = 'DONE';
     timerLabel.textContent = 'READY';
+    cliState.textContent = 'DONE';
+    cliResult.textContent = 'SCAN COMPLETE';
+    completeInspection();
   } else {
     let phaseIndex = 0;
     let phaseStartedAt = performance.now();
@@ -169,6 +220,30 @@ if (lockLifecycle) {
       statusLabel.textContent = phase.label;
       phaseStartedAt = now;
       if (progressBar) progressBar.style.transform = 'scaleX(0)';
+
+      if (phase.state === 'idle' || phase.state === 'red' || phase.state === 'rest') {
+        resetInspection();
+        cliState.textContent = 'STANDBY';
+        cliResult.textContent = 'WAITING';
+      } else if (phase.state === 'dock') {
+        resetInspection();
+        cliState.textContent = 'LINK';
+        cliResult.textContent = 'CONNECTING';
+      } else if (phase.state === 'amber') {
+        cliState.textContent = 'RUN';
+        cliResult.textContent = 'INSPECTING';
+      } else if (phase.state === 'resolve') {
+        completeInspection();
+        cliState.textContent = 'VERIFY';
+        cliResult.textContent = 'EVIDENCE READY';
+      } else if (phase.state === 'green') {
+        completeInspection();
+        cliState.textContent = 'DONE';
+        cliResult.textContent = 'SCAN COMPLETE';
+      } else if (phase.state === 'exit') {
+        cliState.textContent = 'DONE';
+        cliResult.textContent = 'SCAN COMPLETE';
+      }
     };
 
     const tickLifecycle = (now) => {
@@ -182,13 +257,12 @@ if (lockLifecycle) {
 
       const activePhase = phases[phaseIndex];
       const activeElapsed = Math.max(0, now - phaseStartedAt);
+      const progress = Math.min(1, activeElapsed / activePhase.duration);
       const remaining = Math.max(0, activePhase.duration - activeElapsed);
       timerLabel.textContent = `${(remaining / 1000).toFixed(1)}s`;
 
-      if (progressBar) {
-        const progress = Math.min(1, activeElapsed / activePhase.duration);
-        progressBar.style.transform = `scaleX(${progress})`;
-      }
+      if (progressBar) progressBar.style.transform = `scaleX(${progress})`;
+      if (activePhase.state === 'amber') updateInspection(progress);
 
       animationFrame = window.requestAnimationFrame(tickLifecycle);
     };
@@ -199,6 +273,7 @@ if (lockLifecycle) {
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         phaseStartedAt = performance.now();
+        setPhase(phaseIndex, phaseStartedAt);
       }
     }, { passive: true });
 
