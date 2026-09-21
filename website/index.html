@@ -54,7 +54,7 @@
         <div class="hero-logo-wrap hero-lock" data-lock-lifecycle data-state="idle" aria-label="SecChecker scan lifecycle animation">
           <svg class="hero-lock-svg" viewBox="0 0 450 630" role="img" aria-labelledby="hero-lock-title hero-lock-desc">
             <title id="hero-lock-title">SecChecker scan lifecycle</title>
-            <desc id="hero-lock-desc">A closed origami lock opens when a risk is detected, scans while amber, then closes when the scan clears.</desc>
+            <desc id="hero-lock-desc">A closed origami lock opens when a risk is detected, a SecChecker CLI inspector docks and checks its trust surfaces, then the lock closes when the check completes.</desc>
             <defs>
               <clipPath id="hero-body-clip">
                 <path d="M93 257L430 230V506L286 620L43 520V308Z"/>
@@ -84,39 +84,32 @@
                 <path d="M43 308V520L286 620L430 506V230"/>
               </g>
             </g>
-
-            <g class="hero-lock-fault" aria-hidden="true">
-              <path d="M340 246L365 264" fill="none" stroke="#B84A3A" stroke-width="4"/>
-              <path d="M356 244L375 257" fill="none" stroke="#B84A3A" stroke-width="2"/>
-            </g>
-
-            <g clip-path="url(#hero-body-clip)" class="hero-lock-scan" aria-hidden="true">
-              <g class="hero-lock-scan-grid">
-                <path d="M86 314H392M72 356H406M62 398H416M72 440H406M88 482H390" fill="none" stroke="#D8A624" stroke-width="1" stroke-dasharray="3 8"/>
-                <path d="M142 270V532M204 250V558M266 244V570M328 252V544" fill="none" stroke="#D8A624" stroke-width="1" stroke-dasharray="2 10"/>
-              </g>
-              <g class="hero-lock-scan-pass">
-                <rect class="hero-scan-band" x="54" y="274" width="370" height="46" fill="#D8A624"/>
-                <path d="M58 274H420M58 320H420" fill="none" stroke="#D8A624" stroke-width="2"/>
-                <path d="M78 265V284H96M402 265V284H384M78 329V310H96M402 329V310H384" fill="none" stroke="#111111" stroke-width="3"/>
-                <g class="hero-scan-samples">
-                  <rect x="128" y="289" width="11" height="5" fill="#111111"/>
-                  <rect x="150" y="289" width="5" height="5" fill="#111111"/>
-                  <rect x="166" y="289" width="18" height="5" fill="#111111"/>
-                  <rect x="198" y="289" width="7" height="5" fill="#111111"/>
-                  <rect x="218" y="289" width="26" height="5" fill="#111111"/>
-                  <rect x="258" y="289" width="8" height="5" fill="#111111"/>
-                  <rect x="279" y="289" width="16" height="5" fill="#111111"/>
-                  <rect x="310" y="289" width="12" height="5" fill="#111111"/>
-                  <rect x="337" y="289" width="5" height="5" fill="#111111"/>
-                  <circle class="hero-scan-head" cx="112" cy="296" r="7" fill="#111111"/>
-                </g>
-                <path class="hero-scan-ruler" d="M101 307H113M126 307H138M151 307H163M176 307H188M201 307H213M226 307H238M251 307H263M276 307H288M301 307H313M326 307H338M351 307H363" fill="none" stroke="#111111" stroke-width="2"/>
-              </g>
+            <g class="hero-lock-checkpoints" aria-hidden="true">
+              <g data-lock-fold="0" transform="translate(150 315)"><rect class="hero-fold-marker" x="-6" y="-6" width="12" height="12"/></g>
+              <g data-lock-fold="1" transform="translate(242 333)"><rect class="hero-fold-marker" x="-6" y="-6" width="12" height="12"/></g>
+              <g data-lock-fold="2" transform="translate(330 315)"><rect class="hero-fold-marker" x="-6" y="-6" width="12" height="12"/></g>
+              <g data-lock-fold="3" transform="translate(174 438)"><rect class="hero-fold-marker" x="-6" y="-6" width="12" height="12"/></g>
+              <g data-lock-fold="4" transform="translate(302 438)"><rect class="hero-fold-marker" x="-6" y="-6" width="12" height="12"/></g>
             </g>
 
             <circle class="hero-lock-dot" cx="366" cy="336" r="15"/>
           </svg>
+
+          <div class="hero-cli-scanner" aria-hidden="true">
+            <div class="hero-cli-bar">
+              <span>SECHECKER / INSPECT</span>
+              <b data-cli-state>STANDBY</b>
+            </div>
+            <div class="hero-cli-command"><span>$</span> secchecker . --type llm</div>
+            <div class="hero-cli-steps">
+              <div data-cli-step="0"><span>PROMPT</span><b>·</b></div>
+              <div data-cli-step="1"><span>TOOLS</span><b>·</b></div>
+              <div data-cli-step="2"><span>MODEL OUT</span><b>·</b></div>
+              <div data-cli-step="3"><span>MEMORY</span><b>·</b></div>
+              <div data-cli-step="4"><span>CREDENTIAL</span><b>·</b></div>
+            </div>
+            <div class="hero-cli-result" data-cli-result>WAITING</div>
+          </div>
 
           <div class="hero-status-panel" aria-live="polite">
             <span class="hero-status-label" data-lock-status>READY</span>
@@ -124,7 +117,7 @@
           </div>
           <div class="hero-status-track" aria-hidden="true"><span data-lock-progress></span></div>
         </div>
-        <div class="mark-caption">READY <span>→</span> RISK <span>→</span> SCANNING <span>→</span> CLEAR</div>
+        <div class="mark-caption">DETECT <span>→</span> INSPECT <span>→</span> VERIFY</div>
       </div>
     </section>
 
@@ -262,22 +255,8 @@ SecChecker owns the scan result. Explanations and remediation suggestions are ad
       </article>
     </section>
 
-    <section class="section-shell ruled-section judge-section">
-      <div class="section-index">03 / NO LLM JUDGE</div>
-      <div class="judge-grid">
-        <div>
-          <h2>Security findings should not depend on another model's opinion.</h2>
-          <p class="lede-sm">SecChecker produces repeatable static findings. An AI coding agent can explain a result or suggest a change, but it does not own the scan verdict.</p>
-        </div>
-        <div class="judge-flow" aria-label="SecChecker decision flow">
-          <span>CODE</span><b>→</b><span>SECCHECKER</span><b>→</b><span>EVIDENCE</span><b>→</b><span>DEVELOPER</span>
-          <small>Optional afterwards: AI explanation or remediation suggestion.</small>
-        </div>
-      </div>
-    </section>
-
     <section id="coverage" class="section-shell ruled-section">
-      <div class="section-index">04 / WHAT IT CHECKS</div>
+      <div class="section-index">03 / WHAT IT CHECKS</div>
       <div class="surface-grid">
         <article><span>01</span><h3>Prompt & context</h3><p>Flags risky transitions where untrusted content can influence privileged AI context.</p></article>
         <article><span>02</span><h3>MCP & tools</h3><p>Checks tool descriptions, metadata and tool-result handling around sensitive actions.</p></article>
@@ -289,7 +268,7 @@ SecChecker owns the scan result. Explanations and remediation suggestions are ad
     </section>
 
     <section id="evaluation" class="section-shell ruled-section evaluation">
-      <div class="section-index">05 / EVALUATION</div>
+      <div class="section-index">04 / EVALUATION</div>
       <div class="evaluation-intro">
         <div>
           <h2>Evaluation should expose blind spots, not hide them.</h2>
@@ -311,60 +290,6 @@ SecChecker owns the scan result. Explanations and remediation suggestions are ad
       <div class="evaluation-note">
         <strong>NO FINDINGS ≠ SECURE APPLICATION</strong>
         <span>A static scan is one source of evidence. Findings can be false positives or false negatives, and a clean result is not proof of security.</span>
-      </div>
-    </section>
-
-    <section id="fit" class="section-shell ruled-section fit-section">
-      <div class="section-index">06 / WHERE IT FITS</div>
-      <div class="fit-heading">
-        <h2>Put the check where developers already make decisions.</h2>
-        <p>SecChecker is designed for the pre-deployment path: fast enough to run while building, structured enough to use in review, and explicit about what still needs runtime controls.</p>
-      </div>
-
-      <div class="fit-grid">
-        <article>
-          <span>BUILD</span>
-          <h3>Run locally</h3>
-          <p>Check the repository before opening a pull request.</p>
-          <code>$ secchecker . --type llm</code>
-        </article>
-        <article>
-          <span>REVIEW</span>
-          <h3>Gate in CI</h3>
-          <p>Emit machine-readable findings and keep the result next to the code change.</p>
-          <code>SARIF · JSON · exit codes</code>
-        </article>
-        <article class="fit-boundary">
-          <span>BOUNDARY</span>
-          <h3>Know what it is not</h3>
-          <p>SecChecker does not replace code review, threat modelling, red-team testing or runtime policy controls.</p>
-          <code>STATIC ANALYSIS ≠ RUNTIME ENFORCEMENT</code>
-        </article>
-      </div>
-    </section>
-
-    <section class="section-shell ruled-section start-here-section">
-      <div class="section-index">07 / START HERE</div>
-      <h2>Choose the shortest path into SecChecker.</h2>
-      <div class="start-here-grid">
-        <article>
-          <span>LOCAL SCAN</span>
-          <h3>One command.</h3>
-          <code>pip install secchecker</code>
-          <button class="button" data-copy="pip install secchecker" type="button">COPY</button>
-        </article>
-        <article>
-          <span>CODING AGENT</span>
-          <h3>Give the agent the check.</h3>
-          <p>Use the compact agent setup without changing who owns the security result.</p>
-          <button class="button button-dark" data-copy-target="#agent-setup-prompt" type="button">COPY AGENT PROMPT</button>
-        </article>
-        <article>
-          <span>CI / REVIEW</span>
-          <h3>Export the result.</h3>
-          <code>SARIF · JSON · Markdown · XML · HTML</code>
-          <a class="button" href="https://github.com/vishnu-77/secchecker">GITHUB ↗</a>
-        </article>
       </div>
     </section>
   </main>
