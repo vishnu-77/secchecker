@@ -1,4 +1,4 @@
-document.querySelectorAll('[data-copy]').forEach((button) => {
+document.querySelectorAll('[data-copy], [data-copy-target]').forEach((button) => {
   button.addEventListener('click', async () => {
     const targetSelector = button.getAttribute('data-copy-target');
     const target = targetSelector ? document.querySelector(targetSelector) : null;
@@ -120,3 +120,20 @@ if (demoConsole && !prefersReducedMotion) {
 
   observer.observe(demoConsole);
 }
+
+
+document.querySelectorAll('[data-finding-tab]').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const target = tab.getAttribute('data-finding-tab');
+    document.querySelectorAll('[data-finding-tab]').forEach((item) => {
+      const active = item === tab;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-finding-pane]').forEach((pane) => {
+      const active = pane.getAttribute('data-finding-pane') === target;
+      pane.classList.toggle('is-active', active);
+      pane.hidden = !active;
+    });
+  });
+});
