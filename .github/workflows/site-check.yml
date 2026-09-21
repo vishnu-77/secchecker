@@ -101,7 +101,8 @@ jobs:
               '#B84A3A': 'red status state',
               '#D8A624': 'amber status state',
               '#698960': 'green status state',
-              'status-cycle': 'status animation',
+              '<animate': 'native SVG status animation',
+              'attributeName="fill"': 'animated fill state',
               'SecChecker origami lock': 'approved mark identity',
           }
           missing_mark = [label for token, label in required_mark_tokens.items() if token not in mark]
