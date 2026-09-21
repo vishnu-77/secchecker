@@ -145,6 +145,7 @@ const workflowScroll = document.querySelector('[data-workflow-scroll]');
 if (workflowScroll) {
   const strip = workflowScroll.querySelector('[data-workflow-strip]');
   const stages = [...workflowScroll.querySelectorAll('[data-workflow-stage]')];
+  const triggers = [...workflowScroll.querySelectorAll('[data-workflow-trigger]')];
   const readout = workflowScroll.querySelector('[data-workflow-readout]');
   const note = workflowScroll.querySelector('[data-workflow-note]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -190,17 +191,27 @@ if (workflowScroll) {
 
   const updateWorkflowFromScroll = () => {
     ticking = false;
-    if (reducedMotion || window.innerWidth <= 760) {
+
+    if (reducedMotion || window.innerWidth <= 760 || !triggers.length) {
       applyWorkflowStage(0);
       return;
     }
 
-    const rect = workflowScroll.getBoundingClientRect();
-    const scrollable = Math.max(1, rect.height - window.innerHeight);
-    const travelled = Math.min(scrollable, Math.max(0, -rect.top));
-    const progress = travelled / scrollable;
-    const index = Math.min(stages.length - 1, Math.floor(progress * stages.length));
-    applyWorkflowStage(index);
+    const targetY = window.innerHeight * 0.58;
+    let nearestIndex = 0;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+
+    triggers.forEach((trigger, index) => {
+      const rect = trigger.getBoundingClientRect();
+      const center = rect.top + (rect.height / 2);
+      const distance = Math.abs(center - targetY);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestIndex = index;
+      }
+    });
+
+    applyWorkflowStage(nearestIndex);
   };
 
   const requestWorkflowUpdate = () => {
