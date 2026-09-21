@@ -74,12 +74,24 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .prompt-details{width:100%;border-top:1px solid var(--rule);margin-top:12px;padding-top:14px}
 .prompt-details summary{cursor:pointer;font:11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase}
 .prompt-details pre{margin:16px 0 0;max-height:300px;overflow:auto;border:1px solid var(--rule);background:#F8F8F4;padding:18px;white-space:pre-wrap;font:12px/1.6 var(--mono)}
-.workflow-strip{display:grid;grid-template-columns:repeat(4,1fr);align-items:stretch;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:0}
-.workflow-strip>div{min-height:126px;padding:20px 28px;display:flex;flex-direction:column;justify-content:center}
-.workflow-strip>div+div{border-left:1px solid var(--rule)}
-.workflow-strip span{font:10px/1 var(--mono);color:var(--muted);letter-spacing:.1em}
-.workflow-strip strong{margin-top:12px;font:500 18px/1 var(--mono)}
-.workflow-strip small{margin-top:8px;color:var(--muted);font-size:13px}
+.workflow-scroll-shell{position:relative;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.workflow-sticky{position:sticky;top:18px;z-index:6;background:var(--paper);padding-bottom:20px}
+.workflow-strip{position:relative;display:grid;grid-template-columns:repeat(4,1fr);align-items:stretch;border:0;padding:0}
+.workflow-stage{position:relative;min-height:138px;padding:22px 28px;display:flex;flex-direction:column;justify-content:center;transition:background .18s linear,color .18s linear}
+.workflow-stage+.workflow-stage{border-left:1px solid var(--rule)}
+.workflow-stage span{font:10px/1 var(--mono);color:var(--muted);letter-spacing:.1em}
+.workflow-stage strong{margin-top:12px;font:500 18px/1 var(--mono)}
+.workflow-stage small{margin-top:8px;color:var(--muted);font-size:13px}
+.workflow-stage.is-active{background:var(--paper-2)}
+.workflow-stage.is-active span,.workflow-stage.is-active small{color:var(--ink)}
+.workflow-stage.is-complete span{color:var(--ink)}
+.workflow-inspection-window{position:absolute;z-index:3;top:0;bottom:0;left:0;width:25%;border:1px solid var(--ink);pointer-events:none;transform:translate3d(calc(var(--workflow-step) * 100%),0,0);transition:transform .3s cubic-bezier(.2,.75,.25,1);will-change:transform}
+.workflow-inspection-window::before{content:"INSPECT";position:absolute;right:8px;top:7px;padding-left:8px;background:var(--paper);font:8px/1 var(--mono);letter-spacing:.1em;color:var(--muted)}
+.workflow-readout{min-height:58px;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:15px}
+.workflow-readout code{font:11px/1.4 var(--mono);letter-spacing:.04em;color:var(--ink)}
+.workflow-readout span{font-size:13px;color:var(--muted);text-align:right;max-width:620px}
+.workflow-scroll-track{position:relative}
+.workflow-scroll-trigger{height:56vh;min-height:360px}
 .finding-heading{display:grid;grid-template-columns:1fr auto;gap:60px;align-items:end;margin-bottom:38px}
 .finding-heading h2{max-width:830px}
 .finding-tabs{display:inline-flex;border:1px solid var(--ink)}
@@ -112,6 +124,16 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .hero-lock-svg{display:block;width:100%;height:auto;overflow:visible}
 .hero-lock-shackle{transform-box:fill-box;transform-origin:16% 92%;transition:transform .48s cubic-bezier(.18,.8,.22,1)}
 .hero-lock-body{transition:transform .3s ease}
+.hero-lock-state-dot{fill:#8C8B85;transition:fill .16s linear,transform .16s linear;transform-box:fill-box;transform-origin:center}
+.hero-lock[data-state="red"] .hero-lock-state-dot{fill:var(--red);transform:scale(1.08)}
+.hero-lock[data-state="dock"] .hero-lock-state-dot,
+.hero-lock[data-state="amber"] .hero-lock-state-dot,
+.hero-lock[data-state="resolve"] .hero-lock-state-dot{fill:var(--yellow)}
+.hero-lock[data-state="amber"] .hero-lock-state-dot{animation:heroStatusBlink .72s steps(1,end) infinite}
+.hero-lock[data-state="green"] .hero-lock-state-dot{fill:var(--green);transform:scale(1.08)}
+.hero-lock[data-state="exit"] .hero-lock-state-dot{fill:var(--green)}
+.hero-lock[data-state="rest"] .hero-lock-state-dot,
+.hero-lock[data-state="idle"] .hero-lock-state-dot{fill:#8C8B85}
 
 /* One inspection cursor moves between trust surfaces instead of scattering markers across the logo. */
 .hero-inspection-cursor{opacity:0;transition:opacity .14s linear}
@@ -135,14 +157,11 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .hero-cli-result{border-top:1px solid #30302E;padding:8px 9px;font-size:8px;letter-spacing:.09em;color:#77736B}
 
 .hero-status-panel{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-top:12px;border-top:1px solid var(--rule);padding-top:12px;font:11px/1 var(--mono);letter-spacing:.12em}
-.hero-status-state{display:inline-flex;align-items:center;gap:9px}
-.hero-status-dot{display:block;width:9px;height:9px;border-radius:50%;background:#8C8B85;transition:background .16s linear,transform .16s linear}
 .hero-status-label{color:var(--muted)}
 .hero-status-timer{min-width:52px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
 
 /* Risk is communicated mechanically, not with decorative markers. */
 .hero-lock[data-state="red"] .hero-lock-shackle{transform:translate(44px,-42px) rotate(24deg)}
-.hero-lock[data-state="red"] .hero-status-dot{background:var(--red);transform:scale(1.12)}
 .hero-lock[data-state="red"] .hero-status-label,.hero-lock[data-state="red"] .hero-status-timer{color:var(--red)}
 
 /* The CLI inspector docks before analysis. */
@@ -153,17 +172,12 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .hero-lock[data-state="amber"] .hero-cli-scanner,
 .hero-lock[data-state="resolve"] .hero-cli-scanner,
 .hero-lock[data-state="green"] .hero-cli-scanner{opacity:1;transform:translateX(0)}
-.hero-lock[data-state="dock"] .hero-status-dot,
-.hero-lock[data-state="amber"] .hero-status-dot,
-.hero-lock[data-state="resolve"] .hero-status-dot{background:var(--yellow)}
-.hero-lock[data-state="amber"] .hero-status-dot{animation:heroStatusBlink .72s steps(1,end) infinite}
 .hero-lock[data-state="dock"] .hero-status-label,.hero-lock[data-state="dock"] .hero-status-timer,
 .hero-lock[data-state="amber"] .hero-status-label,.hero-lock[data-state="amber"] .hero-status-timer,
 .hero-lock[data-state="resolve"] .hero-status-label,.hero-lock[data-state="resolve"] .hero-status-timer{color:#9A7410}
 
 /* Completion is the visual payoff: terminal confirms, lock re-seats, inspector leaves. */
 .hero-lock[data-state="green"] .hero-lock-shackle{animation:heroRelock .72s cubic-bezier(.15,.8,.2,1) both}
-.hero-lock[data-state="green"] .hero-status-dot{background:var(--green);transform:scale(1.12)}
 .hero-lock[data-state="green"] .hero-status-label,.hero-lock[data-state="green"] .hero-status-timer{color:var(--green)}
 .hero-lock[data-state="green"] .hero-cli-bar b,.hero-lock[data-state="green"] .hero-cli-result{color:#A9C4AF}
 .hero-lock[data-state="exit"] .hero-cli-scanner{opacity:0;transform:translateX(-130px)}
@@ -185,7 +199,7 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 
 /* Scroll-linked workflow rail */
 @media (prefers-reduced-motion:reduce){
-  .hero-status-dot{animation:none!important}
+  .hero-lock-state-dot{animation:none!important}
   .workflow-sticky{position:static}
   .workflow-inspection-window{display:none}
   .workflow-scroll-track{display:none}
