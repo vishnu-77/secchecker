@@ -144,7 +144,7 @@ const lockLifecycle = document.querySelector('[data-lock-lifecycle]');
 if (lockLifecycle) {
   const statusLabel = lockLifecycle.querySelector('[data-lock-status]');
   const timerLabel = lockLifecycle.querySelector('[data-lock-timer]');
-  const progressBar = lockLifecycle.querySelector('[data-lock-progress]');
+  const progressDots = [...lockLifecycle.querySelectorAll('[data-lock-progress-dots] i')];
   const cliState = lockLifecycle.querySelector('[data-cli-state]');
   const cliResult = lockLifecycle.querySelector('[data-cli-result]');
   const cliSteps = [...lockLifecycle.querySelectorAll('[data-cli-step]')];
@@ -165,8 +165,7 @@ if (lockLifecycle) {
   const resetInspection = () => {
     cliSteps.forEach((row) => {
       row.classList.remove('is-active', 'is-done');
-      const mark = row.querySelector('b');
-      if (mark) mark.textContent = '·';
+
     });
     foldSteps.forEach((fold) => fold.classList.remove('is-active', 'is-done'));
   };
@@ -179,8 +178,7 @@ if (lockLifecycle) {
     cliSteps.forEach((row, index) => {
       row.classList.toggle('is-done', index < activeIndex);
       row.classList.toggle('is-active', index === activeIndex);
-      const mark = row.querySelector('b');
-      if (mark) mark.textContent = index < activeIndex ? '✓' : index === activeIndex ? '■' : '·';
+
     });
 
     foldSteps.forEach((fold, index) => {
@@ -193,8 +191,7 @@ if (lockLifecycle) {
     cliSteps.forEach((row) => {
       row.classList.remove('is-active');
       row.classList.add('is-done');
-      const mark = row.querySelector('b');
-      if (mark) mark.textContent = '✓';
+
     });
     foldSteps.forEach((fold) => {
       fold.classList.remove('is-active');
@@ -219,7 +216,7 @@ if (lockLifecycle) {
       lockLifecycle.dataset.state = phase.state;
       statusLabel.textContent = phase.label;
       phaseStartedAt = now;
-      if (progressBar) progressBar.style.transform = 'scaleX(0)';
+      progressDots.forEach((dot) => dot.classList.remove('is-filled'));
 
       if (phase.state === 'idle' || phase.state === 'red' || phase.state === 'rest') {
         resetInspection();
@@ -261,7 +258,8 @@ if (lockLifecycle) {
       const remaining = Math.max(0, activePhase.duration - activeElapsed);
       timerLabel.textContent = `${(remaining / 1000).toFixed(1)}s`;
 
-      if (progressBar) progressBar.style.transform = `scaleX(${progress})`;
+      const filled = Math.round(progress * progressDots.length);
+      progressDots.forEach((dot, index) => dot.classList.toggle('is-filled', index < filled));
       if (activePhase.state === 'amber') updateInspection(progress);
 
       animationFrame = window.requestAnimationFrame(tickLifecycle);
