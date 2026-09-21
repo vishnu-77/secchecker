@@ -107,7 +107,10 @@
           </div>
 
           <div class="hero-status-panel" aria-live="polite">
-            <span class="hero-status-label" data-lock-status>READY</span>
+            <span class="hero-status-state">
+              <i class="hero-status-dot" aria-hidden="true"></i>
+              <span class="hero-status-label" data-lock-status>READY</span>
+            </span>
             <span class="hero-status-timer" data-lock-timer>1.8s</span>
           </div>
         </div>
@@ -180,6 +183,12 @@ SecChecker owns the scan result. Explanations and remediation suggestions are ad
           <code data-workflow-readout>EDIT / GENERATE</code>
           <span data-workflow-note>Build the change. SecChecker stays out of the way until you ask it to check.</span>
         </div>
+      </div>
+      <div class="workflow-scroll-track" aria-hidden="true">
+        <div class="workflow-scroll-trigger" data-workflow-trigger="0"></div>
+        <div class="workflow-scroll-trigger" data-workflow-trigger="1"></div>
+        <div class="workflow-scroll-trigger" data-workflow-trigger="2"></div>
+        <div class="workflow-scroll-trigger" data-workflow-trigger="3"></div>
       </div>
     </section>
 
