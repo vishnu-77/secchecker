@@ -139,6 +139,82 @@ document.querySelectorAll('[data-finding-tab]').forEach((tab) => {
 });
 
 
+
+const workflowScroll = document.querySelector('[data-workflow-scroll]');
+
+if (workflowScroll) {
+  const strip = workflowScroll.querySelector('[data-workflow-strip]');
+  const stages = [...workflowScroll.querySelectorAll('[data-workflow-stage]')];
+  const readout = workflowScroll.querySelector('[data-workflow-readout]');
+  const note = workflowScroll.querySelector('[data-workflow-note]');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const stageCopy = [
+    {
+      readout: 'EDIT / GENERATE',
+      note: 'Build the change. SecChecker stays out of the way until you ask it to check.',
+    },
+    {
+      readout: '$ secchecker . --type llm',
+      note: 'Run the deterministic check against the repository.',
+    },
+    {
+      readout: 'FINDING / EVIDENCE',
+      note: 'Inspect what was detected, why it matters and the reported location.',
+    },
+    {
+      readout: '$ secchecker . --type llm',
+      note: 'Rerun after the change and verify whether the finding remains.',
+    },
+  ];
+
+  let activeStage = -1;
+  let ticking = false;
+
+  const applyWorkflowStage = (index) => {
+    if (index === activeStage) return;
+    activeStage = index;
+    strip.style.setProperty('--workflow-step', String(index));
+
+    stages.forEach((stage, stageIndex) => {
+      stage.classList.toggle('is-active', stageIndex === index);
+      stage.classList.toggle('is-complete', stageIndex < index);
+      if (stageIndex === index) stage.setAttribute('aria-current', 'step');
+      else stage.removeAttribute('aria-current');
+    });
+
+    const copy = stageCopy[index];
+    if (readout) readout.textContent = copy.readout;
+    if (note) note.textContent = copy.note;
+  };
+
+  const updateWorkflowFromScroll = () => {
+    ticking = false;
+    if (reducedMotion || window.innerWidth <= 760) {
+      applyWorkflowStage(0);
+      return;
+    }
+
+    const rect = workflowScroll.getBoundingClientRect();
+    const scrollable = Math.max(1, rect.height - window.innerHeight);
+    const travelled = Math.min(scrollable, Math.max(0, -rect.top));
+    const progress = travelled / scrollable;
+    const index = Math.min(stages.length - 1, Math.floor(progress * stages.length));
+    applyWorkflowStage(index);
+  };
+
+  const requestWorkflowUpdate = () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateWorkflowFromScroll);
+  };
+
+  window.addEventListener('scroll', requestWorkflowUpdate, { passive: true });
+  window.addEventListener('resize', requestWorkflowUpdate, { passive: true });
+  applyWorkflowStage(0);
+  requestWorkflowUpdate();
+}
+
 const lockLifecycle = document.querySelector('[data-lock-lifecycle]');
 
 if (lockLifecycle) {
