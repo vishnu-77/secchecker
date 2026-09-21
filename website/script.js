@@ -1,6 +1,8 @@
 document.querySelectorAll('[data-copy]').forEach((button) => {
   button.addEventListener('click', async () => {
-    const value = button.getAttribute('data-copy') || '';
+    const targetSelector = button.getAttribute('data-copy-target');
+    const target = targetSelector ? document.querySelector(targetSelector) : null;
+    const value = target ? target.textContent.trim() : (button.getAttribute('data-copy') || '');
     try {
       await navigator.clipboard.writeText(value);
       const previous = button.textContent;
@@ -8,10 +10,10 @@ document.querySelectorAll('[data-copy]').forEach((button) => {
       window.setTimeout(() => { button.textContent = previous; }, 1400);
     } catch {
       button.textContent = 'SELECT';
-      const code = button.parentElement?.querySelector('code');
-      if (code) {
+      const copySource = target || button.parentElement?.querySelector('code, pre');
+      if (copySource) {
         const range = document.createRange();
-        range.selectNodeContents(code);
+        range.selectNodeContents(copySource);
         const selection = window.getSelection();
         selection?.removeAllRanges();
         selection?.addRange(range);
