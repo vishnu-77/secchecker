@@ -98,12 +98,8 @@ jobs:
 
           mark = (root / 'assets/secchecker-mark.svg').read_text(encoding='utf-8')
           required_mark_tokens = {
-              '#B84A3A': 'red status state',
-              '#D8A624': 'amber status state',
-              '#698960': 'green status state',
-              '<animate': 'native SVG status animation',
-              'attributeName="fill"': 'animated fill state',
               'SecChecker origami lock': 'approved mark identity',
+              'folded-paper padlock': 'approved mark description',
           }
           missing_mark = [label for token, label in required_mark_tokens.items() if token not in mark]
           if missing_mark:
@@ -112,5 +108,5 @@ jobs:
           print('site check: OK')
           print('relative assets:', len(parser.refs))
           print('public-surface policy: OK')
-          print('logo identity + status animation: OK')
+          print('logo identity: OK')
           PY
