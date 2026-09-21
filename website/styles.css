@@ -144,7 +144,12 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .hero-lock-dot{fill:#8C8B85;transition:fill .2s linear}
 .hero-lock-fault{opacity:0;transition:opacity .16s linear}
 .hero-lock-scan{opacity:0;transition:opacity .18s linear}
-.hero-lock-scan-pass{transform:translateY(-120px)}
+.hero-lock-scan-grid{opacity:0}
+.hero-lock-scan-pass{transform:translateY(-150px)}
+.hero-scan-band{opacity:.22}
+.hero-scan-samples,.hero-scan-ruler{opacity:.92}
+.hero-scan-head{transform-box:fill-box;transform-origin:center}
+
 .hero-status-panel{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-top:12px;border-top:1px solid var(--rule);padding-top:12px;font:11px/1 var(--mono);letter-spacing:.12em}
 .hero-status-label{color:var(--muted)}
 .hero-status-timer{min-width:42px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -156,18 +161,28 @@ h3{font-size:24px;line-height:1.1;letter-spacing:-.025em;font-weight:500}
 .hero-lock[data-state="red"] .hero-lock-fault{opacity:1}
 .hero-lock[data-state="red"] .hero-status-label,.hero-lock[data-state="red"] .hero-status-timer{color:var(--red)}
 .hero-lock[data-state="red"] .hero-status-track>span{background:var(--red)}
-.hero-lock[data-state="amber"] .hero-lock-shackle{transform:translate(8px,-9px) rotate(8deg)}
-.hero-lock[data-state="amber"] .hero-lock-dot{fill:var(--yellow)}
-.hero-lock[data-state="amber"] .hero-lock-fault{opacity:.35}
+.hero-lock[data-state="amber"] .hero-lock-shackle{transform:translate(4px,-5px) rotate(4deg)}
+.hero-lock[data-state="amber"] .hero-lock-dot{fill:var(--yellow);animation:heroScanDot .7s steps(1,end) infinite}
+.hero-lock[data-state="amber"] .hero-lock-fault{opacity:.18}
 .hero-lock[data-state="amber"] .hero-lock-scan{opacity:1}
-.hero-lock[data-state="amber"] .hero-lock-scan-pass{animation:heroScanPass 1.15s linear infinite}
+.hero-lock[data-state="amber"] .hero-lock-scan-grid{opacity:.22}
+.hero-lock[data-state="amber"] .hero-lock-scan-pass{animation:heroScanPass 1.35s cubic-bezier(.35,0,.65,1) infinite}
+.hero-lock[data-state="amber"] .hero-scan-head{animation:heroScanHead .45s steps(2,end) infinite}
 .hero-lock[data-state="amber"] .hero-status-label,.hero-lock[data-state="amber"] .hero-status-timer{color:#9A7410}
 .hero-lock[data-state="amber"] .hero-status-track>span{background:var(--yellow)}
 .hero-lock[data-state="green"] .hero-lock-shackle{transform:translate(0,0) rotate(0)}
 .hero-lock[data-state="green"] .hero-lock-dot{fill:var(--green)}
 .hero-lock[data-state="green"] .hero-status-label,.hero-lock[data-state="green"] .hero-status-timer{color:var(--green)}
 .hero-lock[data-state="green"] .hero-status-track>span{background:var(--green)}
-@keyframes heroScanPass{0%{transform:translateY(-120px)}100%{transform:translateY(240px)}}
+@keyframes heroScanPass{
+  0%{transform:translateY(-150px)}
+  12%{transform:translateY(-105px)}
+  50%{transform:translateY(70px)}
+  88%{transform:translateY(245px)}
+  100%{transform:translateY(290px)}
+}
+@keyframes heroScanHead{0%,49%{opacity:1;transform:scale(1)}50%,100%{opacity:.45;transform:scale(.72)}}
+@keyframes heroScanDot{0%,49%{opacity:1}50%,100%{opacity:.38}}
 @media (prefers-reduced-motion:reduce){
   .hero-lock-shackle,.hero-lock-body,.hero-lock-dot,.hero-lock-fault,.hero-lock-scan{transition:none}
   .hero-lock[data-state] .hero-lock-scan-pass{animation:none}
