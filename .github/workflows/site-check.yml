@@ -107,13 +107,16 @@ jobs:
 
           js = (root / 'script.js').read_text(encoding='utf-8')
           interaction_contract = {
-              'hero-lock-state-dot': ('html', html, 'single semantic hero status light'),
-              'data-workflow-trigger="0"': ('html', html, 'workflow scroll checkpoints'),
-              '.workflow-sticky{position:sticky': ('css', css, 'sticky workflow rail'),
-              '.workflow-scroll-trigger{height:56vh': ('css', css, 'scroll trigger height'),
-              "querySelectorAll('[data-workflow-trigger]')": ('js', js, 'scroll checkpoint controller'),
+              'hero-lock-state-dot': (html, 'single semantic hero status light'),
+              'data-workflow-trigger="0"': (html, 'workflow scroll checkpoints'),
+              '.workflow-sticky{position:sticky': (css, 'sticky workflow rail'),
+              '.workflow-scroll-trigger{height:56vh': (css, 'scroll trigger height'),
+              "querySelectorAll('[data-workflow-trigger]')": (js, 'scroll checkpoint controller'),
           }
-          missing_interactions = [label for _, source, label in interaction_contract.values() if _ not in source]
+          missing_interactions = [
+              label for token, (source, label) in interaction_contract.items()
+              if token not in source
+          ]
           if missing_interactions:
               raise SystemExit('website interaction contract missing: ' + ', '.join(missing_interactions))
 
