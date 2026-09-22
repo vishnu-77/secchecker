@@ -1,0 +1,5 @@
+<unknown>:63: SyntaxWarning: invalid escape sequence '\('
+<unknown>:83: SyntaxWarning: invalid escape sequence '\['
+<unknown>:91: SyntaxWarning: invalid escape sequence '\['
+<unknown>:106: SyntaxWarning: invalid escape sequence '\A'
+[+] Report: /home/runner/work/secchecker/secchecker/bench/agentsecbench-v2/results/raw/camel.json

@@ -1,0 +1,751 @@
+{
+    "metadata": {
+        "timestamp": "2026-09-22T16:41:18.930474",
+        "version": "0.5.1",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 79,
+        "total_secrets": 81,
+        "total_matches": 87,
+        "severity_counts": {
+            "CRITICAL": 4,
+            "HIGH": 81,
+            "MEDIUM": 2,
+            "LOW": 0
+        }
+    },
+    "findings": {
+        "browser_use/mcp/server.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "_retry_with_browser_use_agent: line 651"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "browser_use/dom/playground/multi_act.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 17"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "browser_use/agent/prompts.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "browser_use/actor/playground/flights.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 8"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "browser_use/llm/vercel/chat.py": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "message api_key"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        },
+        "browser_use/llm/openrouter/chat.py": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "message api_key"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        },
+        "browser_use/llm/deepseek/chat.py": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "message api_key"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        },
+        "browser_use/llm/cerebras/chat.py": {
+            "LLM - Secret Passed to LLM": {
+                "matches": [
+                    "message api_key"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        },
+        "examples/demo_mode_example.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 6"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/getting_started/03_data_extraction.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 31"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/getting_started/05_fast_agent.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 24"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/getting_started/04_multi_step_task.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 31"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/getting_started/01_basic_search.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 21"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/getting_started/02_form_filling.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 31"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/integrations/gmail_2fa_integration.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 201"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/integrations/agentmail/2fa.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 20"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/integrations/discord/discord_api.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_agent: line 107"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/integrations/slack/slack_api.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_agent: line 83"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/sandbox/structured_output.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "get_ip_location: line 27"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/sandbox/example.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "pydantic_example: line 36"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/buy_groceries.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "add_to_cart: line 24"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/find_influencer_profiles.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 65"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/captcha.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 24"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/phone_comparison.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "find: line 25"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/onepassword.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 26"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/pcpartpicker.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 6"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/extract_pdf_content.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 24"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/check_appointment.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 37"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/use-cases/apply_to_job.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "apply_to_rochester_regional_health: line 14"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/csv_file_generation.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 29"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/video_recording.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 9"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/custom_output.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 33"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/large_blocklist.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 53"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/custom_system_prompt.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 22"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/rerun_history.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 58"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/follow_up_tasks.py": {
+            "Agentic - Agent Loop Without Exit Condition": {
+                "matches": [
+                    "line 25"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 21"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/parallel_agents.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 28"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/add_image_context.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 89"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/process_agent_output.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 20"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/save_as_pdf.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 31"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/download_file.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_download: line 24"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/judge_trace.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 29"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/features/follow_up_task.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 10"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/file_upload.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 69"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/cua.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 280"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/action_filters.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 94"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/notification.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 34"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/parallel_agents.py": {
+            "LLM - API Key in Log Statement": {
+                "matches": [
+                    "print api_key"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            },
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_single_agent: line 143"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/onepassword_2fa.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 44"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/advanced_search.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 92"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/actor_use.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 30"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/custom-functions/save_to_file_hugging_face.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 40"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/browser/real_browser.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 35"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/browser/playwright_integration.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 306"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/browser/parallel_browser.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 8"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/browser/custom_headers.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 66"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/browser/cloud_browser.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "basic: line 18",
+                    "full_config: line 32"
+                ],
+                "severity": "HIGH",
+                "count": 2
+            }
+        },
+        "examples/browser/using_cdp.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 36"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/qwen.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 21"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/moonshot.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 28"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/oci_models.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "basic_example: line 96",
+                    "structured_output_example: line 121",
+                    "advanced_configuration_example: line 153",
+                    "provider_compatibility_test: line 179"
+                ],
+                "severity": "HIGH",
+                "count": 4
+            }
+        },
+        "examples/models/gemini-3.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_search: line 18"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/browser_use_provider_models.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 37"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/skills.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_search: line 14"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/modelscope_example.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_search: line 22"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/browser_use_llm.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 22"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/deepseek-chat.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 20"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/novita.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_search: line 25"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/aws.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "example_anthropic_bedrock: line 21",
+                    "example_aws_bedrock: line 48"
+                ],
+                "severity": "HIGH",
+                "count": 2
+            }
+        },
+        "examples/models/llama4-groq.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 30"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/cerebras_example.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 36"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/gemini.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_search: line 18"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/models/langchain/example.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 20"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/ui/gradio_demo.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_browser_task: line 58"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/beta_agent/basic.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 17"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/apps/ad-use/ad_generator.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "analyze_landing_page: line 54"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/apps/msg-use/login.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "login_to_whatsapp: line 18"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/apps/msg-use/scheduler.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "send_message: line 118",
+                    "auto_respond_to_unread: line 145"
+                ],
+                "severity": "HIGH",
+                "count": 2
+            }
+        },
+        "examples/apps/news-use/news_monitor.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "extract_latest_article: line 66"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        }
+    }
+}

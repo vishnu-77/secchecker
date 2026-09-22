@@ -1,0 +1,47 @@
+{
+    "metadata": {
+        "timestamp": "2026-09-22T16:47:16.417360",
+        "version": "0.5.1",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 3,
+        "total_secrets": 3,
+        "total_matches": 3,
+        "severity_counts": {
+            "CRITICAL": 0,
+            "HIGH": 3,
+            "MEDIUM": 0,
+            "LOW": 0
+        }
+    },
+    "findings": {
+        "examples/memory.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "do_ai: line 56"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "docs/fastmcp-analytics.js": {
+            "MCP - Hardcoded MCP Server URL": {
+                "matches": [
+                    "SERVER_URL"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "fastmcp_slim/fastmcp/client/oauth_callback.py": {
+            "MCP - Hardcoded MCP Server URL": {
+                "matches": [
+                    "server_url"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        }
+    }
+}

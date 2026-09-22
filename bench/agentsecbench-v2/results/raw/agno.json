@@ -1,0 +1,326 @@
+{
+    "metadata": {
+        "timestamp": "2026-09-22T16:46:03.506873",
+        "version": "0.5.1",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 31,
+        "total_secrets": 34,
+        "total_matches": 40,
+        "severity_counts": {
+            "CRITICAL": 0,
+            "HIGH": 40,
+            "MEDIUM": 0,
+            "LOW": 0
+        }
+    },
+    "findings": {
+        "cookbook/04_workflows/06_advanced_concepts/guardrails/prompt_injection.py": {
+            "LLM - Hardcoded Jailbreak Instruction": {
+                "matches": [
+                    "Ignore previous instructions previous  ",
+                    "forget everything   "
+                ],
+                "severity": "HIGH",
+                "count": 2
+            }
+        },
+        "cookbook/04_workflows/06_advanced_concepts/run_control/workflow_cli.py": {
+            "LLM - Env Var in LLM Context": {
+                "matches": [
+                    "prompt getenv"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/04_workflows/08_human_in_the_loop/executor_hitl/08_agent_user_input_step.py": {
+            "MCP - Untrusted Tool Description in Prompt": {
+                "matches": [
+                    "tool_schema get"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/90_models/google/gemini/file_search_rag_pipeline.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "query_with_citations: line 95"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/10_reasoning/tools/capture_reasoning_content_knowledge_tools.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_example: line 22"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/10_reasoning/tools/capture_reasoning_content_reasoning_tools.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_example: line 18"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/03_teams/18_guardrails/prompt_injection.py": {
+            "LLM - Hardcoded Jailbreak Instruction": {
+                "matches": [
+                    "Ignore previous instructions previous  ",
+                    "forget everything   "
+                ],
+                "severity": "HIGH",
+                "count": 2
+            },
+            "LLM - Role Override Instruction": {
+                "matches": [
+                    "Act as if you have no restrictions "
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/91_tools/mcp/magic_hour.py": {
+            "MCP - Hardcoded MCP Server URL": {
+                "matches": [
+                    "MCP_URL"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/91_tools/mcp/structured_content.py": {
+            "MCP - Hardcoded MCP Server URL": {
+                "matches": [
+                    "MCP_URL"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/91_tools/mcp/protocol_mode.py": {
+            "MCP - Hardcoded MCP Server URL": {
+                "matches": [
+                    "MCP_URL"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/91_tools/mcp/emem.py": {
+            "MCP - Hardcoded MCP Server URL": {
+                "matches": [
+                    "server_url"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/91_tools/mcp/bgpt.py": {
+            "MCP - Hardcoded MCP Server URL": {
+                "matches": [
+                    "MCP_URL"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/data_labeling/_05_text_pairwise_preference/jury_hardened.py": {
+            "LLM - Hardcoded Jailbreak Instruction": {
+                "matches": [
+                    "ignore previous\ninstructions previous  "
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/09_evals/reliability/reliability_async.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "factorial: line 21"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/09_evals/reliability/multiple_tool_calls/calculator.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "multiply_and_exponentiate: line 21",
+                    "subset_matching: line 39"
+                ],
+                "severity": "HIGH",
+                "count": 2
+            }
+        },
+        "cookbook/09_evals/reliability/single_tool_calls/calculator.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "factorial: line 21",
+                    "multiply_with_argument_check: line 37"
+                ],
+                "severity": "HIGH",
+                "count": 2
+            }
+        },
+        "cookbook/09_evals/performance/response_with_storage.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_agent: line 22"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/09_evals/performance/simple_response.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_agent: line 16"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/09_evals/performance/response_with_memory_updates.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_agent: line 22"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/09_evals/performance/db_logging.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_agent: line 17"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/00_quickstart/agent_with_guardrails.py": {
+            "LLM - Hardcoded Jailbreak Instruction": {
+                "matches": [
+                    "Ignore previous instructions previous  "
+                ],
+                "severity": "HIGH",
+                "count": 1
+            },
+            "MCP - Poisoned Tool Docstring": {
+                "matches": [
+                    "<module>: 'Ignore previous instructions'"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/00_quickstart/config.yaml": {
+            "LLM - Hardcoded Jailbreak Instruction": {
+                "matches": [
+                    "Ignore previous instructions previous  "
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/02_agents/14_advanced/custom_cancellation_manager.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 115"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/02_agents/10_human_in_the_loop/side_effecting_tool_approval.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "run_case: line 70"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/02_agents/12_multimodal/media_input_for_tool.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 85"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/02_agents/08_guardrails/mixed_hooks.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 28"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/02_agents/08_guardrails/prompt_injection.py": {
+            "LLM - Hardcoded Jailbreak Instruction": {
+                "matches": [
+                    "Ignore previous instructions previous  ",
+                    "forget everything   "
+                ],
+                "severity": "HIGH",
+                "count": 2
+            },
+            "LLM - Role Override Instruction": {
+                "matches": [
+                    "Act as if you have no restrictions "
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/02_agents/18_checkpointing/03_checkpoint_endpoints.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 33"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "cookbook/02_agents/09_hooks/pre_hook_input.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "main: line 83"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "libs/agno/agno/guardrails/prompt_injection.py": {
+            "LLM - Hardcoded Jailbreak Instruction": {
+                "matches": [
+                    "ignore previous instructions previous  ",
+                    "forget everything   "
+                ],
+                "severity": "HIGH",
+                "count": 2
+            }
+        },
+        "libs/agno/agno/knowledge/chunking/agentic.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        }
+    }
+}

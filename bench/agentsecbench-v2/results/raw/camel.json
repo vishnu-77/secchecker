@@ -1,0 +1,263 @@
+{
+    "metadata": {
+        "timestamp": "2026-09-22T16:47:01.460681",
+        "version": "0.5.1",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 27,
+        "total_secrets": 27,
+        "total_matches": 27,
+        "severity_counts": {
+            "CRITICAL": 1,
+            "HIGH": 25,
+            "MEDIUM": 1,
+            "LOW": 0
+        }
+    },
+    "findings": {
+        "examples/code/generate_meta_data.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/agents/single_agent.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/evaluation/single_agent.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/usecases/chat_with_github/demo_git_ingest.py": {
+            "LLM - Prompt Injection via f-string": {
+                "matches": [
+                    "prompt query"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/ai_society/generate_meta_data.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "examples/generate_text_embedding_data/task_generation.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "test/prompts/test_prompt_base.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/generators.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/benchmarks/browsecomp.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/personas/persona_hub.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "instruction format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/datagen/self_improving_cot.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/datagen/self_instruct/self_instruct.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/datagen/evol_instruct/evol_instruct.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "instruction format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/agents/task_agent.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/agents/mcp_agent.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/agents/search_agent.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/agents/chat_agent.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/toolkits/browser_toolkit.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/toolkits/video_analysis_toolkit.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/toolkits/async_browser_toolkit.py": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "camel/datasets/base_generator.py": {
+            "Agentic - Agent Loop Without Exit Condition": {
+                "matches": [
+                    "line 154"
+                ],
+                "severity": "MEDIUM",
+                "count": 1
+            }
+        },
+        "docs/cookbooks/data_generation/sft_data_generation_and_unsloth_finetuning_mistral_7b_instruct.ipynb": {
+            "LLM - Prompt Injection via f-string": {
+                "matches": [
+                    "prompt content"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "docs/cookbooks/data_generation/sft_data_generation_and_unsloth_finetuning_Qwen2_5_7B.ipynb": {
+            "LLM - Prompt Injection via f-string": {
+                "matches": [
+                    "prompt content"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "docs/cookbooks/data_generation/sft_data_generation_and_unsloth_finetuning_tinyllama.ipynb": {
+            "LLM - Prompt Injection via f-string": {
+                "matches": [
+                    "prompt content"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "docs/cookbooks/data_generation/synthetic_dataevaluation&filter_with_reward_model.ipynb": {
+            "LLM - Prompt Injection via f-string": {
+                "matches": [
+                    "prompt content"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "docs/cookbooks/basic_concepts/agents_prompting.ipynb": {
+            "LLM - Prompt Injection via format()": {
+                "matches": [
+                    "prompt format"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "docs/cookbooks/applications/customer_service_Discord_bot_using_SambaNova_with_agentic_RAG.ipynb": {
+            "Agentic - PII Passed to External Agent": {
+                "matches": [
+                    "dob Llm"
+                ],
+                "severity": "CRITICAL",
+                "count": 1
+            }
+        }
+    }
+}

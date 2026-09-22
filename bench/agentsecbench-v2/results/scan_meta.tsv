@@ -1,0 +1,7 @@
+id	repository	commit	elapsed_seconds	exit_code
+browser-use	browser-use/browser-use	d8110c5ff87ccba887aaa726cdb780f2f84bef8d	7.0299	1
+pydantic-ai	pydantic/pydantic-ai	8809abe5f740e35dd559d34e7c222b97cb8130f6	210.3078	1
+agno	agno-agi/agno	9ba48375ea14f90e3fe353ad202b3c7c135ca7fb	65.8400	1
+camel	camel-ai/camel	fc27907e31ea2074d6b65ceb121573c5fa1ab345	52.5254	1
+fastmcp	PrefectHQ/fastmcp	3517bc49b9862caa1a0aa60898ddca05dab29a6a	13.5463	1
+mcp-agent-mail	Dicklesworthstone/mcp_agent_mail	3c2e5c32a272b84911f746f618dab3ffd10ed1a2	5.8050	0

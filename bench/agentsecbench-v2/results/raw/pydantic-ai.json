@@ -1,0 +1,92 @@
+{
+    "metadata": {
+        "timestamp": "2026-09-22T16:44:55.019399",
+        "version": "0.5.1",
+        "tool": "secchecker"
+    },
+    "summary": {
+        "total_files": 8,
+        "total_secrets": 8,
+        "total_matches": 8,
+        "severity_counts": {
+            "CRITICAL": 0,
+            "HIGH": 6,
+            "MEDIUM": 0,
+            "LOW": 2
+        }
+    },
+    "findings": {
+        "examples/pydantic_ai_examples/flight_booking.py": {
+            "LLM - System Prompt Hardcoded": {
+                "matches": [
+                    "Extract all the flight details from the given text."
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "examples/pydantic_ai_examples/evals/agent.py": {
+            "LLM - System Prompt Hardcoded": {
+                "matches": [
+                    "Convert the user's request into a structured time range."
+                ],
+                "severity": "LOW",
+                "count": 1
+            }
+        },
+        "pydantic_ai_slim/pydantic_ai/_run_context.py": {
+            "MCP - Untrusted Tool Description in Prompt": {
+                "matches": [
+                    "tool_def get"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "pydantic_ai_slim/pydantic_ai/common_tools/x_search.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "__call__: line 70"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "pydantic_ai_slim/pydantic_ai/common_tools/image_generation.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "__call__: line 107"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "pydantic_ai_slim/pydantic_ai/models/anthropic.py": {
+            "MCP - Untrusted Tool Description in Prompt": {
+                "matches": [
+                    "tool_def get"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "pydantic_ai_slim/pydantic_ai/models/__init__.py": {
+            "MCP - Untrusted Tool Description in Prompt": {
+                "matches": [
+                    "tool_def get"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        },
+        "pydantic_evals/pydantic_evals/generation.py": {
+            "Agentic - Recursive Self-Invocation Risk": {
+                "matches": [
+                    "generate_dataset: line 33"
+                ],
+                "severity": "HIGH",
+                "count": 1
+            }
+        }
+    }
+}
