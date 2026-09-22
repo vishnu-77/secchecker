@@ -1,0 +1,63 @@
+{
+  "name": "AgentSecBench v2",
+  "frozen_at": "2026-09-22",
+  "scanner": {
+    "repository": "vishnu-77/secchecker",
+    "source_branch": "main",
+    "source_sha": "17f6b8ffb3a7e8c03fb3cb0cd104b23870201bc3",
+    "scanner_code_baseline_sha": "f2137be1bc95f969cc2211c7680d4822e4c69902",
+    "scan_type": "llm",
+    "severity_threshold": "LOW"
+  },
+  "rules": {
+    "benchmark_only": true,
+    "scanner_changes_during_first_pass": false,
+    "version_changes": false,
+    "target_repo_changes": false,
+    "score_before_tuning": true
+  },
+  "repositories": [
+    {
+      "id": "browser-use",
+      "repository": "browser-use/browser-use",
+      "url": "https://github.com/browser-use/browser-use.git",
+      "commit": "d8110c5ff87ccba887aaa726cdb780f2f84bef8d",
+      "surface": "browser agent / consequential external actions"
+    },
+    {
+      "id": "pydantic-ai",
+      "repository": "pydantic/pydantic-ai",
+      "url": "https://github.com/pydantic/pydantic-ai.git",
+      "commit": "8809abe5f740e35dd559d34e7c222b97cb8130f6",
+      "surface": "typed agents / tools / model providers"
+    },
+    {
+      "id": "agno",
+      "repository": "agno-agi/agno",
+      "url": "https://github.com/agno-agi/agno.git",
+      "commit": "9ba48375ea14f90e3fe353ad202b3c7c135ca7fb",
+      "surface": "agents / memory / tools / orchestration"
+    },
+    {
+      "id": "camel",
+      "repository": "camel-ai/camel",
+      "url": "https://github.com/camel-ai/camel.git",
+      "commit": "fc27907e31ea2074d6b65ceb121573c5fa1ab345",
+      "surface": "multi-agent communication / tools"
+    },
+    {
+      "id": "fastmcp",
+      "repository": "PrefectHQ/fastmcp",
+      "url": "https://github.com/PrefectHQ/fastmcp.git",
+      "commit": "3517bc49b9862caa1a0aa60898ddca05dab29a6a",
+      "surface": "Python MCP servers and clients"
+    },
+    {
+      "id": "mcp-agent-mail",
+      "repository": "Dicklesworthstone/mcp_agent_mail",
+      "url": "https://github.com/Dicklesworthstone/mcp_agent_mail.git",
+      "commit": "3c2e5c32a272b84911f746f618dab3ffd10ed1a2",
+      "surface": "MCP application / agent coordination / persistent state"
+    }
+  ]
+}
