@@ -23,11 +23,13 @@ for target in MANIFEST["repositories"]:
     target_id = target["id"]
     path = RAW / f"{target_id}.json"
     if not path.exists():
+        m = meta.get(target_id, {})
+        exit_code = int(m["exit_code"]) if m.get("exit_code") else None
         summary_rows.append({
             "id": target_id,
             "repository": target["repository"],
             "commit": target["commit"],
-            "status": "missing-result",
+            "status": "clean" if exit_code == 0 else "missing-result",
             "files_with_findings": 0,
             "finding_categories": 0,
             "total_matches": 0,
@@ -35,8 +37,8 @@ for target in MANIFEST["repositories"]:
             "high": 0,
             "medium": 0,
             "low": 0,
-            "elapsed_seconds": None,
-            "scanner_exit_code": None,
+            "elapsed_seconds": float(m["elapsed_seconds"]) if m.get("elapsed_seconds") else None,
+            "scanner_exit_code": exit_code,
         })
         continue
 
