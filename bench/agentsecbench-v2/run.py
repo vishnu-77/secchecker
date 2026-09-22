@@ -11,12 +11,14 @@ REPO_ROOT = ROOT.parent.parent
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 WORK = ROOT / ".work"
 RAW = ROOT / "results" / "raw"
+STDOUT = ROOT / "results" / "stdout"
 META = ROOT / "results" / "scan_meta.tsv"
 
 shutil.rmtree(WORK, ignore_errors=True)
 shutil.rmtree(ROOT / "results", ignore_errors=True)
 WORK.mkdir(parents=True, exist_ok=True)
 RAW.mkdir(parents=True, exist_ok=True)
+STDOUT.mkdir(parents=True, exist_ok=True)
 
 rows = []
 
@@ -63,6 +65,7 @@ for target in MANIFEST["repositories"]:
         timeout=1200,
     )
     elapsed = time.perf_counter() - started
+    (STDOUT / f"{target_id}.txt").write_text(proc.stdout, encoding="utf-8")
     print(proc.stdout[-8000:], flush=True)
 
     rows.append({
@@ -73,10 +76,21 @@ for target in MANIFEST["repositories"]:
         "exit_code": str(proc.returncode),
     })
 
+    with META.open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=["id", "repository", "commit", "elapsed_seconds", "exit_code"],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
     if proc.returncode not in (0, 1):
         raise SystemExit(f"scanner failed for {target_id} with exit code {proc.returncode}")
-    if not out.exists():
-        raise SystemExit(f"scanner produced no JSON result for {target_id}")
+    if proc.returncode == 1 and not out.exists():
+        raise SystemExit(f"scanner reported findings but produced no JSON result for {target_id}")
+    if proc.returncode == 0 and not out.exists():
+        print(f"{target_id}: clean scan; SecChecker emitted no report file.", flush=True)
 
 with META.open("w", encoding="utf-8", newline="") as fh:
     writer = csv.DictWriter(
