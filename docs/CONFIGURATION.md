@@ -6,7 +6,7 @@ secchecker accepts a file or directory path and optional flags. Run `secchecker 
 
 | Flag | Values | Default |
 |------|--------|---------|
-| `--type` | `secrets`, `llm`, `devsecops`, `all` | `secrets`, or `scan_types` from `.secchecker.yml` if set |
+| `--type` | `secrets`, `llm`, `devsecops`, `all` | `llm`, or `scan_types` from `.secchecker.yml` if set |
 | `--format` | `json`, `md`, `xml`, `sarif`, `html` | `md` |
 | `--output` / `-o` | file path | `secchecker_report.<format>` |
 | `--severity-threshold` | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` | — |

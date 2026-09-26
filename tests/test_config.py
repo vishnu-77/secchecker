@@ -221,7 +221,7 @@ def test_regression_g3_scan_types_resolution():
     from secchecker.cli import _resolve_scan_types
     assert _resolve_scan_types(None, {'scan_types': ['llm']}) == {'llm'}
     assert _resolve_scan_types('secrets', {'scan_types': ['llm']}) == {'secrets'}
-    assert _resolve_scan_types(None, {}) == {'secrets'}
+    assert _resolve_scan_types(None, {}) == {'llm'}
     assert _resolve_scan_types(None, {'scan_types': ['secrets', 'llm']}) == {'secrets', 'llm'}
 
 
