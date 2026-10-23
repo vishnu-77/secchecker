@@ -4,9 +4,11 @@ Complements pattern matching with structural analysis:
 - Hardcoded string literals in security-sensitive assignments
 - Context-aware AI credential usage in provider/client initialisation
 - eval() / exec() calls (with any argument)
-- Simplified taint tracking: user-controlled sources -> dangerous sinks
+- Limited, lexical-scope taint tracking: user-controlled sources -> dangerous sinks
 
-Only runs on .py files. Falls back gracefully on parse errors.
+Only runs on .py files. Falls back gracefully on syntax/read errors.
+Unexpected analyser failures are allowed to propagate so callers can distinguish
+an analysis error from a genuinely clean file.
 Zero external dependencies (stdlib ast only).
 """
 import ast
@@ -95,6 +97,8 @@ def _node_to_call_path(node):
     if isinstance(node, ast.Attribute):
         parent = _node_to_call_path(node.value)
         return "{}.{}".format(parent, node.attr) if parent else node.attr
+    if isinstance(node, ast.Subscript):
+        return _node_to_call_path(node.value)
     return ""
 
 
@@ -110,13 +114,26 @@ def _display_secret(value):
     return "{}...{}".format(value[:4], value[-4:])
 
 
+def _path_matches(candidate, expected):
+    """Match a canonical call path without reducing it to a bare method name."""
+    return candidate == expected or candidate.endswith('.' + expected)
+
+
 class _SecurityVisitor(ast.NodeVisitor):
-    """Walk the AST and collect security findings with limited context."""
+    """Walk the AST and collect findings with deliberately bounded context.
+
+    This is not whole-program taint analysis. State is lexical-scope aware and
+    propagates through direct assignments and simple expression composition.
+    Calls through unknown helper functions are not assumed to preserve taint.
+    """
 
     def __init__(self):
         self.findings = {}  # type: Dict[str, List[str]]
-        self._tainted_names = set()
-        self._hardcoded_secret_names = set()
+        # Each scope maps name -> bool. Keeping explicit False entries is
+        # important: a local safe reassignment must shadow an outer tainted or
+        # hardcoded binding rather than falling through to it.
+        self._taint_scopes = [{}]
+        self._hardcoded_scopes = [{}]
 
     def _add(self, category, detail):
         if category not in self.findings:
@@ -124,51 +141,143 @@ class _SecurityVisitor(ast.NodeVisitor):
         if detail not in self.findings[category]:
             self.findings[category].append(detail)
 
+    def _push_scope(self):
+        self._taint_scopes.append({})
+        self._hardcoded_scopes.append({})
+
+    def _pop_scope(self):
+        self._taint_scopes.pop()
+        self._hardcoded_scopes.pop()
+
+    @staticmethod
+    def _lookup(scopes, name):
+        for scope in reversed(scopes):
+            if name in scope:
+                return bool(scope[name])
+        return False
+
+    def _set_taint(self, name, value):
+        self._taint_scopes[-1][name] = bool(value)
+
+    def _set_hardcoded(self, name, value):
+        self._hardcoded_scopes[-1][name] = bool(value)
+
+    def _is_name_tainted(self, name):
+        return self._lookup(self._taint_scopes, name)
+
+    def _is_name_hardcoded(self, name):
+        return self._lookup(self._hardcoded_scopes, name)
+
     def _record_secret_assignment(self, target_name, node):
         val = _get_string_value(node)
-        if not val or len(val) < _MIN_SECRET_LEN or not _name_is_sensitive(target_name):
+        is_hardcoded = bool(
+            val and len(val) >= _MIN_SECRET_LEN and _name_is_sensitive(target_name)
+        )
+        self._set_hardcoded(target_name, is_hardcoded)
+        if not is_hardcoded:
             return
-        self._hardcoded_secret_names.add(target_name)
         self._add(
             CAT_HARDCODED_SECRET,
             "{}=<redacted:{} chars>".format(target_name, len(val)),
         )
 
+    def _source_path(self, node):
+        if isinstance(node, ast.Call):
+            return _node_to_call_path(node.func)
+        if isinstance(node, (ast.Attribute, ast.Subscript)):
+            return _node_to_call_path(node)
+        return ""
+
+    def _is_direct_source(self, node):
+        path = self._source_path(node)
+        if not path:
+            return False
+        return any(_path_matches(path, source) for source in _TAINT_SOURCES)
+
+    def _expr_is_tainted(self, node):
+        if node is None:
+            return False
+        if isinstance(node, ast.Name):
+            return self._is_name_tainted(node.id)
+        if self._is_direct_source(node):
+            return True
+        if isinstance(node, ast.JoinedStr):
+            return any(
+                isinstance(value, ast.FormattedValue) and self._expr_is_tainted(value.value)
+                for value in node.values
+            )
+        if isinstance(node, ast.BinOp):
+            return self._expr_is_tainted(node.left) or self._expr_is_tainted(node.right)
+        if isinstance(node, ast.BoolOp):
+            return any(self._expr_is_tainted(value) for value in node.values)
+        if isinstance(node, ast.IfExp):
+            return self._expr_is_tainted(node.body) or self._expr_is_tainted(node.orelse)
+        if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+            return any(self._expr_is_tainted(elt) for elt in node.elts)
+        if isinstance(node, ast.Dict):
+            return any(self._expr_is_tainted(value) for value in node.values)
+        return False
+
+    def _assign_name(self, target, value):
+        target_name = ""
+        if isinstance(target, ast.Name):
+            target_name = target.id
+        elif isinstance(target, ast.Attribute):
+            target_name = target.attr
+        if not target_name:
+            return
+        self._record_secret_assignment(target_name, value)
+        self._set_taint(target_name, self._expr_is_tainted(value))
+
     def visit_Assign(self, node):
         for target in node.targets:
-            target_name = ""
-            if isinstance(target, ast.Name):
-                target_name = target.id
-            elif isinstance(target, ast.Attribute):
-                target_name = target.attr
-            if target_name:
-                self._record_secret_assignment(target_name, node.value)
-
-        rhs = self._call_path_from_expr(node.value)
-        if rhs and any(rhs.startswith(src) for src in _TAINT_SOURCES):
-            for target in node.targets:
-                if isinstance(target, ast.Name):
-                    self._tainted_names.add(target.id)
+            self._assign_name(target, node.value)
         self.generic_visit(node)
 
     def visit_AnnAssign(self, node):
         if node.value is None:
             return
-        target_name = ""
-        if isinstance(node.target, ast.Name):
-            target_name = node.target.id
-        elif isinstance(node.target, ast.Attribute):
-            target_name = node.target.attr
-        if target_name:
-            self._record_secret_assignment(target_name, node.value)
+        self._assign_name(node.target, node.value)
         self.generic_visit(node)
+
+    def _visit_function(self, node):
+        # Decorators/defaults are evaluated in the enclosing scope.
+        for decorator in node.decorator_list:
+            self.visit(decorator)
+        for default in list(node.args.defaults) + [d for d in node.args.kw_defaults if d is not None]:
+            self.visit(default)
+
+        self._push_scope()
+        try:
+            for stmt in node.body:
+                self.visit(stmt)
+        finally:
+            self._pop_scope()
+
+    def visit_FunctionDef(self, node):
+        self._visit_function(node)
+
+    def visit_AsyncFunctionDef(self, node):
+        self._visit_function(node)
+
+    def visit_ClassDef(self, node):
+        for decorator in node.decorator_list:
+            self.visit(decorator)
+        for base in node.bases:
+            self.visit(base)
+        self._push_scope()
+        try:
+            for stmt in node.body:
+                self.visit(stmt)
+        finally:
+            self._pop_scope()
 
     def _credential_expr_is_hardcoded(self, expr):
         """Explain hardcoded credential material without flagging env loading."""
         literal = _get_string_value(expr)
         if literal and len(literal) >= _MIN_SECRET_LEN:
             return "literal credential ({})".format(_display_secret(literal))
-        if isinstance(expr, ast.Name) and expr.id in self._hardcoded_secret_names:
+        if isinstance(expr, ast.Name) and self._is_name_hardcoded(expr.id):
             return "hardcoded variable '{}'".format(expr.id)
         return ""
 
@@ -185,6 +294,21 @@ class _SecurityVisitor(ast.NodeVisitor):
                     "{}({}=...) uses {}".format(call_path, kw.arg, reason),
                 )
 
+    def _is_dangerous_sink(self, call_path):
+        return any(_path_matches(call_path, sink) for sink in _DANGEROUS_SINKS)
+
+    def _expr_label(self, node):
+        if isinstance(node, ast.Name):
+            return node.id
+        path = self._source_path(node)
+        if path:
+            return path
+        if isinstance(node, ast.JoinedStr):
+            return "f-string"
+        if isinstance(node, ast.BinOp):
+            return "composed-expression"
+        return "expression"
+
     def visit_Call(self, node):
         call_path = _node_to_call_path(node.func)
 
@@ -194,37 +318,23 @@ class _SecurityVisitor(ast.NodeVisitor):
             arg_repr = self._arg_summary(node)
             self._add(CAT_EVAL_EXEC, "{}({})".format(call_path, arg_repr))
 
-        if call_path in _DANGEROUS_SINKS or any(
-            call_path.endswith(sink.split('.')[-1]) for sink in _DANGEROUS_SINKS
-        ):
+        if self._is_dangerous_sink(call_path):
             for arg in node.args:
-                tainted_arg = self._tainted_arg_name(arg)
-                if tainted_arg and tainted_arg in self._tainted_names:
+                if self._expr_is_tainted(arg):
+                    label = self._expr_label(arg)
                     self._add(
                         CAT_TAINTED_SINK,
-                        "{}({}) [tainted: {}]".format(call_path, tainted_arg, tainted_arg),
+                        "{}({}) [tainted: {}]".format(call_path, label, label),
                     )
             for kw in node.keywords:
-                tainted = self._tainted_arg_name(kw.value) if kw.value else ""
-                if tainted and tainted in self._tainted_names:
+                if kw.value is not None and self._expr_is_tainted(kw.value):
+                    label = self._expr_label(kw.value)
                     self._add(
                         CAT_TAINTED_SINK,
-                        "{}({}={}) [tainted]".format(call_path, kw.arg or '**', tainted),
+                        "{}({}={}) [tainted]".format(call_path, kw.arg or '**', label),
                     )
 
         self.generic_visit(node)
-
-    def _call_path_from_expr(self, node):
-        if isinstance(node, ast.Call):
-            return _node_to_call_path(node.func)
-        if isinstance(node, ast.Attribute):
-            return _node_to_call_path(node)
-        return ""
-
-    def _tainted_arg_name(self, node):
-        if isinstance(node, ast.Name):
-            return node.id
-        return ""
 
     def _arg_summary(self, call_node):
         if not call_node.args:
@@ -251,8 +361,6 @@ def scan_file_ast(filepath):
     except SyntaxError:
         return {}
     except (OSError, IOError, PermissionError):
-        return {}
-    except Exception:
         return {}
 
     visitor = _SecurityVisitor()

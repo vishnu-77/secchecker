@@ -12,7 +12,7 @@ inputs:
     required: false
     default: '.'
   type:
-    description: 'Scan type: secrets, llm, devsecops, all'
+    description: 'Scan type: secrets, llm, devsecops, dependency, all'
     required: false
     default: 'llm'
   format:
@@ -36,9 +36,9 @@ inputs:
     required: false
     default: '3.11'
   version:
-    description: 'secchecker version to install ("latest" or e.g. "0.3.0")'
+    description: 'Scanner source: "source" (same revision as this Action), "latest", or an exact PyPI version'
     required: false
-    default: 'latest'
+    default: 'source'
 
 outputs:
   report-path:
@@ -59,7 +59,12 @@ runs:
     - name: Install secchecker
       shell: bash
       run: |
-        if [ "${{ inputs.version }}" = "latest" ]; then
+        if [ "${{ inputs.version }}" = "source" ]; then
+          # Install the exact source revision referenced by `uses:`. This keeps
+          # branch/tag Action behaviour reproducible instead of silently
+          # substituting whatever version happens to be newest on PyPI.
+          pip install "${GITHUB_ACTION_PATH}"
+        elif [ "${{ inputs.version }}" = "latest" ]; then
           pip install secchecker
         else
           pip install "secchecker==${{ inputs.version }}"

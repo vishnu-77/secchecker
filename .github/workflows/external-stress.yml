@@ -1,0 +1,156 @@
+name: External Agent Stress
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  langgraph-fork:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout secchecker change
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install branch under test
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Checkout external LangGraph fork
+        uses: actions/checkout@v4
+        with:
+          repository: wkpark/langgraph-supervisor-py
+          ref: main
+          path: stress-target
+
+      - name: Scan fork with published v0.5.1 baseline
+        run: |
+          python -m venv /tmp/secchecker-baseline
+          /tmp/secchecker-baseline/bin/pip install -q secchecker==0.5.1
+          cd stress-target
+          /tmp/secchecker-baseline/bin/python - <<'PY'
+          import json
+          from secchecker.cli import _run_scan
+
+          results = _run_scan('.', 'llm', True, {})
+          payload = {
+              'scanner': '0.5.1',
+              'files_with_findings': len(results),
+              'finding_categories': sorted({
+                  category
+                  for findings in results.values()
+                  for category in findings
+              }),
+              'results': results,
+          }
+          with open('../stress-baseline.json', 'w', encoding='utf-8') as fh:
+              json.dump(payload, fh, indent=2)
+          print('baseline files with findings:', len(results))
+          print('baseline categories:', payload['finding_categories'])
+          PY
+
+      - name: Scan same fork with PR branch
+        run: |
+          python - <<'PY'
+          import json
+          from secchecker.cli import _run_scan
+
+          results = _run_scan('stress-target', 'llm', True, {})
+          payload = {
+              'scanner': 'pr-branch',
+              'files_with_findings': len(results),
+              'finding_categories': sorted({
+                  category
+                  for findings in results.values()
+                  for category in findings
+              }),
+              'results': results,
+          }
+          with open('stress-branch.json', 'w', encoding='utf-8') as fh:
+              json.dump(payload, fh, indent=2)
+          print('branch files with findings:', len(results))
+          print('branch categories:', payload['finding_categories'])
+          PY
+
+      - name: Controlled provider-credential mutation must be detected by --type llm
+        run: |
+          cat > stress-target/secchecker_vulnerable_provider_fixture.py <<'PY'
+          from openai import OpenAI
+
+          openai_api_key = "hardcoded-provider-credential"
+          client = OpenAI(api_key=openai_api_key)
+          PY
+          python - <<'PY'
+          from secchecker.cli import _run_scan
+
+          path = 'stress-target/secchecker_vulnerable_provider_fixture.py'
+          results = _run_scan(path, 'llm', True, {})
+          findings = results.get(path, {})
+          required = 'AST - Hardcoded AI Credential Used in Provider Client'
+          if required not in findings:
+              raise SystemExit('expected contextual AI credential finding was not produced')
+          print('controlled vulnerable fixture:', required)
+          PY
+
+      - name: Cross-function same-name safe mutation must stay clean for tainted-sink rule
+        run: |
+          cat > stress-target/secchecker_safe_scope_fixture.py <<'PY'
+          import os
+          import subprocess
+
+          def first():
+              value = os.getenv("CMD")
+              return value
+
+          def second():
+              value = "echo safe"
+              subprocess.run(value)
+          PY
+          python - <<'PY'
+          from secchecker.cli import _run_scan
+
+          path = 'stress-target/secchecker_safe_scope_fixture.py'
+          results = _run_scan(path, 'llm', True, {})
+          findings = results.get(path, {})
+          forbidden = 'AST - Tainted Input to Dangerous Sink'
+          if forbidden in findings:
+              raise SystemExit('cross-function taint contamination regression: {}'.format(findings[forbidden]))
+          print('controlled safe fixture: no cross-function taint finding')
+          PY
+
+      - name: Summarise baseline vs branch
+        run: |
+          python - <<'PY'
+          import json
+
+          baseline = json.load(open('stress-baseline.json', encoding='utf-8'))
+          branch = json.load(open('stress-branch.json', encoding='utf-8'))
+          summary = {
+              'target': 'wkpark/langgraph-supervisor-py',
+              'target_is_fork_of': 'langchain-ai/langgraph-supervisor-py',
+              'baseline_files_with_findings': baseline['files_with_findings'],
+              'branch_files_with_findings': branch['files_with_findings'],
+              'baseline_categories': baseline['finding_categories'],
+              'branch_categories': branch['finding_categories'],
+          }
+          print(json.dumps(summary, indent=2))
+          with open('stress-summary.json', 'w', encoding='utf-8') as fh:
+              json.dump(summary, fh, indent=2)
+          PY
+
+      - name: Upload stress evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-langgraph-stress
+          path: |
+            stress-baseline.json
+            stress-branch.json
+            stress-summary.json
