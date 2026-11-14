@@ -17,8 +17,8 @@ PATTERNS = {
     
     # Authentication Tokens
     "JWT Token": r"eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*",
-    "Bearer Token": r"[Bb]earer\s+[a-zA-Z0-9_\-\.=]+",
-    "Basic Auth": r"[Bb]asic\s+[A-Za-z0-9+/=]+",
+    "Bearer Token": r"(?i)\bbearer[ \t]+[A-Za-z0-9._~+/-]{16,}(?![A-Za-z0-9._~+/-])",
+    "Basic Auth": r"(?i)\bbasic[ \t]+[A-Za-z0-9+/]{8,}={0,2}(?![A-Za-z0-9+/=])",
     
     # Private Keys
     "RSA Private Key": r"-----BEGIN RSA PRIVATE KEY-----",
@@ -55,8 +55,8 @@ PATTERNS = {
     "Social Security Number": r"\b\d{3}-\d{2}-\d{4}\b",
 
     # URLs with embedded credentials
-    "HTTP URL with Credentials": r"https?://[^:\s]+:[^@\s]+@[^\s]+",
-    "FTP URL with Credentials": r"ftp://[^:\s]+:[^@\s]+@[^\s]+",
+    "HTTP URL with Credentials": r"https?://[^:/\s?#@]+:[^@/\s?#]+@[^/\s?#]+",
+    "FTP URL with Credentials": r"ftp://[^:/\s?#@]+:[^@/\s?#]+@[^/\s?#]+",
     
     # Generic Secrets
     "Generic Secret": r"(?i)(secret|token|key|password)['\"\s]*[:=]['\"\s]*[a-zA-Z0-9+/=]{16,}",
