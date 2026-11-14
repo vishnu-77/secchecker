@@ -25,7 +25,7 @@ def test_scan_file_multiple_patterns(tmp_path):
 def test_scan_directory(tmp_path):
     """Test scanning a directory recursively."""
     # Create test files
-    (tmp_path / "file1.py").write_text("password='test123'")
+    (tmp_path / "file1.py").write_text("password='N3x7VaultValue_9Q'")
     (tmp_path / "subdir").mkdir()
     (tmp_path / "subdir" / "file2.js").write_text("api_key: 'AIzaSyABC123'")
     

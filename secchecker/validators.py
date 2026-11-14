@@ -7,6 +7,7 @@ validate_match(pattern_name, match) is the single dispatch entry point.
 """
 import re
 import base64
+import binascii
 import json
 import math
 from typing import Optional
@@ -153,6 +154,26 @@ def validate_match(pattern_name, match):
     # validation, or every non-JWT bearer-scheme match is silently suppressed)
     if 'jwt' in name_lower:
         return is_valid_jwt(match)
+
+    # Basic credentials must be strictly valid base64 user:password, not identifiers
+    # such as "BasicAuth" or prose mentioning "basic helpers".
+    if name_lower == 'basic auth':
+        try:
+            value = match.split(None, 1)[1]
+            raw = base64.b64decode(value, validate=True)
+            user, sep, password = raw.partition(b':')
+            return bool(sep and user and password and not any(c < 32 or c == 127 for c in raw))
+        except (IndexError, ValueError, UnicodeEncodeError, binascii.Error):
+            return False
+
+    # Bearer tokens are opaque, but tiny words or very repetitive strings
+    # are not actionable credentials. This is a heuristic, not verification.
+    if name_lower == 'bearer token':
+        try:
+            token = match.split(None, 1)[1]
+            return len(token) >= 16 and has_sufficient_entropy(token, threshold=3.0)
+        except IndexError:
+            return False
 
     # Default: accept the match.
     # Entropy filtering is available via has_sufficient_entropy() for callers

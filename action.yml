@@ -52,49 +52,58 @@ runs:
   using: 'composite'
   steps:
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: ${{ inputs.python-version }}
 
     - name: Install secchecker
       shell: bash
+      env:
+        SECCHECKER_VERSION: ${{ inputs.version }}
       run: |
-        if [ "${{ inputs.version }}" = "latest" ]; then
+        if [ "$SECCHECKER_VERSION" = "latest" ]; then
           pip install secchecker
         else
-          pip install "secchecker==${{ inputs.version }}"
+          pip install "secchecker==$SECCHECKER_VERSION"
         fi
 
     - name: Run secchecker scan
       id: run-scan
       shell: bash
+      env:
+        SCAN_PATH: ${{ inputs.path }}
+        SCAN_TYPE: ${{ inputs.type }}
+        SCAN_FORMAT: ${{ inputs.format }}
+        SCAN_OUTPUT: ${{ inputs.output }}
+        SCAN_SEVERITY: ${{ inputs.severity-threshold }}
+        FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
       run: |
         set +e
-        secchecker "${{ inputs.path }}" \
-          --type "${{ inputs.type }}" \
-          --format "${{ inputs.format }}" \
-          --output "${{ inputs.output }}" \
-          --severity-threshold "${{ inputs.severity-threshold }}"
+        secchecker "$SCAN_PATH" \
+          --type "$SCAN_TYPE" \
+          --format "$SCAN_FORMAT" \
+          --output "$SCAN_OUTPUT" \
+          --severity-threshold "$SCAN_SEVERITY"
         SCAN_EXIT=$?
-        echo "report_path=${{ inputs.output }}" >> $GITHUB_OUTPUT
+        printf "report_path=%s\n" "$SCAN_OUTPUT" >> "$GITHUB_OUTPUT"
         if [ $SCAN_EXIT -eq 1 ]; then
-          echo "findings_detected=true" >> $GITHUB_OUTPUT
+          echo "findings_detected=true" >> "$GITHUB_OUTPUT"
         else
-          echo "findings_detected=false" >> $GITHUB_OUTPUT
+          echo "findings_detected=false" >> "$GITHUB_OUTPUT"
         fi
         # Exit code 2 = runtime/config/reporting error. Never let it pass as success.
         if [ $SCAN_EXIT -ge 2 ]; then
           echo "::error::secchecker exited with a runtime error (exit $SCAN_EXIT)."
           exit $SCAN_EXIT
         fi
-        if [ "${{ inputs.fail-on-findings }}" = "true" ] && [ $SCAN_EXIT -eq 1 ]; then
-          echo "::error::secchecker found security issues. See ${{ inputs.output }}"
+        if [ "$FAIL_ON_FINDINGS" = "true" ] && [ $SCAN_EXIT -eq 1 ]; then
+          echo "::error::secchecker found security issues. See $SCAN_OUTPUT"
           exit 1
         fi
 
     - name: Upload SARIF to GitHub Security tab
       if: inputs.format == 'sarif' && always()
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@9418214df1f2c4b8128c770156c409013b07d6b9 # v3
       with:
         sarif_file: ${{ inputs.output }}
       continue-on-error: true
