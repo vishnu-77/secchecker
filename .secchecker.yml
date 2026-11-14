@@ -14,6 +14,15 @@ exclude_paths:
   - "tests/"
   # benchmark fixtures are intentionally vulnerable/safe pairs, by design
   - "bench/fixtures/"
+  # benchmark corpora and captured tool outputs, never production source
+  - "bench/agentsecbench/cases/"
+  - "bench/agentsecbench/raw_results/"
+  - "bench/agentsecbench/raw_results_after_fix/"
+  # intentionally insecure illustration scenarios
+  - "brand/scenarios.py"
+  # local developer bootstrap scripts include intentionally fake example credentials
+  - "dev-setup.sh"
+  - "dev-setup.bat"
   # example reports echo pattern names
   - "sample-reports/"
   # CI YAML embeds test snippets inline
@@ -22,6 +31,7 @@ exclude_paths:
   - "secchecker/patterns.py"
   - "secchecker/llm_patterns.py"
   - "secchecker/devsecops_patterns.py"
+  - "secchecker/llm_scanner.py"
   # severity/OWASP maps and category-name constants also self-match: their
   # dict keys are themselves auth-related pattern names (bearer-scheme and
   # basic-auth entries), and AST_SEVERITY_MAP's category constants look
