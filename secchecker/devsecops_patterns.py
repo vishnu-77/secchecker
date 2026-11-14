@@ -32,7 +32,7 @@ DEVSECOPS_PATTERNS: Dict[str, str] = {
     # ---- CI/CD Pipelines ----
     "CI - Secret echoed to log": r"(?i)(echo|run:.*echo)\s+.*\$\{\{?\s*secrets\.",
     "CI - pull_request_target trigger": r"(?i)pull_request_target",
-    "CI - Unpinned GitHub Action": r"uses:\s+[a-zA-Z0-9_\-]+/[a-zA-Z0-9_\-]+@(?!v?\d)[a-zA-Z]",
+    "CI - Unpinned GitHub Action": r"(?m)^[ \t-]*uses:\s+(?:[A-Za-z0-9_.-]+/){1,2}[A-Za-z0-9_.-]+@(?!(?:[0-9a-fA-F]{40})(?=\s*(?:#.*)?$))[^\s#]+",
     "Docker Compose - Secret in environment": r"(?mi)-\s+\w*(password|secret|key|token)=\S+",
 }
 
