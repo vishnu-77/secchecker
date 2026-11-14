@@ -7,6 +7,7 @@ validate_match(pattern_name, match) is the single dispatch entry point.
 """
 import re
 import base64
+import binascii
 import json
 import math
 from typing import Optional
@@ -162,7 +163,7 @@ def validate_match(pattern_name, match):
             raw = base64.b64decode(value, validate=True)
             user, sep, password = raw.partition(b':')
             return bool(sep and user and password and not any(c < 32 or c == 127 for c in raw))
-        except (IndexError, ValueError, UnicodeEncodeError):
+        except (IndexError, ValueError, UnicodeEncodeError, binascii.Error):
             return False
 
     # Bearer tokens are opaque, but tiny words or very repetitive strings
