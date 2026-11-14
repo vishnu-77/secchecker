@@ -44,6 +44,7 @@ def test_custom_regex_capture_reports_whole_match(tmp_path):
 def test_basic_auth_validates_decoded_user_and_password(tmp_path):
     assert "Basic Auth" not in scan_text(tmp_path, "basic helpers and BasicAuth")
     assert "Basic Auth" not in scan_text(tmp_path, "Authorization: Basic dXNlcm5hbWU=")
+    assert "Basic Auth" not in scan_text(tmp_path, "Authorization: Basic ZZZZZZZZZ")
     assert "Basic Auth" in scan_text(tmp_path, "Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
 
 
