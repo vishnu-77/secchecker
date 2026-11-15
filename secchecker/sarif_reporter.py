@@ -87,14 +87,15 @@ def _line_of(content, text):
     return content.count('\n', 0, pos) + 1 if pos != -1 else 1
 
 
-def _build_results(results):
-    # type: (Dict[str, Dict[str, List[str]]]) -> List[Dict[str, Any]]
-    """Build SARIF results array."""
+def _build_results(results, base_dir=""):
+    # type: (Dict[str, Dict[str, List[str]]], str) -> List[Dict[str, Any]]
+    """Build SARIF results array. Directory scans key results by path relative
+    to the scan root, so *base_dir* (that root) is needed to open the files."""
     sarif_results = []
     for filepath, patterns in results.items():
         uri = _normalize_path(filepath)
         try:
-            with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+            with open(os.path.join(base_dir, filepath), "r", encoding="utf-8", errors="replace") as f:
                 content = f.read()
         except (OSError, IOError):
             content = None
@@ -126,8 +127,8 @@ def _build_results(results):
     return sarif_results
 
 
-def generate_sarif_report(results):
-    # type: (Dict[str, Dict[str, List[str]]]) -> str
+def generate_sarif_report(results, base_dir=""):
+    # type: (Dict[str, Dict[str, List[str]]], str) -> str
     """Generate a SARIF 2.1.0 report as a JSON string."""
     all_patterns = []
     for patterns in results.values():
@@ -147,7 +148,7 @@ def generate_sarif_report(results):
                     "rules": _build_rules(all_patterns),
                 }
             },
-            "results": _build_results(results),
+            "results": _build_results(results, base_dir),
             "invocations": [{
                 "executionSuccessful": True,
                 "startTimeUtc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -157,10 +158,10 @@ def generate_sarif_report(results):
     return json.dumps(sarif, indent=2)
 
 
-def to_sarif(results, output_file="secchecker_report.sarif"):
-    # type: (Dict[str, Dict[str, List[str]]], str) -> str
+def to_sarif(results, output_file="secchecker_report.sarif", base_dir=""):
+    # type: (Dict[str, Dict[str, List[str]]], str, str) -> str
     """Write SARIF 2.1.0 report to file. Returns file path."""
-    report = generate_sarif_report(results)
+    report = generate_sarif_report(results, base_dir)
     output_path = str(output_file)
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(report)

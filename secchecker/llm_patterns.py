@@ -7,7 +7,7 @@ LLM_PATTERNS: Dict[str, str] = {
         r'(?i)(prompt|system_prompt|instruction|user_message)\s*[+]?=\s*f["\'].*\{(user_?input|query|request|message|content)\}'
     ),
     "LLM - Prompt Injection via format()": (
-        r'(?i)(prompt|instruction)\s*=.*\.(format|%)\s*\('
+        r'(?i)(prompt|instruction|system_prompt|user_message)\s*[+]?=.*(?:\.format\s*\([^)]*\b(?:user_?input|query|request|message|content|question)\b|%\s*\(?\s*(?:user_?input|query|request|message|content)\b|\+\s*(?:user_?input|query|request|message|content)\b)'
     ),
     "LLM - Hardcoded Jailbreak Instruction": (
         r'(?i)(ignore\s+(previous|prior|all)\s+instructions|disregard\s+(your\s+)?(system\s+)?prompt|'
@@ -29,7 +29,7 @@ LLM_PATTERNS: Dict[str, str] = {
         r'(?i)(context|prompt|message)\s*=\s*(open\s*\(|Path\s*\(.*\)\.read_text|file\.read\(\))'
     ),
     "LLM - Env Var in LLM Context": (
-        r'(?i)(prompt|context|system_prompt)\s*.*os\.(environ|getenv)\s*\('
+        r'(?i)(prompt|context|system_prompt)\s*.*os\.(?:getenv\s*\(|environ\s*(?:\.get\s*\(|\[))'
     ),
 
     # Dangerous Output Handling
@@ -45,26 +45,26 @@ LLM_PATTERNS: Dict[str, str] = {
         r'(?i)(prompt|context|message|system_prompt)\s*[+=]+.*\b(api_?key|secret|password|token|credential)\b'
     ),
     "LLM - API Key in Log Statement": (
-        r'(?i)(print|log|logger)\s*\(.*\b(api_key|openai_api_key|anthropic_api_key)\b'
+        r'(?i)\b(print|(?:\w+\.)?(?:log|logger|logging)(?:\.\w+)?)\s*\(.*\b(api_key|openai_api_key|anthropic_api_key)\b'
     ),
 
     # Hardcoded AI Service Keys
     # OpenAI: legacy `sk-` (48 alnum) plus the current project/service-account/admin
     # key families (`sk-proj-`/`sk-svcacct-`/`sk-admin-`, ~150-char base64url body -
     # {40,} is a floor well under that, chosen only to skip short doc placeholders).
-    "LLM - OpenAI API Key": r'sk-(proj|svcacct|admin)-[A-Za-z0-9_-]{40,}|sk-[a-zA-Z0-9]{48}',
+    "LLM - OpenAI API Key": r'(?<![A-Za-z0-9+/])(?:sk-(proj|svcacct|admin)-[A-Za-z0-9_-]{40,}|sk-[a-zA-Z0-9]{48}(?![A-Za-z0-9]))',
     # Anthropic: `sk-ant-` + a long base64url body. Not pinned to an exact length -
     # the previous {93} was brittle (a real api03 key is ~101 chars past `sk-ant-`,
     # already off) and would silently miss any future key generation (oat01, etc.)
     # that changes length. {80,} is a floor comfortably under every real variant.
-    "LLM - Anthropic API Key": r'sk-ant-[a-zA-Z0-9\-_]{80,}',
-    "LLM - HuggingFace Token": r'hf_[a-zA-Z0-9]{34,}',
+    "LLM - Anthropic API Key": r'(?<![A-Za-z0-9+/])sk-ant-[a-zA-Z0-9\-_]{80,}',
+    "LLM - HuggingFace Token": r'(?<![A-Za-z0-9+/])hf_[a-zA-Z0-9]{34,}',
     "LLM - Pinecone API Key": r'(?i)pinecone.*api[_\-]?key[\'"\s:=]+[a-zA-Z0-9\-]{32,}',
     "LLM - Weaviate API Key": r'(?i)weaviate.*api[_\-]?key[\'"\s:=]+[a-zA-Z0-9\-_]{32,}',
-    "LLM - Groq API Key": r'gsk_[A-Za-z0-9]{20,}',
-    "LLM - OpenRouter API Key": r'sk-or-v1-[A-Za-z0-9]{20,}',
-    "LLM - xAI API Key": r'xai-[A-Za-z0-9]{20,}',
-    "LLM - LangSmith API Key": r'lsv2_pt_[A-Za-z0-9_]{20,}',
+    "LLM - Groq API Key": r'(?<![A-Za-z0-9+/])gsk_[A-Za-z0-9]{20,}',
+    "LLM - OpenRouter API Key": r'(?<![A-Za-z0-9+/])sk-or-v1-[A-Za-z0-9]{20,}',
+    "LLM - xAI API Key": r'(?<![A-Za-z0-9+/])xai-[A-Za-z0-9]{20,}',
+    "LLM - LangSmith API Key": r'(?<![A-Za-z0-9+/])lsv2_pt_[A-Za-z0-9_]{20,}',
     "LLM - System Prompt Hardcoded": r'(?i)system_prompt\s*=\s*[\'"](.{50,})[\'"]',
 
     # MCP (Model Context Protocol) Security
@@ -78,7 +78,7 @@ LLM_PATTERNS: Dict[str, str] = {
         r'(?i)(mcp_server|mcp_url|server_url)\s*=\s*[\'"]https?://(?!localhost|127\.0\.0\.1)[^\'"]{6,}[\'"]'
     ),
     "MCP - Untrusted Tool Description in Prompt": (
-        r'(?i)(tool_description|tool_schema|tool_def)\s*=\s*[^\n]*\.(get|fetch|request|load)\s*\('
+        r'(?i)(tool_description|tool_schema|tool_def)\s*=\s*[^\n]*(?:\b(?:requests|httpx|aiohttp|urllib\w*|session|client|http)\.(?:get|post|request|urlopen)|\.(?:fetch|load|request))\s*\('
     ),
 
     # Agentic AI Security
@@ -98,10 +98,13 @@ LLM_PATTERNS: Dict[str, str] = {
     # have entries in LLM_SEVERITY_MAP below and in owasp.py, now populated by
     # the AST findings instead.
     "Agentic - Function Call Result Not Validated": (
-        r'(?i)(function_call|tool_call|action)\s*=\s*.*\b(json\.loads|ast\.literal_eval)\s*\(.*\b(response|completion|llm_output|model_output)\b'
+        r'(?i)(function_call|tool_call|action)\s*=\s*.*\b(json\.loads|ast\.literal_eval)\s*\([^)]*\b(response|completion|llm_output|model_output)\b'
     ),
     "Agentic - PII Passed to External Agent": (
-        r'(?i)(ssn|social_security|credit_card|passport|dob|date_of_birth)\b.*\b(agent|llm|openai|anthropic|completion)\b'
+        # PII word and agent word on the same line, either order. Two per-line
+        # lookaheads instead of `a.*b|b.*a`, which backtracked on every "agent".
+        r'(?im)^(?=[^\n]*?(?<![A-Za-z0-9])(?:ssn|social_security|credit_card|passport|dob|date_of_birth)\b)'
+        r'(?=[^\n]*\b(?:agent|llm|openai|anthropic|completion)\b)[^\n]*'
     ),
 }
 

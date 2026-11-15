@@ -4,6 +4,66 @@ All notable changes to secchecker are documented here.
 
 ---
 
+## [Unreleased]
+
+### Changed
+- **Python 3.10+ required.** 3.8 and 3.9 are end-of-life and no longer available
+  on GitHub's current Ubuntu runners, so they could not be tested.
+
+### Fixed
+- **Findings reported fragments that aren't in the file.** 37 rules across the
+  LLM, secrets and DevSecOps scanners reported their regex capture groups joined
+  together (`prompt user_input`, `password`) instead of the matched code. Users
+  couldn't see what was flagged, and secret validators only saw the keyword, so the
+  placeholder filter never applied. All scanners now report the full match.
+- **AST findings were descriptions, not code** (`line 6`,
+  `search_customer_database: '<IMPORTANT>'`). The poisoned-docstring/description,
+  unbounded-loop and recursive-spawn checks now report the flagged source line; the
+  recursive-spawn check points at the spawn, not the `def`.
+- **SARIF line numbers were always 1 for directory scans run from another
+  directory.** Results are keyed relative to the scan root but SARIF opened them
+  relative to the cwd. The CLI now passes the scan root to the SARIF writer.
+- **A `.secchecker.yml` in the current directory applied to any scan target.**
+  Scanning another repo from a project directory silently used that project's
+  `exclude_paths` (hiding the target's `tests/` and `.github/`). The cwd config
+  now applies only when the scan target is inside the cwd.
+- **A clean scan wrote no report, even with `--output`.** CI steps that consume
+  the file (SARIF upload) failed on a clean repo. An explicit `--output` now
+  always gets a report (empty when clean; exit code stays 0).
+- **Unpinned GitHub Action rule** flagged SHA-pinned actions whose hash starts with a
+  letter and missed tag refs like `@v4`. It now flags anything that isn't a full
+  40-character commit SHA and reports the whole ref.
+- **LLM rule accuracy, from the test plan and a 13-repo real-world scan:**
+  comments no longer trigger rules (Python); aliased/from-imported `os` and
+  `subprocess` sinks are followed; keywords inside prompt prose ("password",
+  "tool_result") no longer count; `os.environ.get`/`[...]`, method-style loggers,
+  either word order for PII, call arguments across lines, and `+`/`%` prompt
+  building are caught; `.format()` needs a user-input-like argument.
+- **Recursive Self-Invocation fired on ordinary agent usage** (`agent = Agent();
+  agent.run()`: 2,603 hits in one repo). It now requires an agent's own code — a
+  function given an agent, or an agent class method — spawning another agent.
+- **Provider-key rules matched inside base64 blobs** (recorded HTTP cassettes) and
+  placeholders like `sk-xxxx…`; tokens must now start at a boundary and
+  placeholders are filtered.
+- **Secret false positives on lockfile hashes and decimals:** Twilio SID and Bitcoin
+  WIF patterns now respect case (and WIF keys must pass the base58check checksum);
+  credit-card matching skips the fractional part of decimals (partly #43).
+
+### Added
+- `tests/test_finding_location.py`: every LLM finding in the paired corpus must
+  appear verbatim in the file on a line that differs from its safe twin, and SARIF
+  lines must match (T1 of `docs/plans/llm-scanner-test-plan.md`).
+- `tests/test_llm_robustness.py` (T7/T8): malformed/non-UTF-8/binary/notebook input,
+  seeded fuzzing with a per-input time bound, deterministic output, exit codes, all formats.
+- `bench/mutate.py` (T3): meaning-preserving rewrites of vulnerable fixtures and comment noise
+  on safe ones; reports evasion gaps.
+- `tests/test_rule_matrix.py` (T2): ≥3 positives and ≥3 hard negatives for each of the 33 LLM
+  rules; known gaps are strict xfails tagged E1–E10.
+- `tests/test_regression_gate.py` + `bench/baseline.json` (T9): CI fails if benchmark or
+  evasion numbers change without the baseline being updated.
+
+---
+
 ## [0.5.1] — 2026-09-10
 
 A correctness release. Nothing here is new capability: it is what running the

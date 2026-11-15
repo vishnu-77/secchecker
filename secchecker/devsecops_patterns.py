@@ -32,7 +32,8 @@ DEVSECOPS_PATTERNS: Dict[str, str] = {
     # ---- CI/CD Pipelines ----
     "CI - Secret echoed to log": r"(?i)(echo|run:.*echo)\s+.*\$\{\{?\s*secrets\.",
     "CI - pull_request_target trigger": r"(?i)pull_request_target",
-    "CI - Unpinned GitHub Action": r"uses:\s+[a-zA-Z0-9_\-]+/[a-zA-Z0-9_\-]+@(?!v?\d)[a-zA-Z]",
+    # anything other than a full 40-char commit SHA (tags and branches are mutable)
+    "CI - Unpinned GitHub Action": r"uses:\s+[\w.\-]+/[\w.\-/]+@(?![0-9a-fA-F]{40}(?![\w.\-]))[^\s#'\"]+",
     "Docker Compose - Secret in environment": r"(?mi)-\s+\w*(password|secret|key|token)=\S+",
 }
 

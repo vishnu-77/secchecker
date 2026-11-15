@@ -70,11 +70,9 @@ def scan_file_devsecops(filepath):
         if not matches_file_filter(filepath, pattern_name):
             continue
         try:
-            matches = _COMPILED_DEVSECOPS_PATTERNS[pattern_name].findall(content)
-            if matches:
-                flat = []
-                for m in matches:
-                    flat.append(m if isinstance(m, str) else ' '.join(m))
+            # full matched text, not capture-group fragments
+            flat = [mo.group(0) for mo in _COMPILED_DEVSECOPS_PATTERNS[pattern_name].finditer(content)]
+            if flat:
                 seen = set()
                 deduped = [x for x in flat if not (x in seen or seen.add(x))]
                 findings[pattern_name] = deduped

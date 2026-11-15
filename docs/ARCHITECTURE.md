@@ -45,7 +45,7 @@ flowchart TD
 ## Design principles
 
 - Zero runtime dependencies — stdlib only, no pip install chain to audit
-- Python 3.8–3.14 compatible, tested in CI across all versions
+- Python 3.10–3.14 compatible, tested in CI across all versions
 - All scanners share a single file-filtering contract via `core.py` — no scanner walks files independently
 - Config loading never raises — returns safe defaults on any parse error
 - Reporters are pure functions: identical input always produces identical output
