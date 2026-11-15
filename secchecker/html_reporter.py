@@ -71,9 +71,9 @@ def generate_html_report(results, scan_type="secrets"):
     total_files = len(results)
     total_patterns = sum(len(p) for p in results.values())
     counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
-    for patterns in results.values():
+    for filepath, patterns in results.items():
         for name in patterns:
-            s = get_severity(name)
+            s = get_severity(name, filepath)
             counts[s] = counts.get(s, 0) + 1
 
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -109,7 +109,7 @@ def generate_html_report(results, scan_type="secrets"):
         for filepath, patterns in sorted(results.items()):
             file_counts = {}
             for pname in patterns:
-                s = get_severity(pname)
+                s = get_severity(pname, filepath)
                 file_counts[s] = file_counts.get(s, 0) + 1
             badges = " ".join(
                 "{} x{}".format(_badge(s), c)
@@ -119,7 +119,7 @@ def generate_html_report(results, scan_type="secrets"):
             parts.append("<summary>{} {}</summary>".format(_esc(os.path.basename(filepath)), badges))
             parts.append("<div class='plist'>")
             for pname, matches in sorted(patterns.items()):
-                sev = get_severity(pname)
+                sev = get_severity(pname, filepath)
                 parts.append("<div class='pitem'>")
                 parts.append("<div class='pname'>{} {}</div>".format(_esc(pname), _badge(sev)))
                 for m in matches[:10]:

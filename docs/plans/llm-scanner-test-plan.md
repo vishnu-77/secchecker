@@ -148,8 +148,10 @@ llama_index 99d7433, autogen 8390985, langchain ea17e48, nexus-mcp eeb6bc3.
 4. **Pending:** a fresh sample from a full post-fix rescan for an unbiased number (the
    rescan was stopped by the host for low memory). Cost of the fixes: crewAI scan 60 s → 70 s.
 
-Next step with the most leverage: G7 — rank test/fixture/docs findings lower (needs a
-per-finding confidence field in the report format).
+5. **G7 done:** LLM/AI behaviour findings in test/fixture paths report as LOW (credential
+   rules excluded). Same sample at a HIGH threshold: 7 TPs still HIGH, FPs 21 → 10
+   (in-sample precision 7/17 = 41%). The remaining 10 are a committed Discord dump (data),
+   docs example notebooks, a docs tool, and an LLM "token" variable.
 
 ### T6 — Differential baseline (optional)
 Run Semgrep and CodeQL (Python) on the T4 + T5 corpus. Report overlap: what only secchecker
