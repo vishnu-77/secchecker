@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 630" role="img" aria-labelledby="title desc">
+  <title id="title">SecChecker origami lock</title>
+  <desc id="desc">An asymmetric folded-paper padlock with a keyhole and a green status dot.</desc>
+
+  <!-- dark folded lock / keyhole shackle -->
+  <path d="M93 257V136L183 48H286L379 136V257Z" fill="#2A2A29"/>
+  <path d="M93 136L183 48V257H93Z" fill="#343432"/>
+  <path d="M286 48L379 136V257H286Z" fill="#3A3A38"/>
+  <path d="M183 48H286V257H183Z" fill="#242423"/>
+  <circle cx="234.5" cy="145" r="50" fill="#F4F4EF"/>
+  <path d="M218 180H251L264 257H205Z" fill="#F4F4EF"/>
+
+  <!-- origami paper body -->
+  <path d="M93 257L430 230V506L286 620L43 520V308Z" fill="#DEDCD5"/>
+  <path d="M43 308L93 257L241 374L43 520Z" fill="#D4D2CB"/>
+  <path d="M430 230L241 374L430 506Z" fill="#CBC9C2"/>
+  <path d="M93 257L241 374L430 230Z" fill="#F0EEE7"/>
+  <path d="M43 520L241 374L286 620Z" fill="#E4E2DB"/>
+  <path d="M241 374L430 506L286 620Z" fill="#BEBDB7"/>
+
+  <!-- fold definition -->
+  <g fill="none" stroke="#9F9D97" stroke-width="1.4" stroke-linejoin="round">
+    <path d="M43 308L93 257L241 374L430 230"/>
+    <path d="M43 520L241 374L430 506"/>
+    <path d="M241 374L286 620"/>
+    <path d="M43 308V520L286 620L430 506V230"/>
+  </g>
+
+  <!-- settled status -->
+  <circle cx="366" cy="336" r="15" fill="#698960"/>
+</svg>

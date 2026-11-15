@@ -1,0 +1,105 @@
+name: Site Check
+
+on:
+  pull_request:
+    paths:
+      - 'website/**'
+      - 'brand/**'
+      - 'README.md'
+      - '.github/workflows/site-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - 'brand/**'
+      - 'README.md'
+      - '.github/workflows/site-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate HTML, assets and public-surface constraints
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re
+
+          root = Path('website')
+          html_path = root / 'index.html'
+          css_path = root / 'styles.css'
+
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.refs = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag in {'img', 'script'} and attrs.get('src'):
+                      self.refs.append(attrs['src'])
+                  if tag == 'link' and attrs.get('href') and attrs.get('rel') in {'stylesheet', 'icon'}:
+                      self.refs.append(attrs['href'])
+
+          html = html_path.read_text(encoding='utf-8')
+          parser = Parser()
+          parser.feed(html)
+
+          missing = []
+          for ref in parser.refs:
+              if re.match(r'^(https?:|#|data:)', ref):
+                  continue
+              path = root / ref.split('?', 1)[0]
+              if not path.exists():
+                  missing.append(ref)
+          if missing:
+              raise SystemExit(f'missing website assets: {missing}')
+
+          css = css_path.read_text(encoding='utf-8').lower()
+          forbidden_design = {
+              'linear-gradient': 'gradients',
+              'radial-gradient': 'gradients',
+              'box-shadow': 'gloss/shadows',
+              'text-shadow': 'glow/shadows',
+              'backdrop-filter': 'glass effects',
+              'filter: blur': 'decorative blur',
+          }
+          violations = [label for token, label in forbidden_design.items() if token in css]
+          if violations:
+              raise SystemExit('forbidden design effects present: ' + ', '.join(sorted(set(violations))))
+
+          public_surface = html.lower()
+          forbidden_public_detail = {
+              'bench/': 'internal benchmark path',
+              'agentsecbench': 'internal corpus name',
+              'methodology.md': 'internal methodology path',
+              'scan_file_llm': 'scanner implementation symbol',
+              'python ast': 'implementation detail',
+              'root-cause': 'internal analysis detail',
+              'root cause': 'internal analysis detail',
+              'hand-triaged': 'internal triage detail',
+              'fixture': 'internal test construction detail',
+              'roadmap.md': 'internal roadmap path',
+          }
+          exposed = [label for token, label in forbidden_public_detail.items() if token in public_surface]
+          if exposed:
+              raise SystemExit('internal detail exposed on public website: ' + ', '.join(sorted(set(exposed))))
+
+          mark = (root / 'assets/secchecker-mark.svg').read_text(encoding='utf-8')
+          if '#698960' not in mark or 'SecChecker origami lock' not in mark:
+              raise SystemExit('website mark is not the approved green origami lock identity')
+          if '#B84A3A' in mark:
+              raise SystemExit('legacy red status dot is still present in website mark')
+
+          print('site check: OK')
+          print('relative assets:', len(parser.refs))
+          print('public-surface policy: OK')
+          print('logo identity: OK')
+          PY

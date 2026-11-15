@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SecChecker is local, deterministic static security analysis for AI applications, agents, MCP tools and LLM integrations.">
+  <meta name="theme-color" content="#F4F4EF">
+  <title>secchecker — trust boundaries for AI</title>
+  <link rel="icon" href="assets/secchecker-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="SecChecker home">
+      <img src="assets/secchecker-mark.svg" alt="" width="38" height="38">
+      <span>secchecker</span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#product">Product</a>
+      <a href="#coverage">Coverage</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="#fit">Where it fits</a>
+      <a class="nav-cta" href="https://github.com/vishnu-77/secchecker">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero section-shell">
+      <div class="hero-copy">
+        <div class="eyebrow">STATIC SECURITY ANALYSIS FOR AI SOFTWARE</div>
+        <h1>Catch risky AI trust-boundary crossings before they ship.</h1>
+        <p class="lede">SecChecker inspects AI applications, agents, MCP tools and LLM integrations for security-sensitive code paths. Local. Deterministic. No LLM judge.</p>
+
+        <div class="start-block" aria-label="Quick start">
+          <div class="start-row">
+            <span class="prompt">$</span>
+            <code>pip install secchecker</code>
+            <button class="copy-button" data-copy="pip install secchecker" type="button">COPY</button>
+          </div>
+          <div class="start-row">
+            <span class="prompt">$</span>
+            <code>secchecker . --type llm</code>
+            <button class="copy-button" data-copy="secchecker . --type llm" type="button">COPY</button>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a class="button button-dark" href="#product">See it run ↓</a>
+          <a class="button" href="#evaluation">How it is evaluated ↓</a>
+        </div>
+      </div>
+
+      <div class="hero-mark" aria-hidden="true">
+        <div class="hero-logo-wrap">
+          <img src="assets/secchecker-mark.svg" alt="" width="450" height="630">
+          <span class="hero-status-yellow"></span>
+        </div>
+        <div class="mark-caption"><span class="status-copy">CHECKING</span><span class="status-arrow"> → </span><span class="status-clear">CLEAR</span></div>
+      </div>
+    </section>
+
+    <section id="product" class="section-shell ruled-section product-section">
+      <div class="section-index">01 / THE PRODUCT</div>
+      <div class="product-heading">
+        <h2>One command. A security signal you can inspect.</h2>
+        <p>Run SecChecker while you build or in CI. Findings stay close to the code and can be exported into the workflows your team already uses.</p>
+      </div>
+
+      <div class="console" aria-label="Illustrated SecChecker console session">
+        <div class="console-bar">
+          <span>secchecker / local</span>
+          <span>scan session</span>
+        </div>
+        <pre><span class="console-prompt">$</span> secchecker . --type llm --format sarif --verbose
+
+<span class="console-info">[*]</span> Scanning: .
+<span class="console-info">[*]</span> Scan type: llm
+<span class="console-info">[*]</span> Format: sarif
+<span class="console-info">[*]</span> 3 finding(s) across 2 file(s)
+<span class="console-ok">[+]</span> Report: secchecker_report.sarif</pre>
+        <div class="console-report">
+          <div class="report-label">SELECTED FINDING / REPORT PREVIEW</div>
+          <div class="report-line">
+            <span class="severity-text">CRITICAL</span>
+            <strong>Tool output reaches command execution</strong>
+          </div>
+          <div class="report-path">example/agent.py</div>
+          <code>tool_result  ───────▶  command execution</code>
+          <p>Review the path before the change ships.</p>
+        </div>
+      </div>
+
+      <div class="product-facts">
+        <div><span>LOCAL</span><strong>Run against the repository on your machine.</strong></div>
+        <div><span>CI READY</span><strong>Use reports and exit codes in automated checks.</strong></div>
+        <div><span>OUTPUTS</span><strong>CLI · JSON · Markdown · XML · SARIF · HTML</strong></div>
+      </div>
+    </section>
+
+    <section class="section-shell ruled-section signal-section">
+      <div class="section-index">02 / SIGNAL, NOT SCROLL</div>
+      <div class="signal-heading">
+        <h2>Make findings show their work without burying what matters in endless output.</h2>
+        <p>See the decision-relevant part first: <strong>what was detected</strong>, <strong>why it matters</strong>, and <strong>where it appears</strong>.</p>
+      </div>
+      <div class="signal-grid" aria-label="Finding summary example">
+        <article>
+          <span>WHAT</span>
+          <strong>Tool output reaches command execution.</strong>
+        </article>
+        <article>
+          <span>WHY</span>
+          <strong>Untrusted output crosses into a consequential action.</strong>
+        </article>
+        <article>
+          <span>WHERE</span>
+          <strong><code>example/agent.py</code></strong>
+        </article>
+      </div>
+    </section>
+
+    <section id="coverage" class="section-shell ruled-section">
+      <div class="section-index">03 / WHAT IT CHECKS</div>
+      <div class="surface-grid">
+        <article><span>01</span><h3>Prompt & context</h3><p>Flags risky transitions where untrusted content can influence privileged AI context.</p></article>
+        <article><span>02</span><h3>MCP & tools</h3><p>Checks tool descriptions, metadata and tool-result handling around sensitive actions.</p></article>
+        <article><span>03</span><h3>Model output</h3><p>Surfaces cases where AI-controlled output can flow into consequential execution paths.</p></article>
+        <article><span>04</span><h3>Agent memory</h3><p>Looks for unsafe persistence of user-controlled or otherwise untrusted content.</p></article>
+        <article><span>05</span><h3>Agent control flow</h3><p>Highlights selected patterns that can make autonomous behaviour harder to constrain or review.</p></article>
+        <article><span>06</span><h3>AI credentials</h3><p>Identifies selected credential-handling risks around AI provider integrations.</p></article>
+      </div>
+    </section>
+
+    <section id="evaluation" class="section-shell ruled-section evaluation">
+      <div class="section-index">04 / EVALUATION</div>
+      <div class="evaluation-intro">
+        <div>
+          <h2>Evaluation should expose blind spots, not hide them.</h2>
+          <p class="lede-sm">SecChecker is tested against expected detections, safe counterparts, harder variations and real open-source code. These checks are kept distinct so one strong result cannot mask a weakness elsewhere.</p>
+        </div>
+        <div class="evaluation-badge">
+          <span>PUBLIC PRINCIPLE</span>
+          <strong>Repeatable · offline · deterministic</strong>
+        </div>
+      </div>
+
+      <div class="evaluation-grid">
+        <article><span>KNOWN CASES</span><h3>Does it keep catching what it already knows?</h3><p>Regression checks protect expected behaviour from silently breaking between releases.</p></article>
+        <article><span>SAFE COUNTERPARTS</span><h3>Does the safer form stay clean?</h3><p>Safe examples are used to catch obvious overreach and reduce noisy detections.</p></article>
+        <article><span>HARDER VARIANTS</span><h3>What happens when the code shape changes?</h3><p>Adversarial variations are used to expose where deterministic rules stop generalising.</p></article>
+        <article><span>REAL CODE</span><h3>Does it survive outside a synthetic example?</h3><p>Real open-source AI code is checked to reveal practical false positives and coverage gaps.</p></article>
+      </div>
+
+      <div class="evaluation-note">
+        <strong>NO FINDINGS ≠ SECURE APPLICATION</strong>
+        <span>A static scan is one source of evidence. Findings can be false positives or false negatives, and a clean result is not proof of security.</span>
+      </div>
+    </section>
+
+    <section id="fit" class="section-shell ruled-section fit-section">
+      <div class="section-index">05 / WHERE IT FITS</div>
+      <div class="fit-heading">
+        <h2>Put the check where developers already make decisions.</h2>
+        <p>SecChecker is designed for the pre-deployment path: fast enough to run while building, structured enough to use in review, and explicit about what still needs runtime controls.</p>
+      </div>
+
+      <div class="fit-grid">
+        <article>
+          <span>BUILD</span>
+          <h3>Run locally</h3>
+          <p>Check the repository before opening a pull request.</p>
+          <code>$ secchecker . --type llm</code>
+        </article>
+        <article>
+          <span>REVIEW</span>
+          <h3>Gate in CI</h3>
+          <p>Emit machine-readable findings and keep the result next to the code change.</p>
+          <code>SARIF · JSON · exit codes</code>
+        </article>
+        <article class="fit-boundary">
+          <span>BOUNDARY</span>
+          <h3>Know what it is not</h3>
+          <p>SecChecker does not replace code review, threat modelling, red-team testing or runtime policy controls.</p>
+          <code>STATIC ANALYSIS ≠ RUNTIME ENFORCEMENT</code>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-shell ruled-section closing-section">
+      <div>
+        <div class="section-index">06 / USE IT</div>
+        <h2>Inspect the code before it becomes authority.</h2>
+        <p class="lede-sm">Start with one repository. Keep the signal close to the developer workflow.</p>
+      </div>
+      <div class="closing-actions">
+        <a class="button button-dark" href="https://github.com/vishnu-77/secchecker">Open repository ↗</a>
+        <a class="button" href="https://pypi.org/project/secchecker/">PyPI ↗</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer section-shell">
+    <div class="brand footer-brand"><img src="assets/secchecker-mark.svg" alt="" width="30" height="30"><span>secchecker</span></div>
+    <p>Static security analysis for AI software.</p>
+    <div class="footer-links"><a href="#evaluation">Evaluation</a><a href="https://github.com/vishnu-77/secchecker">GitHub ↗</a></div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

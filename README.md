@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="brand/secchecker-banner.png" width="760" alt="secchecker - trust boundaries for AI">
+  <img src="brand/secchecker-lockup.svg" width="760" alt="secchecker - trust boundaries for AI">
 </p>
 
 <p align="center">
@@ -431,6 +431,7 @@ secchecker/
 ├── demo/                intentionally vulnerable examples
 ├── docs/                architecture, rules and configuration
 ├── brand/               mark, lockup, motion source, design language
+├── website/             static landing page and reference web language
 ├── .github/             CI workflows
 │
 ├── action.yml           GitHub Action
@@ -451,6 +452,7 @@ Useful documentation:
 - [`docs/OWASP_MAPPING.md`](docs/OWASP_MAPPING.md)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
 - [`brand/README.md`](brand/README.md)
+- [`website/README.md`](website/README.md)
 
 ---
 
