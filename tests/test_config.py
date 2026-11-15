@@ -68,6 +68,19 @@ def test_find_config_file(tmp_path):
     assert found.endswith('.secchecker.yml')
 
 
+def test_cwd_config_applies_only_to_targets_inside_cwd(tmp_path, monkeypatch):
+    # G9: scanning another repo from a project dir must not pick up the
+    # project's .secchecker.yml (it silently applied its exclude_paths)
+    project, inside, other = tmp_path / "project", tmp_path / "project" / "sub", tmp_path / "other"
+    inside.mkdir(parents=True)
+    other.mkdir()
+    (project / ".secchecker.yml").write_text("exclude_paths:\n  - tests/\n")
+    monkeypatch.chdir(project)
+    assert find_config_file(scan_root=str(inside)) == os.path.join(str(project), ".secchecker.yml")
+    assert find_config_file(scan_root=str(other)) is None
+    assert find_config_file() == os.path.join(str(project), ".secchecker.yml")
+
+
 def test_find_config_file_not_found(tmp_path, monkeypatch):
     # chdir into the empty tmp dir so the cwd fallback can't pick up a
     # .secchecker.yml that happens to exist in the project root.

@@ -35,13 +35,27 @@ def get_default_config():
     }
 
 
+def _is_within(path, root):
+    # type: (str, str) -> bool
+    path, root = os.path.abspath(path), os.path.abspath(root)
+    try:
+        return os.path.commonpath([path, root]) == root
+    except ValueError:  # different drives on Windows
+        return False
+
+
 def find_config_file(scan_root=None):
     # type: (Optional[str]) -> Optional[str]
-    """Search for .secchecker.yml in scan_root then cwd."""
+    """Search for .secchecker.yml in scan_root, then in the cwd - but the cwd's
+    config only applies when scan_root is inside the cwd. Otherwise scanning
+    another repo from a project directory silently applied that project's
+    exclude_paths to it (e.g. hiding the target's tests/ and .github/)."""
     candidates = []
+    cwd = os.getcwd()
     if scan_root:
         candidates.append(os.path.join(str(scan_root), CONFIG_FILENAME))
-    candidates.append(os.path.join(os.getcwd(), CONFIG_FILENAME))
+    if not scan_root or _is_within(str(scan_root), cwd):
+        candidates.append(os.path.join(cwd, CONFIG_FILENAME))
     for path in candidates:
         if os.path.isfile(path):
             return path
