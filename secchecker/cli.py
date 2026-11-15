@@ -321,7 +321,9 @@ def _cmd_scan(args):
             if to_sarif is None:
                 print('[!] SARIF reporter not available', file=sys.stderr)
                 sys.exit(2)
-            report_file = to_sarif(results, output_file)
+            # directory results are keyed relative to the scan root
+            base = args.path if os.path.isdir(args.path) else ""
+            report_file = to_sarif(results, output_file, base_dir=base)
         elif fmt == 'html':
             if to_html is None:
                 print('[!] HTML reporter not available', file=sys.stderr)

@@ -1,16 +1,19 @@
 """LLM/AI Security scanner — scans source code for LLM vulnerability patterns."""
 import ast
+import io
 import re
+import tokenize
 import json
 import os
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from secchecker.llm_patterns import (
     LLM_PATTERNS, TOOL_POISONING_MARKERS,
     CAT_POISONED_DOCSTRING, CAT_POISONED_DESCRIPTION,
 )
 from secchecker.core import should_skip_directory, should_skip_file
+from secchecker.validators import _looks_like_placeholder
 
 _POISON_RE = re.compile(TOOL_POISONING_MARKERS)
 
@@ -46,12 +49,51 @@ _MCP_MARKER_RE = re.compile(
 # at the keyword, before any closing brace.
 _VALUE_REF_RE = re.compile(r'os\.(?:environ|getenv)\s*\(|\{')
 
-# rule name -> guard(full_match_text, whole_file_content) -> bool (True = keep)
+_STR_LIT_RE = re.compile(r'([rRbBuUfF]{0,2})("""|\'\'\'|"|\')(.*?)\2', re.S)
+_SECRET_WORD_RE = re.compile(r'(?i)\b(?:api_?key|secret|password|token|credential)\b')
+_TOOL_RESULT_WORD_RE = re.compile(r'(?i)\b(?:tool_result|tool_output|mcp_result|function_result)\b')
+_LOG_KEY_WORD_RE = re.compile(r'(?i)\b(?:api_key|openai_api_key|anthropic_api_key)\b')
+
+
+def _line_of_match(mo, content):
+    start = content.rfind('\n', 0, mo.start()) + 1
+    end = content.find('\n', mo.end())
+    return content[start:end if end != -1 else len(content)]
+
+
+def _code_only(line):
+    """*line* with string-literal text removed; f-string {...} parts are kept,
+    since those are values, not prose."""
+    def keep(m):
+        if 'f' in m.group(1).lower():
+            return ' '.join(re.findall(r'\{([^{}]*)\}', m.group(3)))
+        return '""'
+    return _STR_LIT_RE.sub(keep, line)
+
+
+def _word_in_code(word_re):
+    """Guard: the rule's keyword must appear as code on the line, not only as
+    words inside a string (e.g. a prompt that *mentions* 'password')."""
+    return lambda mo, content: bool(word_re.search(_code_only(_line_of_match(mo, content))))
+
+
+# rule name -> guard(match_object, whole_file_content) -> bool (True = keep)
 _CONTEXT_GUARDS = {
-    "LLM - Secret Passed to LLM": lambda m, content: bool(_LLM_CALL_SINK_RE.search(content)),
-    "LLM - API Key in Log Statement": lambda m, content: bool(_VALUE_REF_RE.search(m)),
-    "MCP - Hardcoded MCP Server URL": lambda m, content: bool(_MCP_MARKER_RE.search(content)),
+    "LLM - Secret Passed to LLM": lambda mo, content: (
+        bool(_LLM_CALL_SINK_RE.search(content)) and _word_in_code(_SECRET_WORD_RE)(mo, content)),
+    "LLM - API Key in Log Statement": lambda mo, content: (
+        bool(_VALUE_REF_RE.search(mo.group(0))) or _word_in_code(_LOG_KEY_WORD_RE)(mo, content)),
+    "MCP - Hardcoded MCP Server URL": lambda mo, content: bool(_MCP_MARKER_RE.search(content)),
+    "MCP - Unvalidated Tool Result in Prompt": _word_in_code(_TOOL_RESULT_WORD_RE),
 }
+for _key_rule in ("OpenAI API Key", "Anthropic API Key", "HuggingFace Token", "Pinecone API Key",
+                  "Weaviate API Key", "Groq API Key", "OpenRouter API Key", "xAI API Key",
+                  "LangSmith API Key"):
+    _CONTEXT_GUARDS["LLM - " + _key_rule] = lambda mo, content: not _looks_like_placeholder(mo.group(0))
+
+# Sink patterns written against `os.` / `subprocess.`; a file that aliases or
+# from-imports those modules gets per-file variants (see _patterns_for).
+_ALIASABLE_MODULES = ('os', 'subprocess')
 
 CAT_UNBOUNDED_LOOP = "Agentic - Agent Loop Without Exit Condition"
 CAT_RECURSIVE_SUBAGENT = "Agentic - Recursive Self-Invocation Risk"
@@ -82,29 +124,70 @@ def _read_file(filepath):
     return None
 
 
-def _scan_content(content):
-    # type: (str) -> Dict[str, List[str]]
-    """Scan text content against LLM_PATTERNS."""
+def _blank_py_comments(content):
+    # type: (str) -> str
+    """Replace Python comments with spaces (same length, so line/column
+    positions and reported code are unchanged). Unparseable input is
+    returned as-is."""
+    lines = content.splitlines(True)
+    try:
+        for tok in tokenize.generate_tokens(io.StringIO(content).readline):
+            if tok.type == tokenize.COMMENT:
+                (row, col), (_, ecol) = tok.start, tok.end
+                line = lines[row - 1]
+                lines[row - 1] = line[:col] + ' ' * (ecol - col) + line[ecol:]
+    except (tokenize.TokenError, IndentationError, SyntaxError, IndexError):
+        return content
+    return ''.join(lines)
+
+
+def _patterns_for(content):
+    # type: (str) -> Dict[str, Any]
+    """Compiled LLM patterns, adjusted for `import os as X` and
+    `from os import system` style imports in *content*."""
+    subs = {}
+    for mod in _ALIASABLE_MODULES:
+        aliases = re.findall(r'^\s*import\s+{}\s+as\s+(\w+)'.format(mod), content, re.M)
+        names = []
+        for group in re.findall(r'^\s*from\s+{}\s+import\s+([\w\s,]+)$'.format(mod), content, re.M):
+            names += [n.split()[0] for n in group.split(',') if n.strip()]
+        if aliases or names:
+            alt = '(?:{})\\.'.format('|'.join([mod] + aliases))
+            if names:
+                alt = '(?:{}|(?=(?:{})\\b))'.format(alt, '|'.join(names))
+            subs[mod] = alt
+    if not subs:
+        return _COMPILED_LLM_PATTERNS
+    out = {}
+    for name, p in LLM_PATTERNS.items():
+        for mod, alt in subs.items():
+            p = re.sub(r'(?<![A-Za-z_]){}\\\.'.format(mod), lambda _m, a=alt: a, p)
+        try:
+            out[name] = re.compile(p)
+        except re.error:
+            out[name] = _COMPILED_LLM_PATTERNS[name]
+    return out
+
+
+def _scan_content(content, python=False):
+    # type: (str, bool) -> Dict[str, List[str]]
+    """Scan text content against LLM_PATTERNS. For Python source, comments
+    are blanked first so a comment that *mentions* a threat doesn't fire."""
+    if python:
+        content = _blank_py_comments(content)
+    compiled = _patterns_for(content)
     findings = {}
     for pattern_name, pattern_regex in LLM_PATTERNS.items():
         try:
             guard = _CONTEXT_GUARDS.get(pattern_name)
-            if guard is not None:
-                # Need the full match text (group(0)) to evaluate the guard,
-                # not just the captured groups findall() would give us -
-                # still recorded in the same "group1 group2" shape as every
-                # other rule so report output/format is unchanged.
-                matches = [
-                    mo.groups()[0] if len(mo.groups()) == 1 else ' '.join(mo.groups())
-                    for mo in _COMPILED_LLM_PATTERNS[pattern_name].finditer(content)
-                    if guard(mo.group(0), content)
-                ]
-            else:
-                matches = _COMPILED_LLM_PATTERNS[pattern_name].findall(content)
-            if matches:
-                flat = []
-                for m in matches:
-                    flat.append(m if isinstance(m, str) else ' '.join(m))
+            # Report the full matched text (group(0)): capture groups are
+            # fragments that don't appear in the file and can't be located.
+            flat = [
+                mo.group(0)
+                for mo in compiled[pattern_name].finditer(content)
+                if guard is None or guard(mo, content)
+            ]
+            if flat:
                 # Deduplicate
                 seen = set()
                 deduped = []
@@ -146,8 +229,21 @@ def _system_marker_is_param_doc(match_text, func_node):
     return 'system' in names
 
 
-def _scan_python_docstrings(tree):
-    # type: (ast.AST) -> Dict[str, List[str]]
+def _src_line(lines, lineno):
+    # type: (List[str], int) -> str
+    """The stripped source line at 1-based *lineno*: AST findings report real
+    code (locatable by reporters), not a description like 'line 6'."""
+    return lines[lineno - 1].strip() if 0 < lineno <= len(lines) else ""
+
+
+def _marker_line(lines, str_node, text, m):
+    # type: (List[str], ast.AST, str, Any) -> str
+    """Source line holding regex match *m* inside string literal *str_node*."""
+    return _src_line(lines, str_node.lineno + text.count("\n", 0, m.start()))
+
+
+def _scan_python_docstrings(tree, lines):
+    # type: (ast.AST, List[str]) -> Dict[str, List[str]]
     """Detect MCP tool-poisoning: hidden instructions embedded in a tool
     function's docstring, or in a description= kwarg / dict-literal value.
 
@@ -168,25 +264,24 @@ def _scan_python_docstrings(tree):
             if doc:
                 m = _POISON_RE.search(doc)
                 if m and not _system_marker_is_param_doc(m.group(0), node):
-                    name = getattr(node, 'name', '<module>')
-                    _add(CAT_POISONED_DOCSTRING, "{}: {!r}".format(name, m.group(0)[:60]))
+                    _add(CAT_POISONED_DOCSTRING, _marker_line(lines, node.body[0].value, doc, m))
 
         elif isinstance(node, ast.Call):
             for kw in node.keywords:
                 if kw.arg in _DESCRIPTION_KEYS:
                     val = _get_str_const(kw.value)
-                    if val and _POISON_RE.search(val):
-                        snippet = _POISON_RE.search(val).group(0)[:60]
-                        _add(CAT_POISONED_DESCRIPTION, "{}={!r}".format(kw.arg, snippet))
+                    m = _POISON_RE.search(val) if val else None
+                    if m:
+                        _add(CAT_POISONED_DESCRIPTION, _marker_line(lines, kw.value, val, m))
 
         elif isinstance(node, ast.Dict):
             for key, value in zip(node.keys, node.values):
                 key_str = _get_str_const(key) if key is not None else ""
                 if key_str.lower() in _DESCRIPTION_KEYS:
                     val = _get_str_const(value)
-                    if val and _POISON_RE.search(val):
-                        snippet = _POISON_RE.search(val).group(0)[:60]
-                        _add(CAT_POISONED_DESCRIPTION, "{}={!r}".format(key_str, snippet))
+                    m = _POISON_RE.search(val) if val else None
+                    if m:
+                        _add(CAT_POISONED_DESCRIPTION, _marker_line(lines, value, val, m))
 
     return findings
 
@@ -219,7 +314,10 @@ def _call_name(call):
 
 def _is_agent_like(name):
     # type: (str) -> bool
-    return isinstance(name, str) and name.lower() in _AGENT_LIKE_NAMES
+    if not isinstance(name, str):
+        return False
+    n = name.lower()
+    return n in _AGENT_LIKE_NAMES or n.endswith(('agent', 'executor'))
 
 
 def _loop_has_sink_call(loop_node):
@@ -251,8 +349,8 @@ def _is_unbounded_iter_call(expr):
     return isinstance(expr, ast.Call) and _call_name(expr) in _UNBOUNDED_ITER_FUNCS
 
 
-def _scan_unbounded_agent_loops(tree):
-    # type: (ast.AST) -> Dict[str, List[str]]
+def _scan_unbounded_agent_loops(tree, lines):
+    # type: (ast.AST, List[str]) -> Dict[str, List[str]]
     """Detect an agent-call sink inside a loop that can never terminate:
     `while True` or an unbounded iterator (itertools.count/cycle), with no
     break/return anywhere in its body.
@@ -279,13 +377,13 @@ def _scan_unbounded_agent_loops(tree):
             continue
 
         if unbounded and _loop_has_sink_call(node) and not _loop_has_exit(node):
-            _add("line {}".format(node.lineno))
+            _add(_src_line(lines, node.lineno))
 
     return findings
 
 
-def _scan_recursive_subagent_spawn(tree):
-    # type: (ast.AST) -> Dict[str, List[str]]
+def _scan_recursive_subagent_spawn(tree, lines):
+    # type: (ast.AST, List[str]) -> Dict[str, List[str]]
     """Detect a function that both holds an agent/executor (as a parameter or
     a freshly-instantiated AgentExecutor/ReActAgent) and invokes an
     agent/executor-named object's .run()/.invoke() - spawning or driving
@@ -307,11 +405,15 @@ def _scan_recursive_subagent_spawn(tree):
         if detail not in findings[CAT_RECURSIVE_SUBAGENT]:
             findings[CAT_RECURSIVE_SUBAGENT].append(detail)
 
+    agent_methods = {
+        n for c in ast.walk(tree) if isinstance(c, ast.ClassDef) and _is_agent_like(c.name) and not c.name.startswith('Test')
+        for n in c.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
     for func in ast.walk(tree):
         if not isinstance(func, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
 
-        has_agent_instantiation = False
+        spawn_line = 0  # first agent instantiation: the risky line, reported
         has_invoke_on_agent_like = False
 
         for node in ast.walk(func):
@@ -319,7 +421,7 @@ def _scan_recursive_subagent_spawn(tree):
                 continue
             callee = node.func
             if isinstance(callee, ast.Name) and _is_agent_like(callee.id):
-                has_agent_instantiation = True
+                spawn_line = spawn_line or node.lineno
             if isinstance(callee, ast.Attribute) and callee.attr in _INVOKE_VERBS:
                 receiver = callee.value
                 receiver_name = receiver.id if isinstance(receiver, ast.Name) else None
@@ -327,10 +429,14 @@ def _scan_recursive_subagent_spawn(tree):
                     has_invoke_on_agent_like = True
 
         # Merely receiving an agent as a parameter and calling .run() on it
-        # once is normal, safe agent usage - the risk is specifically
-        # *spawning a new* agent-like instance from within the function.
-        if has_agent_instantiation and has_invoke_on_agent_like:
-            _add("{}: line {}".format(func.name, func.lineno))
+        # once is normal, safe agent usage - and so is creating an agent and
+        # running it (`agent = Agent(...); agent.run(q)`, thousands of hits in
+        # real repos). The risk is an agent's own code - a function handed an
+        # agent, or a method of an agent class - spawning *another* one.
+        args = func.args.args + func.args.kwonlyargs
+        holds_agent = func in agent_methods or any(_is_agent_like(a.arg) for a in args)
+        if spawn_line and has_invoke_on_agent_like and holds_agent:
+            _add(_src_line(lines, spawn_line))
 
     return findings
 
@@ -355,10 +461,11 @@ def _scan_python_ast_checks(content):
         tree = ast.parse(content)
     except (SyntaxError, ValueError):
         return {}
+    lines = content.splitlines()
     findings = {}  # type: Dict[str, List[str]]
-    _merge_findings(findings, _scan_python_docstrings(tree))
-    _merge_findings(findings, _scan_unbounded_agent_loops(tree))
-    _merge_findings(findings, _scan_recursive_subagent_spawn(tree))
+    _merge_findings(findings, _scan_python_docstrings(tree, lines))
+    _merge_findings(findings, _scan_unbounded_agent_loops(tree, lines))
+    _merge_findings(findings, _scan_recursive_subagent_spawn(tree, lines))
     return findings
 
 
@@ -379,7 +486,7 @@ def _scan_notebook(filepath):
             elif isinstance(source, str):
                 all_source.append(source)
         joined = '\n'.join(all_source)
-        findings = _scan_content(joined)
+        findings = _scan_content(joined, python=True)
         _merge_findings(findings, _scan_python_ast_checks(joined))
         return findings
     except (ValueError, KeyError, TypeError):
@@ -406,8 +513,9 @@ def scan_file_llm(filepath):
     content = _read_file(filepath)
     if content is None:
         return {}
-    findings = _scan_content(content)
-    if path.suffix.lower() == '.py':
+    is_py = path.suffix.lower() == '.py'
+    findings = _scan_content(content, python=is_py)
+    if is_py:
         _merge_findings(findings, _scan_python_ast_checks(content))
     return findings
 

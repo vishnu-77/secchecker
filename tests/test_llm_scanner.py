@@ -2,6 +2,9 @@ import pytest
 from secchecker.llm_patterns import LLM_PATTERNS, LLM_SEVERITY_MAP
 from secchecker.llm_scanner import scan_file_llm, scan_directory_llm, _scan_content
 
+# varied key-shaped body: runs like "aaaa" are placeholders and are filtered
+_TOK = "Ab3dEf6hIj" * 12
+
 
 def test_llm_patterns_exist():
     assert isinstance(LLM_PATTERNS, dict)
@@ -16,21 +19,21 @@ def test_llm_severity_map_exists():
 
 def test_openai_key_detection(tmp_path):
     f = tmp_path / "config.py"
-    f.write_text('OPENAI_API_KEY = "sk-' + 'a' * 48 + '"')
+    f.write_text('OPENAI_API_KEY = "sk-' + _TOK[:48] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - OpenAI API Key" in findings
 
 
 def test_anthropic_key_detection(tmp_path):
     f = tmp_path / "config.py"
-    f.write_text('api_key = "sk-ant-' + 'a' * 93 + '"')
+    f.write_text('api_key = "sk-ant-' + _TOK[:93] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - Anthropic API Key" in findings
 
 
 def test_huggingface_token_detection(tmp_path):
     f = tmp_path / "model.py"
-    f.write_text('HF_TOKEN = "hf_' + 'a' * 36 + '"')
+    f.write_text('HF_TOKEN = "hf_' + _TOK[:36] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - HuggingFace Token" in findings
 
@@ -38,7 +41,7 @@ def test_huggingface_token_detection(tmp_path):
 def test_openai_legacy_key_still_detected(tmp_path):
     # The original, still-valid 48-char legacy sk- shape.
     f = tmp_path / "config.py"
-    f.write_text('OPENAI_API_KEY = "sk-' + 'a' * 48 + '"')
+    f.write_text('OPENAI_API_KEY = "sk-' + _TOK[:48] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - OpenAI API Key" in findings
 
@@ -72,7 +75,7 @@ def test_anthropic_key_still_detected_at_original_exact_length(tmp_path):
     # Regression: the previous pattern pinned exactly 93 chars - confirm that
     # exact case still matches now that it's a floor, not a pin.
     f = tmp_path / "config.py"
-    f.write_text('api_key = "sk-ant-' + 'a' * 93 + '"')
+    f.write_text('api_key = "sk-ant-' + _TOK[:93] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - Anthropic API Key" in findings
 
@@ -88,28 +91,28 @@ def test_anthropic_current_api03_key_detected(tmp_path):
 
 def test_groq_key_detection(tmp_path):
     f = tmp_path / "config.py"
-    f.write_text('GROQ_API_KEY = "gsk_' + 'a' * 40 + '"')
+    f.write_text('GROQ_API_KEY = "gsk_' + _TOK[:40] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - Groq API Key" in findings
 
 
 def test_openrouter_key_detection(tmp_path):
     f = tmp_path / "config.py"
-    f.write_text('OPENROUTER_API_KEY = "sk-or-v1-' + 'a' * 40 + '"')
+    f.write_text('OPENROUTER_API_KEY = "sk-or-v1-' + _TOK[:40] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - OpenRouter API Key" in findings
 
 
 def test_xai_key_detection(tmp_path):
     f = tmp_path / "config.py"
-    f.write_text('XAI_API_KEY = "xai-' + 'a' * 40 + '"')
+    f.write_text('XAI_API_KEY = "xai-' + _TOK[:40] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - xAI API Key" in findings
 
 
 def test_langsmith_key_detection(tmp_path):
     f = tmp_path / "config.py"
-    f.write_text('LANGSMITH_API_KEY = "lsv2_pt_' + 'a' * 40 + '"')
+    f.write_text('LANGSMITH_API_KEY = "lsv2_pt_' + _TOK[:40] + '"')
     findings = scan_file_llm(str(f))
     assert "LLM - LangSmith API Key" in findings
 
@@ -154,7 +157,7 @@ def test_scan_nonexistent_directory():
 
 
 def test_scan_directory_llm(tmp_path):
-    (tmp_path / "model.py").write_text('HF_TOKEN = "hf_' + 'a' * 36 + '"')
+    (tmp_path / "model.py").write_text('HF_TOKEN = "hf_' + _TOK[:36] + '"')
     results = scan_directory_llm(str(tmp_path))
     assert len(results) >= 1
 

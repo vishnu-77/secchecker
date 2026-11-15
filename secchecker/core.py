@@ -124,10 +124,10 @@ def scan_file(filepath: str, extra_patterns: Dict[str, str] = None) -> Dict[str,
                 # Only use the precompiled cache when a custom_patterns entry
                 # hasn't overridden this name with a different regex string.
                 compiled = _COMPILED_PATTERNS.get(name) if PATTERNS.get(name) == pattern else None
-                if compiled is not None:
-                    matches = compiled.findall(content)
-                else:
-                    matches = re.findall(pattern, content, _SCAN_FLAGS)
+                if compiled is None:
+                    compiled = re.compile(pattern, _SCAN_FLAGS)
+                # full matched text, not capture-group fragments
+                matches = [mo.group(0) for mo in compiled.finditer(content)]
                 if matches:
                     # Remove duplicates while preserving order
                     unique_matches = list(dict.fromkeys(matches))

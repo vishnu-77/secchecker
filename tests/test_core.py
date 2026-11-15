@@ -25,7 +25,10 @@ def test_scan_file_multiple_patterns(tmp_path):
 def test_scan_directory(tmp_path):
     """Test scanning a directory recursively."""
     # Create test files
-    (tmp_path / "file1.py").write_text("password='test123'")
+    # realistic value: placeholders like 'test123' are now (correctly) filtered,
+    # since validators see the whole match instead of just the keyword group
+    (tmp_path / "file1.py").write_text("password='Xk9#mQ2vLp'")
+    (tmp_path / "placeholder.py").write_text("password='test123'")
     (tmp_path / "subdir").mkdir()
     (tmp_path / "subdir" / "file2.js").write_text("api_key: 'AIzaSyABC123'")
     
@@ -35,6 +38,7 @@ def test_scan_directory(tmp_path):
     # Check if files are found (don't check specific paths due to OS differences)
     found_files = list(results.keys())
     assert any("file1.py" in path for path in found_files)
+    assert not any("placeholder.py" in path for path in found_files)
 
 def test_scan_nonexistent_file():
     """Test scanning a file that doesn't exist."""
