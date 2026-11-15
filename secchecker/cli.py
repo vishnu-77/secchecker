@@ -97,7 +97,7 @@ def _filter_by_severity(results, threshold):
     filtered = {}
     for filepath, findings in results.items():
         kept = {k: v for k, v in findings.items()
-                if SEVERITY_ORDER.get(get_severity(k), 0) >= min_level}
+                if SEVERITY_ORDER.get(get_severity(k, filepath), 0) >= min_level}
         if kept:
             filtered[filepath] = kept
     return filtered

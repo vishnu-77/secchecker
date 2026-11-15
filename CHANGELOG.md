@@ -7,6 +7,14 @@ All notable changes to secchecker are documented here.
 ## [Unreleased]
 
 ### Changed
+- **LLM/AI behaviour findings in test and fixture files are LOW.** Files under
+  `tests/`, `test/`, `__tests__/`, `fixtures/`, `testdata/`, `cassettes/`, or named
+  `test_*.py`, `*_test.py`, `conftest.py`, `*.test.js`, `*.spec.ts` keep their
+  findings, but they rank below production code in every report and
+  `--severity-threshold` can drop them. Credential rules (provider keys, all
+  secrets/DevSecOps/dependency rules) keep full severity everywhere. In the
+  real-world triage sample this moved in-sample precision at HIGH from 25% to 41%
+  with every true positive still HIGH.
 - **Python 3.10+ required.** 3.8 and 3.9 are end-of-life and no longer available
   on GitHub's current Ubuntu runners, so they could not be tested.
 

@@ -11,7 +11,7 @@ try:
 except ImportError:
     _VERSION = "0.3.0"
 
-    def get_severity(name):
+    def get_severity(name, path=None):
         return "MEDIUM"
 
     def get_owasp(name):
@@ -100,7 +100,7 @@ def _build_results(results, base_dir=""):
         except (OSError, IOError):
             content = None
         for pattern_name, matches in patterns.items():
-            severity = get_severity(pattern_name)
+            severity = get_severity(pattern_name, filepath)
             level = SARIF_LEVEL_MAP.get(severity, "warning")
             msg = "{} ({} occurrence{})".format(
                 pattern_name, len(matches), "s" if len(matches) != 1 else ""

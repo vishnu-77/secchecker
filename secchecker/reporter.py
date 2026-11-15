@@ -1,4 +1,5 @@
 import json
+import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from datetime import datetime
@@ -130,8 +131,32 @@ try:
 except ImportError:
     DEPENDENCY_SEVERITY_MAP = {}
 
-def get_severity(pattern_name: str) -> str:
-    """Get severity level for a pattern across secrets, LLM/AI, DevSecOps, AST, and dependency maps."""
+_TEST_DIRS = {"test", "tests", "__tests__", "fixtures", "testdata", "cassettes"}
+_TEST_FILE_RE = re.compile(r"(^test_.*\.py$|_test\.py$|^conftest\.py$|\.(?:test|spec)\.[jt]sx?$)")
+
+
+def is_test_path(path) -> bool:
+    """True for files under a test/fixture directory or named like a test."""
+    parts = re.split(r"[\\/]", str(path))
+    return (any(p.lower() in _TEST_DIRS for p in parts[:-1])
+            or bool(_TEST_FILE_RE.search(parts[-1].lower())))
+
+
+def _downgrades_in_tests(pattern_name: str) -> bool:
+    # LLM/AI behaviour rules only: a prompt-injection shape in a test is test
+    # data, but a real credential in a test file is still a real leak.
+    return (pattern_name in LLM_SEVERITY_MAP
+            and "API Key" not in pattern_name and not pattern_name.endswith("Token"))
+
+
+def get_severity(pattern_name: str, path=None) -> str:
+    """Get severity level for a pattern across secrets, LLM/AI, DevSecOps, AST, and dependency maps.
+
+    With *path*, LLM/AI behaviour findings in test/fixture files are LOW: they
+    stay visible but rank below production code (real-world triage found about
+    a third of HIGH/CRITICAL findings were test data)."""
+    if path is not None and _downgrades_in_tests(pattern_name) and is_test_path(path):
+        return "LOW"
     if pattern_name in SEVERITY_MAP:
         return SEVERITY_MAP[pattern_name]
     if pattern_name in LLM_SEVERITY_MAP:
@@ -179,7 +204,7 @@ def to_json(results: Dict[str, Dict[str, List[str]]], output_file="secchecker_re
     for file, findings in results.items():
         enhanced_results["findings"][file] = {}
         for pattern_name, matches in findings.items():
-            severity = get_severity(pattern_name)
+            severity = get_severity(pattern_name, file)
             severity_counts[severity] += len(matches)
             
             enhanced_results["findings"][file][pattern_name] = {
@@ -207,9 +232,9 @@ def to_markdown(results: Dict[str, Dict[str, List[str]]], output_file="secchecke
     
     # Count by severity
     severity_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
-    for findings in results.values():
+    for file, findings in results.items():
         for pattern_name, matches in findings.items():
-            severity = get_severity(pattern_name)
+            severity = get_severity(pattern_name, file)
             severity_counts[severity] += len(matches)
     
     with open(output_file, "w", encoding="utf-8") as f:
@@ -237,7 +262,7 @@ def to_markdown(results: Dict[str, Dict[str, List[str]]], output_file="secchecke
         for file, findings in results.items():
             f.write(f"### 📄 `{file}`\n\n")
             for pattern_name, matches in findings.items():
-                severity = get_severity(pattern_name)
+                severity = get_severity(pattern_name, file)
                 emoji = {"CRITICAL": "🔴", "HIGH": "🟠", "MEDIUM": "🟡", "LOW": "🟢"}[severity]
                 f.write(f"- {emoji} **{pattern_name}** ({severity}): {len(matches)} match(es)\n")
                 for i, match in enumerate(matches, 1):
@@ -268,9 +293,9 @@ def to_xml(results: Dict[str, Dict[str, List[str]]], output_file="secchecker_rep
     
     # Severity counts
     severity_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
-    for findings in results.values():
+    for file, findings in results.items():
         for pattern_name, matches in findings.items():
-            severity = get_severity(pattern_name)
+            severity = get_severity(pattern_name, file)
             severity_counts[severity] += len(matches)
     
     severity_elem = ET.SubElement(summary, "SeverityCounts")
@@ -290,7 +315,7 @@ def to_xml(results: Dict[str, Dict[str, List[str]]], output_file="secchecker_rep
         for pattern_name, matches in findings.items():
             category_elem = ET.SubElement(file_elem, "Category")
             category_elem.set("name", pattern_name)
-            category_elem.set("severity", get_severity(pattern_name))
+            category_elem.set("severity", get_severity(pattern_name, file))
             category_elem.set("matchCount", str(len(matches)))
             
             for match in matches:
@@ -337,7 +362,7 @@ def generate_json_report(data: Dict[str, Dict[str, List[str]]]) -> str:
         for pattern_name, matches in findings.items():
             enhanced_results["findings"][file][pattern_name] = {
                 "matches": matches,
-                "severity": get_severity(pattern_name),
+                "severity": get_severity(pattern_name, file),
                 "count": len(matches)
             }
     
@@ -353,7 +378,7 @@ def generate_markdown_report(data: Dict[str, Dict[str, List[str]]]) -> str:
     for file, findings in data.items():
         lines.append(f'## 📄 {file}')
         for pattern_name, matches in findings.items():
-            severity = get_severity(pattern_name)
+            severity = get_severity(pattern_name, file)
             emoji = {"CRITICAL": "🔴", "HIGH": "🟠", "MEDIUM": "🟡", "LOW": "🟢"}[severity]
             lines.append(f"- {emoji} **{pattern_name}** ({severity}): {matches}")
     
@@ -374,7 +399,7 @@ def generate_xml_report(data: Dict[str, Dict[str, List[str]]]) -> str:
         for pattern_name, matches in findings.items():
             category_elem = ET.SubElement(file_elem, "Category")
             category_elem.set("name", pattern_name)
-            category_elem.set("severity", get_severity(pattern_name))
+            category_elem.set("severity", get_severity(pattern_name, file))
             
             for match in matches:
                 match_elem = ET.SubElement(category_elem, "Match")
