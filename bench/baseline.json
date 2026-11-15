@@ -1,0 +1,22 @@
+{
+  "_comment": "Ratchet for tests/test_regression_gate.py (T9 of docs/plans/llm-scanner-test-plan.md). Worse fails CI; better also fails until this file is updated, so gains are locked in.",
+  "paired": {
+    "tp": 23,
+    "fp": 0,
+    "tn": 23,
+    "fn": 0
+  },
+  "adversarial_caught": 6,
+  "benign_flagged": 2,
+  "mutation_kept": {
+    "identity": 23,
+    "rename_vars": 8,
+    "fstring_to_format": 0,
+    "fstring_to_concat": 0,
+    "fstring_to_percent": 0,
+    "alias_imports": 3,
+    "split_call_args": 16,
+    "wrap_in_helper": 23
+  },
+  "comment_noise_flagged": 0
+}
