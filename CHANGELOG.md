@@ -19,6 +19,9 @@ All notable changes to secchecker are documented here.
 - **SARIF line numbers were always 1 for directory scans run from another
   directory.** Results are keyed relative to the scan root but SARIF opened them
   relative to the cwd. The CLI now passes the scan root to the SARIF writer.
+- **A clean scan wrote no report, even with `--output`.** CI steps that consume
+  the file (SARIF upload) failed on a clean repo. An explicit `--output` now
+  always gets a report (empty when clean; exit code stays 0).
 - **Unpinned GitHub Action rule** flagged SHA-pinned actions whose hash starts with a
   letter and missed tag refs like `@v4`. It now flags anything that isn't a full
   40-character commit SHA and reports the whole ref.

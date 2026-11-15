@@ -305,7 +305,10 @@ def _cmd_scan(args):
 
     if not results:
         print('[+] No findings detected.')
-        sys.exit(0)
+        # an explicit --output still gets an (empty) report: CI steps such as
+        # SARIF upload fail on a missing file when the scan is clean
+        if not args.output:
+            sys.exit(0)
 
     fmt = args.format
     output_file = args.output or 'secchecker_report.{}'.format(fmt)
@@ -338,7 +341,7 @@ def _cmd_scan(args):
         print('[*] {} finding(s) across {} file(s)'.format(total, len(results)))
     print('[+] Report: {}'.format(report_file))
 
-    sys.exit(1)
+    sys.exit(1 if results else 0)
 
 
 def _find_lockfiles(project_root):

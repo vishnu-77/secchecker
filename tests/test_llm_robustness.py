@@ -100,6 +100,24 @@ def test_exit_codes(tmp_path, dirs):
     assert _cli(tmp_path, str(tmp_path / "missing"), "--type", "llm").returncode == 2
 
 
+@pytest.mark.parametrize("fmt", ["json", "sarif", "xml", "md", "html"])
+def test_clean_scan_with_output_still_writes_report(tmp_path, dirs, fmt):
+    # CI steps (e.g. SARIF upload) fail on a missing file when a scan is clean
+    clean, _ = dirs
+    out = tmp_path / ("clean." + fmt)
+    r = _cli(tmp_path, str(clean), "--type", "llm", "--format", fmt, "--output", str(out))
+    assert r.returncode == 0, r.stderr
+    assert out.exists() and out.read_text(encoding="utf-8").strip()
+    if fmt == "sarif":
+        assert json.loads(out.read_text(encoding="utf-8"))["runs"][0]["results"] == []
+
+
+def test_clean_scan_without_output_writes_nothing(tmp_path, dirs):
+    clean, _ = dirs
+    assert _cli(tmp_path, str(clean), "--type", "llm").returncode == 0
+    assert not list(tmp_path.glob("secchecker_report.*"))
+
+
 def test_threshold_above_findings_exits_clean(tmp_path, dirs):
     _, vuln = dirs  # f-string injection is HIGH
     r = _cli(tmp_path, str(vuln), "--type", "llm", "--severity-threshold", "CRITICAL",
