@@ -10,6 +10,14 @@
 exclude_paths:
   # intentionally-vulnerable demo app
   - "demo/"
+  # evasion harness: its comment-noise string is deliberate threat text
+  - "bench/mutate.py"
+  # real-world triage write-ups and raw scan results quote flagged code
+  - "bench/agentsecbench/"
+  # README/brand examples are deliberately vulnerable snippets
+  - "brand/scenarios.py"
+  # the LLM scanner's own marker strings and docstrings self-match
+  - "secchecker/llm_scanner.py"
   # test fixtures contain sample secrets
   - "tests/"
   # benchmark fixtures are intentionally vulnerable/safe pairs, by design
