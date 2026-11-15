@@ -6,6 +6,10 @@ All notable changes to secchecker are documented here.
 
 ## [Unreleased]
 
+### Changed
+- **Python 3.10+ required.** 3.8 and 3.9 are end-of-life and no longer available
+  on GitHub's current Ubuntu runners, so they could not be tested.
+
 ### Fixed
 - **Findings reported fragments that aren't in the file.** 37 rules across the
   LLM, secrets and DevSecOps scanners reported their regex capture groups joined
@@ -19,6 +23,10 @@ All notable changes to secchecker are documented here.
 - **SARIF line numbers were always 1 for directory scans run from another
   directory.** Results are keyed relative to the scan root but SARIF opened them
   relative to the cwd. The CLI now passes the scan root to the SARIF writer.
+- **A `.secchecker.yml` in the current directory applied to any scan target.**
+  Scanning another repo from a project directory silently used that project's
+  `exclude_paths` (hiding the target's `tests/` and `.github/`). The cwd config
+  now applies only when the scan target is inside the cwd.
 - **A clean scan wrote no report, even with `--output`.** CI steps that consume
   the file (SARIF upload) failed on a clean repo. An explicit `--output` now
   always gets a report (empty when clean; exit code stays 0).
