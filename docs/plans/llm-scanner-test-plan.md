@@ -152,6 +152,19 @@ llama_index 99d7433, autogen 8390985, langchain ea17e48, nexus-mcp eeb6bc3.
    rules excluded). Same sample at a HIGH threshold: 7 TPs still HIGH, FPs 21 → 10
    (in-sample precision 7/17 = 41%). The remaining 10 are a committed Discord dump (data),
    docs example notebooks, a docs tool, and an LLM "token" variable.
+6. **Post-fix census (2026-11-16):** full rescan of the same 13 repos, one at a time, with
+   all fixes including G7. HIGH/CRITICAL fell from 255 to **57**; every one was triaged
+   (no sampling). **21 true positives → precision 36.8% (95% Wilson CI ≈ 25.5%–49.8%)**,
+   up from 7.3%. TPs: 12 hardcoded remote MCP URLs in pydantic-ai plugins, 4 env-derived
+   prompts in CI/example scripts, 2 unvalidated tool results (gpt-researcher, crewAI), the
+   mem0 notebook memory-into-agent-prompt flow, and one real-looking OpenAI key committed in
+   two llama_index Discord dumps. Of the 36 FPs, 18 are chat text in those Discord dump
+   JSON files; 5 are docs notebooks formatting a user query into a RAG template, which the
+   README's own definition would call vulnerable (counting them: 26/57 = 45.6%).
+   Caveat: no sampling bias, but these are the same repos the fixes were tuned on, so this
+   is not yet an unseen-code accuracy number (that needs new repos or T4).
+   Next lever: large JSON data files (chat dumps) — consider scanning `.json` only for
+   MCP/agent config shapes.
 
 ### T6 — Differential baseline (optional)
 Run Semgrep and CodeQL (Python) on the T4 + T5 corpus. Report overlap: what only secchecker
