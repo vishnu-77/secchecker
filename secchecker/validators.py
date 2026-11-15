@@ -100,6 +100,26 @@ def _shannon_entropy(s):
     return -sum((c / length) * math.log2(c / length) for c in freq.values())
 
 
+_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+
+def is_valid_wif(key):
+    # type: (str) -> bool
+    """Return True if *key* is a base58check WIF private key (0x80 prefix, valid checksum)."""
+    import hashlib
+    n = 0
+    for c in key:
+        i = _B58.find(c)
+        if i < 0:
+            return False
+        n = n * 58 + i
+    raw = n.to_bytes((n.bit_length() + 7) // 8, "big")
+    if len(raw) not in (37, 38) or raw[0] != 0x80:
+        return False
+    body, check = raw[:-4], raw[-4:]
+    return hashlib.sha256(hashlib.sha256(body).digest()).digest()[:4] == check
+
+
 def has_sufficient_entropy(value, threshold=3.0):
     # type: (str, float) -> bool
     """Return True if *value* has Shannon entropy above *threshold*."""
@@ -147,6 +167,10 @@ def validate_match(pattern_name, match):
     # Credit card — apply Luhn check
     if 'credit card' in name_lower:
         return luhn_check(match)
+
+    # Bitcoin WIF — base58check checksum must verify
+    if 'bitcoin' in name_lower:
+        return is_valid_wif(match)
 
     # JWT — apply structural check (JWT pattern only; bearer-scheme values
     # are opaque strings and must not be forced through JWT structural

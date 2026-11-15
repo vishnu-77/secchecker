@@ -47,11 +47,12 @@ PATTERNS = {
     "Oracle Connection": r"(?i)oracle.*password=.*",
     
     # Cryptocurrency
-    "Bitcoin Private Key": r"[5KL][1-9A-HJ-NP-Za-km-z]{50,51}",
+    # WIF keys are case-sensitive base58; scoped (?-i:) overrides the global IGNORECASE scan flag
+    "Bitcoin Private Key": r"(?<![A-Za-z0-9])(?-i:5[HJK][1-9A-HJ-NP-Za-km-z]{49}|[KL][1-9A-HJ-NP-Za-km-z]{51})(?![A-Za-z0-9])",
     "Ethereum Private Key": r"0x[a-fA-F0-9]{64}",
     
     # Other Sensitive Data
-    "Credit Card": r"\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b",
+    "Credit Card": r"(?<!\d\.)\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b",
     "Social Security Number": r"\b\d{3}-\d{2}-\d{4}\b",
 
     # URLs with embedded credentials
@@ -75,7 +76,7 @@ PATTERNS = {
     "Stripe Test Secret Key": r"sk_test_[0-9a-zA-Z]{24,}",
     "Stripe Publishable Key": r"pk_live_[0-9a-zA-Z]{24,}",
     "Stripe Restricted Key": r"rk_live_[0-9a-zA-Z]{24,}",
-    "Twilio Account SID": r"AC[a-zA-Z0-9]{32}",
+    "Twilio Account SID": r"\b(?-i:AC[0-9a-f]{32})\b",
     "Twilio Auth Token": r"(?i)twilio.*auth.*token['\"\s:=]+[a-zA-Z0-9]{32}",
     "SendGrid API Key": r"SG\.[a-zA-Z0-9\-_]{22}\.[a-zA-Z0-9\-_]{43}",
     "Datadog API Key": r"(?i)datadog.*api[_\-]?key['\"\s:=]+[a-zA-Z0-9]{32}",
